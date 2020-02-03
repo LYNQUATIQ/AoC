@@ -16,8 +16,25 @@ with open(file_path) as f:
 program = [int(x) for x in program_str.split(",")]
 
 
-computer = IntCodeComputer(program)
-script = [
+def run_script(script):
+    computer = IntCodeComputer(program)
+    for line in script:
+        computer.run_program([ord(c) for c in line] + [10])
+        if line in ["WALK", "RUN"]:
+            print(computer.ascii_output())
+
+
+pt1_script = [
+    "NOT A J",
+    "NOT B T",
+    "OR T J",
+    "NOT C T",
+    "OR T J",
+    "AND D J",
+    "WALK",
+]
+
+pt2_script = [
     "NOT A J",
     "NOT B T",
     "OR T J",
@@ -31,10 +48,10 @@ script = [
     "RUN",
 ]
 
-for line in script:
-    computer.run_program([ord(c) for c in line] + [10])
-    print(computer.ascii_output())
-    # print("".join(chr(c) for c in computer.output()[:-1]))
-    # if computer.last_output() != 10:
-    #     print(computer.last_output())
+
+print("Part 1:")
+run_script(pt1_script)
+
+print("Part 2:")
+run_script(pt2_script)
 

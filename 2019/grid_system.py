@@ -17,7 +17,14 @@ class XY(NamedTuple("XY", [("x", int), ("y", int)])):
 
     @property
     def neighbours(self):
-        return [self + d for d in [XY(0, -1), XY(1, 0), XY(0, 1), XY(-1, 0)]]
+        directions = [XY(0, -1), XY(1, 0), XY(0, 1), XY(-1, 0)]
+        return [self + d for d in directions]
+
+    @property
+    def neighbours_including_diagonals(self):
+        directions = [XY(0, -1), XY(1, 0), XY(0, 1), XY(-1, 0)]
+        directions += [XY(-1, -1), XY(1, -1), XY(-1, 1), XY(1, 1)]
+        return [self + d for d in directions]
 
 
 class ConnectedGrid:
@@ -27,12 +34,17 @@ class ConnectedGrid:
     EAST = XY(1, 0)
     WEST = XY(-1, 0)
 
+    UP = NORTH
+    DOWN = SOUTH
+    RIGHT = EAST
+    LEFT = WEST
+
     directions = [NORTH, SOUTH, EAST, WEST]
 
     def __init__(self):
         self.grid = {}
 
-    def get_limits(self):
+    def get_limits(self, margin=0):
         if not self.grid:
             return range(0), range(0)
         min_x, min_y = None, None
@@ -45,10 +57,15 @@ class ConnectedGrid:
             min_y = min(min_y, pt.y)
             max_x = max(max_x, pt.x + 1)
             max_y = max(max_y, pt.y + 1)
-        return min_x, min_y, max_x, max_y
+        return (
+            min_x - margin,
+            min_y - margin,
+            max_x + margin,
+            max_y + margin,
+        )
 
-    def get_ranges(self):
-        min_x, min_y, max_x, max_y = self.get_limits()
+    def get_ranges(self, margin=0):
+        min_x, min_y, max_x, max_y = self.get_limits(margin)
         return range(min_x, max_x), range(min_y, max_y)
 
     def get_symbol(self, xy):
@@ -62,19 +79,16 @@ class ConnectedGrid:
 
         self.print_grid()
 
-    def print_grid(self):
-        min_x, min_y, max_x, max_y = self.get_limits()
-        header1 = "     " + "".join([" " * 9 + str(x + 1) for x in range(max_x // 10)])
-        header2 = "    " + "".join([str(x % 10) for x in range(max_x)])
-        print(header1)
-        print(header2)
+    def print_grid(self, margin=0):
+        min_x, min_y, max_x, max_y = self.get_limits(margin)
+        header = "      " + "".join([str(x % 10) for x in range(min_x, max_x)])
+        print(header)
         for y in range(min_y, max_y):
-            print(f"{y:3d} ", end="")
+            print(f"{y:5d} ", end="")
             for x in range(min_x, max_x):
                 print(self.get_symbol(XY(x, y)), end="")
-            print(f" {y:<3d} ")
-        print(header2)
-        print(header1)
+            print(f" {y:<5d} ")
+        print(header)
 
     def turn_left(self, facing):
         return {

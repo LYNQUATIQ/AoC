@@ -8,7 +8,7 @@ from itertools import combinations
 from grid_system import XY, ConnectedGrid
 
 script_dir = os.path.dirname(__file__)
-file_path = os.path.join(script_dir, "logs/day_17.log")
+file_path = os.path.join(script_dir, "logs/day_18.log")
 logging.basicConfig(
     level=logging.DEBUG, filename=file_path, filemode="w",
 )
@@ -153,7 +153,7 @@ class UndergroundCavern(ConnectedGrid):
         return route
 
 
-file_path = os.path.join(script_dir, "inputs/day_18_input.txt")
+file_path = os.path.join(script_dir, "inputs/day_18_input_pt1.txt")
 map_image = [line.rstrip("\n") for line in open(file_path)]
 
 uc = UndergroundCavern()
@@ -161,7 +161,19 @@ uc.load_map(map_image)
 uc.gather_all_paths()
 print(f"Gathered {len(uc.paths_cache)} paths...")
 
+distance, route = uc.find_route_from_node()
+# print(f" Route: {'-'.join([key for key in route])}")
+print(f"Part 1 total steps: {distance}")
 
+
+file_path = os.path.join(script_dir, "inputs/day_18_input.txt")
+map_image = [line.rstrip("\n") for line in open(file_path)]
+
+uc = UndergroundCavern()
+uc.load_map(map_image)
+uc.gather_all_paths()
+
+print(f"Gathered {len(uc.paths_cache)} paths...")
 total_steps = 0
 for start in range(4):
     keys = uc.quadrant_keys[start]
@@ -171,5 +183,5 @@ for start in range(4):
     print(f" steps: {distance}")
     total_steps += distance
 
-print(f"Total steps: {total_steps}")
+print(f"Part 2 total steps: {total_steps}")
 
