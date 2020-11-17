@@ -12,9 +12,20 @@ logging.basicConfig(
 )
 
 input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
-lines = [line.rstrip("\n") for line in open(input_file)]
+lines = [int(line.rstrip("\n")) for line in open(input_file)]
 
-part1, part2 = False, False
+fuel = 0
+for x in lines:
+    fuel += x // 3 - 2
+print(f"Part 1: {fuel}")
 
-print(f"Part 1: {part1}")
-print(f"Part 2: {part2}")
+fuel = 0
+for x in lines:
+    f = x // 3 - 2
+    x = f
+    while x > 0:
+        x = max(x // 3 - 2, 0)
+        f += x
+    fuel += f
+
+print(f"Part 2: {fuel}")
