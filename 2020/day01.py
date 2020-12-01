@@ -14,7 +14,16 @@ logging.basicConfig(
 input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
 lines = [line.rstrip("\n") for line in open(input_file)]
 
-part1, part2 = False, False
+from itertools import combinations
 
+values = [int(line) for line in lines]
+
+for a, b in combinations(values, 2):
+    if a + b == 2020:
+        part1 = a * b
 print(f"Part 1: {part1}")
+
+for a, b, c in combinations(values, 3):
+    if a + b + c == 2020:
+        part2 = a * b * c
 print(f"Part 2: {part2}")
