@@ -27,4 +27,4 @@ def get_trees(right, down):
 print(f"Part 1: {get_trees(3, 1)}")
 
 routes = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
-print(f"Part 2: {math.prod([get_trees(a,b ) for a, b in routes])}")
+print(f"Part 2: {math.prod([get_trees(right, down) for right, down in routes])}")

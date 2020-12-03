@@ -24,16 +24,16 @@ for line in lines:
     passwords.append((a, b, character, password))
 
 valid_passwords = 0
-for a, b, character, password in passwords:
+for min_count, max_count, character, password in passwords:
     letter_count = password.count(character)
-    if letter_count >= a and letter_count <= b:
+    if letter_count >= min_count and letter_count <= max_count:
         valid_passwords += 1
 
 print(f"Part 1: {valid_passwords}")
 
 valid_passwords = 0
-for a, b, character, password in passwords:
-    if (password[a - 1] == character) + (password[b - 1] == character) == 1:
+for pos1, pos2, character, password in passwords:
+    if (password[pos1 - 1] == character) + (password[pos2 - 1] == character) == 1:
         valid_passwords += 1
 
 print(f"Part 2: {valid_passwords}")
