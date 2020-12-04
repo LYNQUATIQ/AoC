@@ -49,13 +49,11 @@ detail_checks = {
 required_details = set(detail_checks.keys())
 required_details.discard("cid")
 
-part1 = 0
-part2 = 0
+part1, part2 = 0, 0
 for passport_details in passports.values():
     if required_details.issubset(passport_details):
         part1 += 1
-        if all(detail_checks[k](v) for k, v in passport_details.items()):
-            part2 += 1
+        part2 += all(detail_checks[k](v) for k, v in passport_details.items())
 
 print(f"Part 1: {part1}")
 print(f"Part 2: {part2}")
