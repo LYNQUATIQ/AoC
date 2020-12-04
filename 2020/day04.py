@@ -27,15 +27,15 @@ def is_valid_number(x, min_value, max_value):
     return re.match(r"^\d+$", x) and min_value <= int(x) <= max_value
 
 
-def is_valid_height(height, valid_heights):
+def is_valid_height(x, valid_heights):
     try:
-        h, measure = re.search(rf"^(\d+)({'|'.join(valid_heights)})$", height).groups()
+        height, measure = re.search(rf"^(\d+)({'|'.join(valid_heights)})$", x).groups()
     except AttributeError:
         return False
-    return is_valid_number(h, *valid_heights[measure])
+    return is_valid_number(height, *valid_heights[measure])
 
 
-passport_checks = {
+detail_checks = {
     "byr": lambda x: is_valid_number(x, 1920, 2002),
     "iyr": lambda x: is_valid_number(x, 2010, 2020),
     "eyr": lambda x: is_valid_number(x, 2020, 2030),
@@ -46,15 +46,15 @@ passport_checks = {
     "cid": lambda x: True,
 }
 
-required_details = set(passport_checks.keys())
+required_details = set(detail_checks.keys())
 required_details.discard("cid")
 
 part1 = 0
 part2 = 0
-for passport in passports.values():
-    if required_details.issubset(passport):
+for passport_details in passports.values():
+    if required_details.issubset(passport_details):
         part1 += 1
-        if all(passport_checks[k](v) for k, v in passport.items()):
+        if all(detail_checks[k](v) for k, v in passport_details.items()):
             part2 += 1
 
 print(f"Part 1: {part1}")
