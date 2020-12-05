@@ -13,7 +13,7 @@ lines = [line.rstrip("\n") for line in open(input_file)]
 
 part1, part2 = 0, 0
 for line in lines:
-    a, b, c, p = re.search(r"^(\d+)-(\d+) ([a-z]): ([a-z]+)", line).groups()
+    a, b, c, p = re.match(r"^(\d+)-(\d+) ([a-z]): ([a-z]+)$", line).groups()
     a, b = int(a), int(b)
     part1 += a <= p.count(c) <= b
     part2 += (p[a - 1] == c) + (p[b - 1] == c) == 1

@@ -29,7 +29,7 @@ def is_valid_number(x, min_value, max_value):
 
 def is_valid_height(x, valid_heights):
     try:
-        height, measure = re.search(rf"^(\d+)({'|'.join(valid_heights)})$", x).groups()
+        height, measure = re.match(rf"^(\d+)({'|'.join(valid_heights)})$", x).groups()
     except AttributeError:
         return False
     return is_valid_number(height, *valid_heights[measure])
