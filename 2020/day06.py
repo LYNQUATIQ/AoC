@@ -15,10 +15,10 @@ input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
 lines = [line.rstrip("\n") for line in open(input_file)]
 
 questions = string.ascii_lowercase
-responses = [defaultdict(list)]
 
+responses = []
 for line in lines:
-    if line == "":
+    if not responses or line == "":
         responses.append(defaultdict(list))
         continue
     for q in questions:
