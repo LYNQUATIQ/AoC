@@ -1,7 +1,9 @@
 import logging
 
 logging.basicConfig(
-    level=logging.WARNING, filename="intcode_computer.log", filemode="w",
+    level=logging.WARNING,
+    filename="intcode_computer.log",
+    filemode="w",
 )
 
 
@@ -11,10 +13,10 @@ class IntCodeComputer:
     AWAITING_INPUT = "Awaiting input"
     TERMINATED = "Terminated"
 
-    def __init__(self, program, memory_0_override=None):
-        self.memory = {loc: code for loc, code in enumerate(program, 0)}
-        if memory_0_override is not None:
-            self.memory[0] = memory_0_override
+    def __init__(self, program, memory_overrides={}):
+        self.memory = {loc: code for loc, code in enumerate(program)}
+        for i, override in memory_overrides.items():
+            self.memory[i] = override
         self.input_values = []
         self.output_values = []
         self.pointer = 0
@@ -30,10 +32,7 @@ class IntCodeComputer:
     def ascii_output(self, clear_output=False):
         ascii_ouput = ""
         for c in self.output(clear_output):
-            try:
-                ascii_ouput += chr(c)
-            except ValueError:
-                ascii_ouput += str(c)
+            ascii_ouput += str(c)
         return ascii_ouput
 
     def last_output(self):
@@ -181,4 +180,3 @@ class IntCodeComputerNetwork:
             self.computers[i].run_program(last_output)
             last_output = self.computers[i].last_output()
             i = self.connections[i]
-

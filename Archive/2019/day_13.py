@@ -1,8 +1,14 @@
+import os
+
+script_dir = os.path.dirname(__file__)
+script_name = os.path.splitext(os.path.basename(__file__))[0]
+input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
+
 from collections import defaultdict
 
 from intcode_computer import IntCodeComputer
 
-with open("day13_input.txt") as f:
+with open(input_file) as f:
     program = f.read()
 
 computer = IntCodeComputer(program)
@@ -52,4 +58,3 @@ while not computer.is_terminated() and counter < 10:
 
     print_screen(screen_data, score, counter)
     counter += 1
-

@@ -1,7 +1,11 @@
-import re
+import os
 from collections import defaultdict
 
-lines = [line.rstrip("\n") for line in open("day10_input.txt")]
+script_dir = os.path.dirname(__file__)
+script_name = os.path.splitext(os.path.basename(__file__))[0]
+input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
+
+lines = [line.rstrip("\n") for line in open(input_file)]
 
 asteroids = []
 for y, line in enumerate(lines):
