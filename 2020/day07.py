@@ -10,7 +10,7 @@ lines = [line.rstrip("\n") for line in open(input_file)]
 inner_bags = defaultdict(dict)
 outer_bags = defaultdict(list)
 for line in lines:
-    outer_bag = re.match(r"^(\D+) bags contain .+$", line).groups()[0]
+    outer_bag = re.match(r"^(\D+) bags", line).groups()[0]
     for n, inner_bag in re.findall(r"(\d+) (\D+) bag[s]?[,|\.]", line):
         inner_bags[outer_bag][inner_bag] = int(n)
         outer_bags[inner_bag].append(outer_bag)
