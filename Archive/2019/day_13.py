@@ -1,60 +1,65 @@
 import os
 
-script_dir = os.path.dirname(__file__)
-script_name = os.path.splitext(os.path.basename(__file__))[0]
-input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
-
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 from intcode_computer import IntCodeComputer
 
-with open(input_file) as f:
-    program = f.read()
+script_dir = os.path.dirname(__file__)
+script_name = os.path.splitext(os.path.basename(__file__))[0]
+input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
+lines = [line.rstrip("\n") for line in open(input_file)]
+program = [int(i) for i in lines[0].split(",")]
+
+
+class GameRenderer:
+    PIXELS = {1: "\u2588", 2: "*", 3: "=", 4: "o", 0: " "}
+
+    def __init__(self):
+        self.score = 0
+        self.min_x, self.max_x = 0, 0
+        self.min_y, self.max_y = 0, 0
+        self.paddle_x = None
+        self.ball_x = None
+        self.score = None
+        self.screen_data = {}
+
+    def process_ouput(self, output):
+        while output:
+            x, y, pixel = output.pop(0), output.pop(0), output.pop(0)
+            if (x, y) == (-1, 0):
+                self.score = pixel
+                continue
+            self.screen_data[(x, y)] = pixel
+            self.min_x, self.max_x = min(x, self.min_x), max(x, self.max_x)
+            self.min_y, self.max_y = min(y, self.min_y), max(y, self.max_y)
+            if pixel == 3:
+                self.paddle_x = x
+            if pixel == 4:
+                self.ball_x = x
+
+    def print_screen(self, counter):
+        print(f"\n    SCORE: {self.score}           step {counter}")
+        for y in range(self.min_y, self.max_y + 1):
+            for x in range(self.min_x, self.max_x + 1):
+                pixel = self.PIXELS[self.screen_data.get((x, y), 0)]
+                print(pixel, end="")
+            print()
+
 
 computer = IntCodeComputer(program)
-score = 0
-min_x, max_x, min_y, max_y = 0, 0, 0, 0
+game = GameRenderer()
+computer.run_program()
+game.process_ouput(computer.output())
+print(f"Part 1: {Counter(game.screen_data.values())[2]}")
 
-
-def print_screen(data, score, counter):
-    pixels = {
-        1: "\u2588",
-        2: "*",
-        3: "=",
-        4: "o",
-    }
-    print(f"\n    SCORE: {score}           step {counter}")
-    for y in range(min_y, max_y + 1):
-        for x in range(min_x, max_x + 1):
-            pixel = pixels.get(data[(x, y)], " ")
-            print(pixel, end="")
-        print()
-
-
-counter = 1
+computer = IntCodeComputer(program, {0: 2})
+game = GameRenderer()
+counter = 0
 paddle_input = 0
-while not computer.is_terminated() and counter < 10:
+while not computer.is_terminated():
     computer.run_program([paddle_input])
-    output = computer.output()
-    screen_data = defaultdict(list)
-    print(f"length of output {len(output)}")
-
-    while output:
-        x = output.pop(0)
-        y = output.pop(0)
-        pixel = output.pop(0)
-        if (x, y) != (-1, 0):
-            screen_data[(x, y)] = pixel
-            min_x = min(x, min_x)
-            min_y = min(y, min_y)
-            max_x = max(x, max_x)
-            max_y = max(y, max_y)
-            if pixel == 3:
-                paddle_x = x
-            if pixel == 4:
-                ball_x = x
-        else:
-            score = pixel
-
-    print_screen(screen_data, score, counter)
+    game.process_ouput(computer.output())
+    paddle_input = (game.ball_x > game.paddle_x) - (game.ball_x < game.paddle_x)
     counter += 1
+
+print(f"Part 2: {game.score}")

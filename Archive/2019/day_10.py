@@ -1,48 +1,43 @@
+import math
 import os
 from collections import defaultdict
+
+from grid_system import XY
 
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
 input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
 
-lines = [line.rstrip("\n") for line in open(input_file)]
 
+def angle(x):
+    RADIANS = 2 * math.pi
+    return (math.atan2(*x) - RADIANS) % RADIANS
+
+
+lines = [line.rstrip("\n") for line in open(input_file)]
 asteroids = []
 for y, line in enumerate(lines):
     for x, c in enumerate(line):
         if c == "#":
-            asteroids.append((x, y))
+            asteroids.append(XY(x, y))
 
 
-def get_los_vector(this, other):
-    x1, y1 = this
-    x2, y2 = other
-    distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
-    direction = (round((x2 - x1) / distance, 5), round((y2 - y1) / distance, 5))
-    return direction, distance
-
-
-lines_of_sight = defaultdict(dict)
-distances = defaultdict(dict)
-in_sight = defaultdict(int)
+lines_of_sight = defaultdict(lambda: defaultdict(list))
+best_asteroid = None
 for this_asteroid in asteroids:
-    directions = set()
     for other_asteroid in asteroids:
         if other_asteroid == this_asteroid:
             continue
-        direction, distance = get_los_vector(this_asteroid, other_asteroid)
-        if direction in directions:
-            if distance < distances[this_asteroid][direction]:
-                lines_of_sight[this_asteroid][direction] = other_asteroid
-                distances[this_asteroid][direction] = distance
-        else:
-            directions.add(direction)
-            lines_of_sight[this_asteroid][direction] = other_asteroid
-            distances[this_asteroid][direction] = distance
-            in_sight[this_asteroid] += 1
+        xd = other_asteroid.x - this_asteroid.x
+        yd = this_asteroid.y - other_asteroid.y
+        distance = abs(math.gcd(xd, yd))
+        direction = (xd // distance, yd // distance)
+        lines_of_sight[this_asteroid][direction].append((distance, other_asteroid))
 
-numbers_in_sight = defaultdict(list)
-for asteroid, number_in_sight in in_sight.items():
-    numbers_in_sight[number_in_sight].append(asteroid)
+best_asteroid = max(lines_of_sight, key=lambda x: len(lines_of_sight.get(x)))
+print(f"Part 1: {len(lines_of_sight[best_asteroid])}")
 
-asteroid + (22, 19)
+
+los = sorted(list(lines_of_sight[best_asteroid].keys()), key=angle)
+part2 = (sorted(lines_of_sight[best_asteroid][los[199]])[0])[1]
+print(f"Part 2: {part2[0]:02}{part2[1]:02}")

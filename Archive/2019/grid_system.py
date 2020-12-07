@@ -49,10 +49,11 @@ class ConnectedGrid:
             max_y = max(max_y, pt.y + 1)
         return min_x, min_y, max_x, max_y
 
-    def get_symbol(self, xy):
-        return self.grid.get(xy, " ")
+    def get_symbol(self, xy, char_map={}):
+        symbol = self.grid.get(xy, " ")
+        return char_map.get(symbol, symbol)
 
-    def print_grid(self):
+    def print_grid(self, char_map={}):
         min_x, min_y, max_x, max_y = self.get_limits()
         header1 = "     " + "".join([" " * 9 + str(x + 1) for x in range(max_x // 10)])
         header2 = "    " + "".join([str(x % 10) for x in range(max_x)])
@@ -61,7 +62,7 @@ class ConnectedGrid:
         for y in range(min_y, max_y):
             print(f"{y:3d} ", end="")
             for x in range(min_x, max_x):
-                print(self.get_symbol(XY(x, y)), end="")
+                print(self.get_symbol(XY(x, y), char_map), end="")
             print(f" {y:<3d} ")
         print(header2)
         print(header1)

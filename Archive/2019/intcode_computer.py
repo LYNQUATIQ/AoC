@@ -44,12 +44,16 @@ class IntCodeComputer:
     def is_awaiting_input(self):
         return self.status == self.AWAITING_INPUT
 
+    def add_inputs(self, input_values):
+        self.input_values += input_values
+
     def run_program(self, input_values=[]):
-        self.input_values = input_values
+        self.add_inputs(input_values)
         self.status = self.RUNNING
         while self.status == self.RUNNING:
             opcode, param_modes = self.next_operation()
             self.functions[opcode](self, param_modes)
+        return self.last_output()
 
     def write_to_memory(self, value, location):
         self.memory[location] = value
@@ -168,15 +172,19 @@ class IntCodeComputer:
 
 
 class IntCodeComputerNetwork:
-    def __init__(self, program, number_of_computers=1, connections={}):
+    def __init__(self, program, number_of_computers=1):
+        self.number_of_computers = number_of_computers
         self.computers = [IntCodeComputer(program) for _ in range(number_of_computers)]
-        self.connections = connections
+
+    def add_inputs(self, inputs):
+        for k, v in inputs.items():
+            self.computers[k].add_inputs(v)
 
     def run_program(self, input_value):
-        last_output = 0
+        next_input = input_value
         i = 0
         while not self.computers[-1].is_terminated():
-            logging.debug(f"Running computer {i+1} with input: {last_output}")
-            self.computers[i].run_program(last_output)
-            last_output = self.computers[i].last_output()
-            i = self.connections[i]
+            logging.debug(f"Running computer {i+1} with input: {next_input}")
+            next_input = self.computers[i].run_program([next_input])
+            i = (i + 1) % self.number_of_computers
+        return self.computers[-1].last_output()

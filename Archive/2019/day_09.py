@@ -11,4 +11,4 @@ computer = IntCodeComputer(program)
 print(f"Part 1: {computer.run_program([1])}")
 
 computer = IntCodeComputer(program)
-print(f"Part 2: {computer.run_program([5])}")
+print(f"Part 2: {computer.run_program([2])}")
