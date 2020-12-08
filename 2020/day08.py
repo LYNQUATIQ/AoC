@@ -1,10 +1,7 @@
-import logging
 import os
 
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
-log_file = os.path.join(script_dir, f"logs/{script_name}.log")
-logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
 input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
 lines = [line.rstrip("\n") for line in open(input_file)]
 
@@ -20,14 +17,15 @@ class Computer:
     LOOP_ERROR = "Loop Error"
     TERMINATED = "Terminated"
 
-    def __init__(self, program):
+    def __init__(self, program, patches={}):
         self.program = program
+        self.patches = patches
         self.stack_trace = {}
         self.pointer = 0
         self.accumulator = 0
         self.status = self.INITIALISED
 
-    def run_program(self, patches={}):
+    def run_program(self):
         self.status = self.RUNNING
         while self.status == self.RUNNING:
             if self.pointer in self.stack_trace:
@@ -37,9 +35,10 @@ class Computer:
                 self.status = self.TERMINATED
                 continue
             instruction, param = self.program[self.pointer]
-            instruction = patches.get(self.pointer, instruction)
+            instruction = self.patches.get(self.pointer, instruction)
             self.stack_trace[self.pointer] = (instruction, param, self.accumulator)
-            getattr(self, patches.get(self.pointer, instruction))(param)
+            getattr(self, instruction)(param)
+        return self.status
 
     def acc(self, param):
         self.accumulator += param
@@ -61,11 +60,9 @@ part2 = None
 for pointer, (instruction, _, _) in stack_trace.items():
     if instruction == "acc":
         continue
-    test_computer = Computer(program)
-    test_computer.run_program(
-        patches={pointer: {"nop": "jmp", "jmp": "nop"}[instruction]}
-    )
-    if test_computer.status == Computer.TERMINATED:
+    patch = {pointer: {"nop": "jmp", "jmp": "nop"}[instruction]}
+    test_computer = Computer(program, patches=patch)
+    if test_computer.run_program() == Computer.TERMINATED:
         part2 = test_computer.accumulator
         break
 
