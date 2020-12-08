@@ -27,18 +27,15 @@ class Computer:
 
     def run_program(self):
         self.status = self.RUNNING
-        while self.status == self.RUNNING:
+        while True:
             if self.pointer in self.stack_trace:
-                self.status = self.LOOP_ERROR
-                continue
+                return self.LOOP_ERROR
             if self.pointer not in self.program:
-                self.status = self.TERMINATED
-                continue
+                return self.TERMINATED
             instruction, param = self.program[self.pointer]
             instruction = self.patches.get(self.pointer, instruction)
             self.stack_trace[self.pointer] = (instruction, param, self.accumulator)
             getattr(self, instruction)(param)
-        return self.status
 
     def acc(self, param):
         self.accumulator += param
