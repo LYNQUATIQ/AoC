@@ -1,143 +1,108 @@
-from abc import ABC, abstractmethod
-from collections import deque
-from typing import NamedTuple
+import os
 
+from grid_system import XY, ConnectedGrid
 from intcode_computer import IntCodeComputer
 
-
-class Coord(NamedTuple("Coord", [("x", int), ("y", int)])):
-    NORTH = "N"
-    EAST = "E"
-    SOUTH = "S"
-    WEST = "W"
-
-    directions = {
-        NORTH: Coord(0, 1),
-        EAST: Coord(1, 0),
-        SOUTH: Coord(0, -1),
-        WEST: Coord(-1, 0),
-    }
-
-    def __add__(self, other):
-        return type(self)(self.x + other.x, self.y + other.y)
-
-    def get_direcion(self, neighbour):
-        for direction, d in self.directions.items():
-            if self + d == neighbour:
-                return direction
-        return None
-
-    @property
-    def neighbours(self):
-        return [self + d for d in directions.values()]
+script_dir = os.path.dirname(__file__)
+script_name = os.path.splitext(os.path.basename(__file__))[0]
+input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
+lines = [line.rstrip("\n") for line in open(input_file)]
+program = [int(i) for i in lines[0].split(",")]
 
 
-class ConnectedGrid(ABC):
-    def __init__(self):
-        self.grid = {}
+class OxygenSystem(ConnectedGrid):
 
-    @abstractmethod
-    def connected_nodes(self, node):
-        pass
+    OPEN = " "
+    WALL = "#"
+    O2_SYSTEM = "*"
+    OXYGEN = "O"
+    TO_CHECK = "?"
 
-    # Find the shortest path to the (closest of) goal(s)
-    def shortest_path(self, start, goals):
-        if not isinstance(goals, list):
-            goals = [goals]
-        # List of points to visit (and their distance from the start)
-        queued_nodes = deque([(start, 0)])
-
-        # Store paths - for a given node store distance, previous node (as tuple)
-        paths = {start: (0, None)}
-        visited = set()
-
-        while queued_nodes:
-            node, distance = queued_nodes.popleft()
-            for neighbour in self.connected_nodes(node):
-                if neighbour not in paths or paths[neighbour] > (distance + 1, node):
-                    paths[node] = (distance + 1, node)
-                if neighbour in visited:
-                    continue
-                if neighbour not in [q for q, _ in queued_nodes]:
-                    queued_nodes.append((neighbour, distance + 1))
-            visited.add(node)
-
-        try:
-            shortest_distance, closest_goal = min(
-                (distance, node)
-                for node, (distance, parent) in paths.items()
-                if node in goals
-            )
-        except ValueError:
-            return None
-
-        path = []
-        distance, node = paths[closest_goal]
-        while distance > 1:
-            path = [node] + path
-            distance, node = paths[closest_goal]
-
-        return path
-
-
-class OxygenSystemNotFound(Exception):
-    pass
-
-
-class OxygenSystemSearch(ConnectedGrid):
-    OPEN = 0
-    WALL = 1
-    OXYGEN_SYSTEM = 2
+    SYMBOLS = {0: WALL, 1: OPEN, 2: O2_SYSTEM}
 
     MOVE_NORTH = 1
     MOVE_SOUTH = 2
     MOVE_WEST = 3
     MOVE_EAST = 4
 
-    instructious = {
-        Coord.NORTH: MOVE_NORTH,
-        Coord.SOUTH: MOVE_SOUTH,
-        Coord.EAST: MOVE_EAST,
-        Coord.WEST: MOVE_WEST,
+    DIRECTIONS = {
+        ConnectedGrid.NORTH: MOVE_NORTH,
+        ConnectedGrid.SOUTH: MOVE_SOUTH,
+        ConnectedGrid.EAST: MOVE_EAST,
+        ConnectedGrid.WEST: MOVE_WEST,
     }
 
     def __init__(self, program):
         super().__init__()
         self.computer = IntCodeComputer(program)
-
-        self.robot = Coord(0, 0)
-        self.oxygen_system = None
+        self.origin = XY(0, 0)
+        self.robot = self.origin
         self.grid[self.robot] = self.OPEN
-        self.to_visit = [loc for loc in self.robot.neighbours]
+        self.o2_system = None
+        self.map_system()
 
-    @abstractmethod
+    def get_symbol(self, xy, char_map={}):
+        symbol = self.grid.get(xy, " ")
+        c = char_map.get(symbol, symbol)
+        if xy == self.robot:
+            c = "\u2588"
+        return c
+
+    def move_robot(self, neighbour):
+        direction = neighbour - self.robot
+        retval = self.computer.run_program([self.DIRECTIONS[direction]])
+        self.grid[neighbour] = self.SYMBOLS[retval]
+        if self.grid[neighbour] == self.WALL:
+            return False
+        self.robot = neighbour
+        if self.grid[self.robot] == self.O2_SYSTEM:
+            self.o2_system = self.robot
+        return True
+
     def connected_nodes(self, node):
-        return [loc for loc in loc.neighbours if self.grid.get(loc, None) == self.OPEN]
+        return [n for n in node.neighbours if self.grid.get(n, self.WALL) != self.WALL]
 
-    def search(self):
-        while not self.oxygen_system:
+    def nodes_to_check(self):
+        return set(k for k, v in self.grid.items() if v == self.TO_CHECK)
 
-            if not self.to_visit:
-                raise OxygenSystemNotFound
+    def map_system(self):
+        self.grid.update({n: self.TO_CHECK for n in self.robot.neighbours})
+        visited = set(self.robot)
+        while self.nodes_to_check():
+            paths_to_visit = self.paths_to_goals(self.robot, self.nodes_to_check())
+            shortest_path = sorted(paths_to_visit.values(), key=len)[0]
+            node_to_visit = shortest_path[-1]
+            next_step = shortest_path[0]
+            while next_step != node_to_visit:
+                assert self.move_robot(next_step)
+                shortest_path = shortest_path[1:]
+                next_step = shortest_path[0]
+            if self.move_robot(node_to_visit):
+                nodes_to_check = (n for n in self.robot.neighbours if n not in visited)
+                self.grid.update({n: self.TO_CHECK for n in nodes_to_check})
+            visited.add(self.robot)
+            os.system("cls" if os.name == "nt" else "clear")
+            self.print_grid()
 
-            shortest_path = self.shortest_path(self.robot, self.to_visit)
+    def flood_system(self):
+        t = 0
+        self.grid[self.o2_system] = self.OXYGEN
 
-            if not shortest_path:
-                raise OxygenSystemNotFound
+        nodes_to_flood = set(k for k, v in self.grid.items() if v == self.OPEN)
+        next_to_flood = set(n for n in self.o2_system.neighbours if n in nodes_to_flood)
+        while nodes_to_flood:
+            t += 1
+            nodes_to_flood -= next_to_flood
+            new_nodes = set()
+            for node in next_to_flood:
+                self.grid[node] = self.OXYGEN
+                new_nodes.update(set(n for n in node.neighbours if n in nodes_to_flood))
+            next_to_flood = new_nodes
+            os.system("cls" if os.name == "nt" else "clear")
+            self.print_grid()
+        return t
 
-            self.try_move(shortest_path[0])
 
-    def try_move(self, new_location):
-        direction = self.instructions[self.robot.get_direcion(new_location)]
-
-        self.computer.run_program([direction])
-        output = self.computer.last_output()
-        if output == 0:
-            self.grid[new_location] = self.WALL
-            return
-
-        self.move_robot(new_location)
-        if output == 2:
-            self.oxygen_system = new_location
-        self.robot += direction
-
+system = OxygenSystem(program)
+print(f"Part 1: {len(system.find_shortest_path(system.origin, system.o2_system))}")
+print(f"Part 2: {system.flood_system()}")

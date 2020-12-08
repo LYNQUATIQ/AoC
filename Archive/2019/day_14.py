@@ -1,78 +1,76 @@
 import math
-import re
-
+import os
 
 from collections import defaultdict
+import re
 
-lines = [line.rstrip("\n") for line in open("2019_day14_input.txt")]
-
-pattern = re.compile("^(?P<inputs>[0-9A-Z, ]+) => (?P<output>\d+ [A-Z]+)$")
+script_dir = os.path.dirname(__file__)
+script_name = os.path.splitext(os.path.basename(__file__))[0]
+input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
+lines = [line.rstrip("\n") for line in open(input_file)]
 
 
 class Recipe:
-    def __init__(self, inputs, output):
-        def read_recipe_component(input_str):
-            q, c = input_str.split(" ")
+    FUEL = "FUEL"
+    ORE = "ORE"
+
+    def __init__(self, raw_inputs, raw_output):
+        def read_raw_component(component):
+            q, c = component.split(" ")
             return (int(q), c)
 
-        self.quantity, self.chemical = read_recipe_component(output)
-        self.inputs = []
-        for i in inputs:
-            self.inputs.append(read_recipe_component(i))
+        self.quantity, self.chemical = read_raw_component(raw_output)
+        self.inputs = [read_raw_component(i) for i in raw_inputs.split(", ")]
 
     def __repr__(self):
-        return f" {'+'.join([str(q)+c for q,c in self.inputs])}==>{self.quantity}{self.chemical}"
+        return f" {' + '.join([str(q)+'x'+c for q,c in self.inputs])} ==> {self.quantity}{self.chemical}"
 
 
 recipe_list = {}
-
 for line in lines:
-
-    params = pattern.match(line).groupdict()
-    inputs = params["inputs"].split(", ")
-    output = params["output"]
-    recipe = Recipe(inputs, output)
+    recipe = Recipe(*line.split(" => "))
     recipe_list[recipe.chemical] = recipe
 
 
-class FuelManufacturer:
-    def __init__(self, recipe_list, fuel_requirement=1):
-        self.recipe_list = recipe_list
-        self.chemical_store = defaultdict(int)
-        self.input_requirements = defaultdict(int)
+def ore_requirements(fuel_to_manufacture=1):
+    requirements = defaultdict(int, {Recipe.FUEL: fuel_to_manufacture})
+    ore_requirements = 0
+    chemical_store = defaultdict(int)
+    while requirements:
+        chemical = next(iter(requirements))
+        quantity_required = requirements[chemical]
+        del requirements[chemical]
 
-    def get_chemical(self, quantity, chemical):
-        if chemical == "ORE" and self.chemical_store["ORE"] < quantity:
-            return False
+        available_from_store = min(chemical_store[chemical], quantity_required)
+        chemical_store[chemical] -= available_from_store
+        quantity_required -= available_from_store
 
-        self.chemical_store[chemical] -= quantity
-        if self.chemical_store[chemical] < 0:
-            required = -1 * self.chemical_store[chemical]
-            recipe = self.recipe_list[chemical]
-            n = math.ceil(required / recipe.quantity)
-            for q, c in recipe.inputs:
-                self.input_requirements[c] += n * q
-            self.chemical_store[chemical] += n * recipe.quantity
-        return True
+        if quantity_required == 0:
+            continue
 
-    def process_fuel(self, fuel=1):
-        self.input_requirements["FUEL"] += fuel
-        while len(self.input_requirements) > 0:
-            chemical = next(iter(self.input_requirements))
-            quantity = self.input_requirements[chemical]
-            del self.input_requirements[chemical]
-            if not self.get_chemical(quantity, chemical):
-                return False
-        return True
+        if chemical == Recipe.ORE:
+            ore_requirements += quantity_required
+            continue
 
-    def maximise_fuel(self, ore=1000000000000):
-        self.chemical_store["ORE"] = ore
-        self.fuel_manafactured = 0
-        while self.process_fuel():
-            self.fuel_manafactured += 1
+        recipe = recipe_list[chemical]
+        recipes_made = math.ceil(quantity_required / recipe.quantity)
+        for q, c in recipe_list[chemical].inputs:
+            requirements[c] += q * recipes_made
+        surplus = recipes_made * recipe.quantity - quantity_required
+        chemical_store[chemical] += surplus
 
-        return self.fuel_manafactured
+    return ore_requirements
 
 
-fm = FuelManufacturer(recipe_list)
-print(fm.maximise_fuel())
+part1 = ore_requirements(1)
+print(f"Part 1: {part1}")
+
+AVAILABLE = 1000000000000
+min_search, max_search = AVAILABLE // part1, AVAILABLE
+while min_search != max_search - 1:
+    mid_search = (max_search - min_search) // 2 + min_search
+    if ore_requirements(mid_search) > AVAILABLE:
+        max_search = mid_search
+    else:
+        min_search = mid_search
+print(f"Part 2: {min_search}")
