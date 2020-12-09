@@ -1,17 +1,13 @@
-import logging
 import os
 import string
 
-from collections import deque, defaultdict
-from itertools import combinations
+from collections import defaultdict
 
 from grid_system import XY, ConnectedGrid
 
 script_dir = os.path.dirname(__file__)
-file_path = os.path.join(script_dir, "logs/day_18.log")
-logging.basicConfig(
-    level=logging.DEBUG, filename=file_path, filemode="w",
-)
+file_path = os.path.join(script_dir, "inputs/day_18_input.txt")
+map_image = [line.rstrip("\n") for line in open(file_path)]
 
 
 class UndergroundCavern(ConnectedGrid):
@@ -29,8 +25,8 @@ class UndergroundCavern(ConnectedGrid):
         self.routes_cache = {}
         self.quadrant_keys = defaultdict(list)
 
-    def get_symbol(self, xy):
-        symbol = super().get_symbol(xy)
+    def get_symbol(self, xy, char_map={}):
+        symbol = super().get_symbol(xy, char_map)
         symbol = {self.WALL: "\u2588"}.get(symbol, symbol)
         if xy in self.keys.keys():
             symbol = self.keys[xy].lower()
@@ -38,7 +34,7 @@ class UndergroundCavern(ConnectedGrid):
             format = ";".join([str(0), str(30), str(47)])
             symbol = f"\x1b[{format}m{self.doors[xy]}\x1b[0m"
         if xy in self.start:
-            symbol = self.start.index(xy)  # self.START
+            symbol = self.start.index(xy)
         return symbol
 
     def load_map(self, map_image):
@@ -60,9 +56,10 @@ class UndergroundCavern(ConnectedGrid):
         for start in range(4):
             start_xy = self.start[start]
             for xy, key in self.keys.items():
+                in_quadrant = False
                 if start == 0:
                     in_quadrant = xy.x < start_xy.x and xy.y < start_xy.y
-                elif start == 1:
+                if start == 1:
                     in_quadrant = xy.x > start_xy.x and xy.y < start_xy.y
                 elif start == 2:
                     in_quadrant = xy.x < start_xy.x and xy.y > start_xy.y
@@ -122,8 +119,6 @@ class UndergroundCavern(ConnectedGrid):
         if keys_to_find is None:
             keys_to_find = "".join(key for key in sorted(self.keys.values()))
 
-        print(f"Looking for {keys_to_find} starting from {start}")
-        # input()
         if not keys_to_find:
             return (0, [])
 
@@ -147,14 +142,10 @@ class UndergroundCavern(ConnectedGrid):
                     shortest_distance = route_length + distance
 
         if best_route:
-            route = (shortest_distance, best_route)
-            # print(f"Best route from {start} - {best_route}")
+            best_route = (shortest_distance, best_route)
 
-        return route
+        return best_route
 
-
-file_path = os.path.join(script_dir, "inputs/day_18_input_pt1.txt")
-map_image = [line.rstrip("\n") for line in open(file_path)]
 
 uc = UndergroundCavern()
 uc.load_map(map_image)
@@ -162,7 +153,6 @@ uc.gather_all_paths()
 print(f"Gathered {len(uc.paths_cache)} paths...")
 
 distance, route = uc.find_route_from_node()
-# print(f" Route: {'-'.join([key for key in route])}")
 print(f"Part 1 total steps: {distance}")
 
 
@@ -179,9 +169,7 @@ for start in range(4):
     keys = uc.quadrant_keys[start]
     keys_to_find = "".join(key for key in sorted(keys))
     distance, route = uc.find_route_from_node(start, keys_to_find)
-    # print(f" Route: {'-'.join([key for key in route])}")
     print(f" steps: {distance}")
     total_steps += distance
 
 print(f"Part 2 total steps: {total_steps}")
-
