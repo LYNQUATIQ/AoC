@@ -1,17 +1,31 @@
+# import logging
+import math
 import os
+import re
+import string
+
+from collections import defaultdict, Counter
+import itertools as it
 
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
-input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
-lines = [line.rstrip("\n") for line in open(input_file)]
+# log_file = os.path.join(script_dir, f"logs/{script_name}.log")
+# logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
+with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:
+    actual_input = f.read()
 
-program = {}
-for i, line in enumerate(lines):
-    instruction, param = line.split(" ")
-    program[i] = (instruction, int(param))
+sample_input = """nop +0
+acc +1
+jmp +4
+acc +3
+jmp -3
+acc -99
+acc +1
+jmp -4
+acc +6"""
 
 
-class Computer:
+class HandheldComputer:
     INITIALISED = "Initialised"
     RUNNING = "Running"
     LOOP_ERROR = "Loop Error"
@@ -48,19 +62,28 @@ class Computer:
         self.pointer += 1
 
 
-computer = Computer(program)
-computer.run_program()
-print(f"Part 1: {computer.accumulator}")
+def solve(inputs):
+    program = {}
+    for i, line in enumerate(inputs.split("\n")):
+        instruction, param = line.split(" ")
+        program[i] = (instruction, int(param))
 
-stack_trace = computer.stack_trace
-part2 = None
-for pointer, (instruction, _, _) in stack_trace.items():
-    if instruction == "acc":
-        continue
-    patch = {pointer: {"nop": "jmp", "jmp": "nop"}[instruction]}
-    test_computer = Computer(program, patches=patch)
-    if test_computer.run_program() == Computer.TERMINATED:
-        part2 = test_computer.accumulator
-        break
+    computer = HandheldComputer(program)
+    computer.run_program()
+    print(f"Part 1: {computer.accumulator}")
 
-print(f"Part 2: {part2}")
+    stack_trace = computer.stack_trace
+    part2 = None
+    for pointer, (instruction, _, _) in stack_trace.items():
+        if instruction == "acc":
+            continue
+        patch = {pointer: {"nop": "jmp", "jmp": "nop"}[instruction]}
+        test_computer = HandheldComputer(program, patches=patch)
+        if test_computer.run_program() == HandheldComputer.TERMINATED:
+            part2 = test_computer.accumulator
+            break
+    print(f"Part 2: {part2}\n")
+
+
+solve(sample_input)
+solve(actual_input)

@@ -3,20 +3,38 @@ import os
 
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
-input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
-lines = [line.rstrip("\n") for line in open(input_file)]
+with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:
+    actual_input = f.read()
+
+sample_input = """..##.......
+#...#...#..
+.#....#..#.
+..#.#...#.#
+.#...##..#.
+..#.##.....
+.#.#.#....#
+.#........#
+#.##...#...
+#...##....#
+.#..#...#.#"""
 
 
-def count_trees(right, down):
-    x, y, trees = 0, 0, 0
-    while y < len(lines):
-        trees += lines[y][x] == "#"
-        x = (x + right) % len(lines[y])
-        y += down
-    return trees
+def solve(inputs):
+    rows = inputs.split("\n")
+
+    def count_trees(right, down):
+        x, y, trees = 0, 0, 0
+        while y < len(rows):
+            trees += rows[y][x] == "#"
+            x = (x + right) % len(rows[y])
+            y += down
+        return trees
+
+    routes = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
+
+    print(f"Part 1: {count_trees(3, 1)}")
+    print(f"Part 2: {math.prod([count_trees(*route) for route in routes])}\n")
 
 
-routes = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
-
-print(f"Part 1: {count_trees(3, 1)}")
-print(f"Part 2: {math.prod([count_trees(*route) for route in routes])}")
+solve(sample_input)
+solve(actual_input)

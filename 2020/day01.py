@@ -1,18 +1,33 @@
 import os
 
-from itertools import combinations
+import itertools as it
 
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
-input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
-lines = [int(line.rstrip("\n")) for line in open(input_file)]
+with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:
+    actual_input = f.read()
 
-for a, b in combinations(lines, 2):
-    if a + b == 2020:
-        print(f"Part 1: {a * b}")
-        break
+sample_input = """1721
+979
+366
+299
+675
+1456"""
 
-for a, b, c in combinations(lines, 3):
-    if a + b + c == 2020:
-        print(f"Part 2: {a * b * c}")
-        break
+
+def solve(inputs):
+    values = [int(value) for value in inputs.split("\n")]
+
+    for a, b in it.combinations(values, 2):
+        if a + b == 2020:
+            print(f"Part 1: {a * b}")
+            break
+
+    for a, b, c in it.combinations(values, 3):
+        if a + b + c == 2020:
+            print(f"Part 2: {a * b * c}\n")
+            break
+
+
+solve(sample_input)
+solve(actual_input)
