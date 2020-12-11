@@ -1,5 +1,4 @@
-import logging
-import os
+import math
 
 from collections import deque
 from typing import NamedTuple
@@ -35,6 +34,20 @@ class XY(NamedTuple("XY", [("x", int), ("y", int)])):
     def manhattan_distance(self):
         return abs(self.x) + abs(self.y)
 
+    def in_bounds(self, *args):
+        bounds = []
+        for arg in args:
+            if isinstance(arg, tuple):
+                bounds += arg
+            else:
+                bounds += [arg]
+        min_x, min_y, max_x, max_y = 0, 0, 0, 0
+        if len(bounds) == 2:
+            max_x, max_y = bounds[0], bounds[1]
+        elif len(bounds) == 4:
+            min_x, min_y, max_x, max_y = bounds[0], bounds[1], bounds[2], bounds[3]
+        return self.x >= min_x and self.x < max_x and self.y >= min_y and self.y < max_y
+
 
 class ConnectedGrid:
 
@@ -47,14 +60,8 @@ class ConnectedGrid:
         self.grid = {}
 
     def get_limits(self):
-        if not self.grid:
-            return range(0), range(0)
-        min_x, min_y = None, None
-        max_x, max_y = None, None
+        min_x, min_y, max_x, max_y = math.inf, math.inf, -math.inf, -math.inf
         for pt in self.grid.keys():
-            if min_x is None:
-                min_x, min_y = pt.x, pt.y
-                max_x, max_y = pt.x, pt.y
             min_x = min(min_x, pt.x)
             min_y = min(min_y, pt.y)
             max_x = max(max_x, pt.x + 1)

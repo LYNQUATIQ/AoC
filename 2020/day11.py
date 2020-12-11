@@ -48,7 +48,7 @@ class ChairSystem:
                 xy = chair
                 while True:
                     xy += direction
-                    if xy.x < 0 or xy.x >= max_x or xy.y < 0 or xy.y >= max_y:
+                    if not xy.in_bounds(max_x, max_y):
                         break
                     if xy in self.chairs:
                         self.chairs_in_sight[chair].add(xy)
