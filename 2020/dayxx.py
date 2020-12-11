@@ -7,6 +7,8 @@ import string
 from collections import defaultdict, Counter
 import itertools as it
 
+from grid import XY, ConnectedGrid
+
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
 # log_file = os.path.join(script_dir, f"logs/{script_name}.log")

@@ -6,6 +6,14 @@ from typing import NamedTuple
 
 
 class XY(NamedTuple("XY", [("x", int), ("y", int)])):
+    @classmethod
+    def directions(cls):
+        return [cls(0, -1), cls(1, 0), cls(0, 1), cls(-1, 0)]
+
+    @classmethod
+    def all_directions(cls):
+        return cls.directions() + [cls(-1, -1), cls(1, -1), cls(-1, 1), cls(1, 1)]
+
     def __repr__(self):
         return f"({self.x}, {self.y})"
 
@@ -17,7 +25,11 @@ class XY(NamedTuple("XY", [("x", int), ("y", int)])):
 
     @property
     def neighbours(self):
-        return [self + d for d in [XY(0, -1), XY(1, 0), XY(0, 1), XY(-1, 0)]]
+        return [self + d for d in self.directions()]
+
+    @property
+    def all_neighbours(self):
+        return [self + d for d in self.all_directions()]
 
     @property
     def manhattan_distance(self):
@@ -54,7 +66,9 @@ class ConnectedGrid:
 
     def print_grid(self):
         min_x, min_y, max_x, max_y = self.get_limits()
-        header1 = "     " + "".join([" " * 9 + str(x + 1) for x in range(max_x // 10)])
+        header1 = "     " + "".join(
+            [" " * 9 + str(x + 1) for x in range((max_x - 1) // 10)]
+        )
         header2 = "    " + "".join([str(x % 10) for x in range(max_x)])
         print(header1)
         print(header2)
