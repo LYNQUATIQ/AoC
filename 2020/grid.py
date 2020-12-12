@@ -1,17 +1,28 @@
+import itertools
 import math
 
 from collections import deque
+from itertools import product
 from typing import NamedTuple
 
 
 class XY(NamedTuple("XY", [("x", int), ("y", int)])):
     @classmethod
+    def direction(cls, direction):
+        return {
+            "N": cls(0, -1),
+            "S": cls(0, 1),
+            "E": cls(1, 0),
+            "W": cls(-1, 0),
+        }[direction.upper()[0]]
+
+    @classmethod
     def directions(cls):
-        return [cls(0, -1), cls(1, 0), cls(0, 1), cls(-1, 0)]
+        return [cls.direction[d] for d in "NEWS"]
 
     @classmethod
     def all_directions(cls):
-        return cls.directions() + [cls(-1, -1), cls(1, -1), cls(-1, 1), cls(1, 1)]
+        return [cls(*xy) for xy in product([-1, 0, 1], [-1, 0, 1]) if xy != (0, 0)]
 
     def __repr__(self):
         return f"({self.x}, {self.y})"
@@ -46,7 +57,9 @@ class XY(NamedTuple("XY", [("x", int), ("y", int)])):
             max_x, max_y = bounds[0], bounds[1]
         elif len(bounds) == 4:
             min_x, min_y, max_x, max_y = bounds[0], bounds[1], bounds[2], bounds[3]
-        return self.x >= min_x and self.x < max_x and self.y >= min_y and self.y < max_y
+        return (
+            self.x >= min_x and self.x <= max_x and self.y >= min_y and self.y <= max_y
+        )
 
 
 class ConnectedGrid:
@@ -71,21 +84,25 @@ class ConnectedGrid:
     def get_symbol(self, xy):
         return self.grid.get(xy, " ")
 
-    def print_grid(self):
+    def print_grid(self, show_headers=True):
         min_x, min_y, max_x, max_y = self.get_limits()
         header1 = "     " + "".join(
             [" " * 9 + str(x + 1) for x in range((max_x - 1) // 10)]
         )
         header2 = "    " + "".join([str(x % 10) for x in range(max_x)])
-        print(header1)
-        print(header2)
+        if show_headers:
+            print(header1)
+            print(header2)
         for y in range(min_y, max_y):
-            print(f"{y:3d} ", end="")
+            if show_headers:
+                print(f"{y:3d} ", end="")
             for x in range(min_x, max_x):
                 print(self.get_symbol(XY(x, y)), end="")
-            print(f" {y:<3d} ")
-        print(header2)
-        print(header1)
+            if show_headers:
+                print(f" {y:<3d} ")
+        if show_headers:
+            print(header2)
+            print(header1)
 
     def turn_left(self, facing):
         return {
