@@ -31,7 +31,7 @@ class ChairSystem:
         self.chairs = set()
         self.occupied = set()
 
-        max_x, max_y = None, None
+        x, y = 0, 0
         for y, line in enumerate(inputs.split()):
             for x, c in enumerate(line):
                 if c != self.FLOOR:
@@ -39,10 +39,9 @@ class ChairSystem:
                     self.chairs.add(chair)
                     if c == self.OCCUPIED:
                         self.occupied.add(chair)
-                max_x = x + 1
-            max_y = y + 1
+        max_x, max_y = x, y
 
-        self.chairs_in_sight = defaultdict(set)
+        self.in_sight = defaultdict(set)
         for chair in self.chairs:
             for direction in XY.all_directions():
                 xy = chair
@@ -51,7 +50,7 @@ class ChairSystem:
                     if not xy.in_bounds(max_x, max_y):
                         break
                     if xy in self.chairs:
-                        self.chairs_in_sight[chair].add(xy)
+                        self.in_sight[chair].add(xy)
                         break
                     if immediate_neighbours_only:
                         break
@@ -59,23 +58,21 @@ class ChairSystem:
     def iterate(self):
         new_occupied = set()
         for chair in self.chairs:
-            n_occupied = sum(c in self.occupied for c in self.chairs_in_sight[chair])
+            occupied_count = sum(c in self.occupied for c in self.in_sight[chair])
             if chair not in self.occupied:
-                if n_occupied == 0:
+                if occupied_count == 0:
                     new_occupied.add(chair)
             else:
-                if n_occupied < self.tolerance:
+                if occupied_count < self.tolerance:
                     new_occupied.add(chair)
         self.occupied = new_occupied
-        return frozenset(self.occupied)
 
     def find_stable_state(self):
         while True:
             prior_state = frozenset(self.occupied)
             self.iterate()
             if frozenset(self.occupied) == prior_state:
-                break
-        return len(self.occupied)
+                return len(self.occupied)
 
 
 def solve(inputs):
