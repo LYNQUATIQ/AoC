@@ -15,21 +15,17 @@ def solve(inputs):
     timestamp = int(lines[0])
     buses = {int(b): i for i, b in enumerate(lines[1].split(",")) if b != "x"}
 
-    best_b, best_t = None, None
-    for b in buses:
-        t = math.ceil(timestamp / b) * b
-        if best_b is None or (t - timestamp) < best_t:
-            best_b = b
-            best_t = t - timestamp
-    print(f"Part 1: {(best_t)*best_b}")
+    waiting_times = {b - timestamp % b: b for b in buses}
+    print(f"Part 1: {(min(waiting_times)) * waiting_times[min(waiting_times)]}")
 
-    mods = {k: (k - v) % k for k, v in buses.items()}
-    descending_mods = sorted(mods.keys(), reverse=True)
+    # Use Chinese Remainder Theorem to search for answer by sieving
+    # en.wikipedia.org/wiki/Chinese_remainder_theorem
+    remainders = {k: (k - v) % k for k, v in buses.items()}
+    descending_mods = sorted(remainders.keys(), reverse=True)
     delta = descending_mods[0]
-    part2 = mods[delta]
+    part2 = remainders[delta]
     for mod in descending_mods[1:]:
-        diff = mods[mod]
-        while part2 % mod != diff:
+        while part2 % mod != remainders[mod]:
             part2 += delta
         delta = delta * mod
     print(f"Part 2: {part2}\n")
