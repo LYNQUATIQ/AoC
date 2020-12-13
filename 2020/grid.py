@@ -183,4 +183,4 @@ class ConnectedGrid:
             if not best_path or len(path) < len(best_path):
                 best_path = path
 
-        return path
+        return best_path
