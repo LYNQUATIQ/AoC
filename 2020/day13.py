@@ -21,14 +21,12 @@ def solve(inputs):
     # Use Chinese Remainder Theorem to search for answer by sieving
     # en.wikipedia.org/wiki/Chinese_remainder_theorem
     remainders = {k: (k - v) % k for k, v in buses.items()}
-    descending_mods = sorted(remainders.keys(), reverse=True)
-    delta = descending_mods[0]
-    part2 = remainders[delta]
-    for mod in descending_mods[1:]:
-        while part2 % mod != remainders[mod]:
-            part2 += delta
-        delta = delta * mod
-    print(f"Part 2: {part2}\n")
+    delta, solution = 1, 0
+    for modulus in remainders:
+        while solution % modulus != remainders[modulus]:
+            solution += delta
+        delta = delta * modulus
+    print(f"Part 2: {solution}\n")
 
 
 solve(sample_input)
