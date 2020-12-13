@@ -1,6 +1,6 @@
 import os
 
-from grid import XY
+from aoc2020.grid import XY
 
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
