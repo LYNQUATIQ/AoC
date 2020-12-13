@@ -7,7 +7,7 @@ import string
 from collections import defaultdict, Counter
 import itertools as it
 
-from aoc2020.grid import XY, ConnectedGrid
+from grid import XY, ConnectedGrid
 
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]

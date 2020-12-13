@@ -1,7 +1,7 @@
 import os
 from collections import defaultdict
 
-from aoc2020.grid import XY
+from grid import XY
 
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
