@@ -24,7 +24,7 @@ def solve(inputs):
     for modulus in remainders:
         while solution % modulus != remainders[modulus]:
             solution += delta
-        delta = delta * modulus
+        delta *= modulus
     print(f"Part 2: {solution}\n")
 
 
