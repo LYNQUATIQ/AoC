@@ -20,6 +20,7 @@ sample_input = """sample"""
 
 
 def solve(inputs):
+    # lines = inputs.split("\n")
     # values = [int(line) for line in inputs.split("\n")]
 
     print(f"Part 1: {False}")
