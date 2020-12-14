@@ -19,36 +19,28 @@ mask = 00000000000000000000000000000000X0XX
 mem[26] = 1"""
 
 
-class BitMaskDecoder:
-    def __init__(self, inputs, floating_mode=False):
-        self.floating_mode = floating_mode
-        self.floating_bits = []
-        self.memory = defaultdict(int)
-        instructions = [line.split(" = ") for line in inputs.split("\n")]
-        for token, value in instructions:
-            if token == "mask":
-                self.set_mask(value)
-                continue
-            register, value = int(token[4:-1]), int(value)
-            if floating_mode:
-                base_register = (register | self.mask_1) & ~sum(self.x_bits)
-                for floating_bits in [sum(bits) for bits in powerset(self.x_bits)]:
-                    self.memory[base_register + floating_bits] = value
-            else:
-                self.memory[register] = value | self.mask_1 & self.mask_0
-
-    def memory_sum(self):
-        return sum(self.memory.values())
-
-    def set_mask(self, mask):
-        self.x_bits = [2 ** i for i, b in enumerate(mask[::-1]) if b == "X"]
-        self.mask_1 = int(mask.replace("X", "0"), 2)
-        self.mask_0 = int(mask.replace("X", "1"), 2)
+def bit_mask_decoder(instructions, floating_mode=False):
+    memory = defaultdict(int)
+    mask_1, mask_0, x_bits = 0, 0, []
+    for token, value in [line.split(" = ") for line in instructions.split("\n")]:
+        if token == "mask":
+            x_bits = [2 ** i for i, b in enumerate(value[::-1]) if b == "X"]
+            mask_1 = int(value.replace("X", "0"), 2)
+            mask_0 = int(value.replace("X", "1"), 2)
+            continue
+        register, value = int(token[4:-1]), int(value)
+        if floating_mode:
+            base_register = (register | mask_1) & ~sum(x_bits)
+            for floating_bits in [sum(bits) for bits in powerset(x_bits)]:
+                memory[base_register + floating_bits] = value
+        else:
+            memory[register] = value | mask_1 & mask_0
+    return sum(memory.values())
 
 
 def solve(inputs1, inputs2):
-    print(f"Part 1: {BitMaskDecoder(inputs1).memory_sum()}")
-    print(f"Part 2: {BitMaskDecoder(inputs2, floating_mode=True).memory_sum()}\n")
+    print(f"Part 1: {bit_mask_decoder(inputs1)}")
+    print(f"Part 2: {bit_mask_decoder(inputs2, floating_mode=True)}\n")
 
 
 solve(sample_input1, sample_input2)
