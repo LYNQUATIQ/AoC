@@ -31,7 +31,7 @@ def bit_mask_decoder(instructions, floating_mode=False):
         if floating_mode:
             base_register = (register | mask_1) & ~sum(x_bits)
             for floating_bits in powerset(x_bits):
-                memory[base_register + sum(floating_bits)] = value
+                memory[base_register | sum(floating_bits)] = value
         else:
             memory[register] = (value | mask_1) & mask_0
     return sum(memory.values())
