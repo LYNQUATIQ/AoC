@@ -1,5 +1,6 @@
 import os
 from collections import defaultdict
+import itertools as it
 
 from grid import XY
 
@@ -41,29 +42,28 @@ class ChairSystem:
                         self.occupied.add(chair)
         max_x, max_y = x, y
 
-        self.in_sight = defaultdict(set)
-        for chair in self.chairs:
-            for direction in XY.all_directions():
-                xy = chair
-                while True:
-                    xy += direction
-                    if not xy.in_bounds(max_x, max_y):
-                        break
-                    if xy in self.chairs:
-                        self.in_sight[chair].add(xy)
-                        break
-                    if immediate_neighbours_only:
-                        break
+        self.neighbours_considered = defaultdict(set)
+        for chair, direction in it.product(self.chairs, XY.all_directions()):
+            xy = chair
+            while True:
+                xy += direction
+                if not xy.in_bounds(max_x, max_y):
+                    break
+                if xy in self.chairs:
+                    self.neighbours_considered[chair].add(xy)
+                    break
+                if immediate_neighbours_only:
+                    break
 
     def iterate(self):
         new_occupied = set()
         for chair in self.chairs:
-            occupied_count = sum(c in self.occupied for c in self.in_sight[chair])
+            n_count = sum(c in self.occupied for c in self.neighbours_considered[chair])
             if chair not in self.occupied:
-                if occupied_count == 0:
+                if n_count == 0:
                     new_occupied.add(chair)
             else:
-                if occupied_count < self.tolerance:
+                if n_count < self.tolerance:
                     new_occupied.add(chair)
         self.occupied = new_occupied
 

@@ -5,6 +5,8 @@ script_name = os.path.splitext(os.path.basename(__file__))[0]
 with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:
     actual_input = f.read()
 
+sample_input = """FBFBBFFRLR"""
+
 
 def solve(inputs):
     occupied = set()
@@ -14,7 +16,9 @@ def solve(inputs):
     print(f"Part 1: {max(occupied)}")
     for i in range(min(occupied), max(occupied)):
         if i not in occupied:
-            print(f"Part 2: {i}\n")
+            print(f"Part 2: {i}")
+    print()
 
 
+solve(sample_input)
 solve(actual_input)
