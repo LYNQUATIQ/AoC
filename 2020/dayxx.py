@@ -8,6 +8,7 @@ from collections import defaultdict, Counter
 import itertools as it
 
 from grid import XY, ConnectedGrid
+from utils import *
 
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
