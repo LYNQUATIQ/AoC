@@ -1,7 +1,6 @@
 import os
 
-from collections import defaultdict
-from utils import *
+from utils import powerset
 
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
@@ -20,7 +19,7 @@ mem[26] = 1"""
 
 
 def decode_bitmask(inputs, floating_mode=False):
-    memory = defaultdict(int)
+    memory = {}
     for token, value in [input_line.split(" = ") for input_line in inputs.split("\n")]:
         if token == "mask":
             x_bits = [2 ** i for i, b in enumerate(value[::-1]) if b == "X"]
