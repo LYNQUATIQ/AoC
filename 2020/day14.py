@@ -19,9 +19,9 @@ mask = 00000000000000000000000000000000X0XX
 mem[26] = 1"""
 
 
-def bit_mask_decoder(instructions, floating_mode=False):
+def decode_bitmask(inputs, floating_mode=False):
     memory = defaultdict(int)
-    for token, value in [line.split(" = ") for line in instructions.split("\n")]:
+    for token, value in [input_line.split(" = ") for input_line in inputs.split("\n")]:
         if token == "mask":
             x_bits = [2 ** i for i, b in enumerate(value[::-1]) if b == "X"]
             mask_1 = int(value.replace("X", "0"), 2)
@@ -38,8 +38,8 @@ def bit_mask_decoder(instructions, floating_mode=False):
 
 
 def solve(inputs1, inputs2):
-    print(f"Part 1: {bit_mask_decoder(inputs1)}")
-    print(f"Part 2: {bit_mask_decoder(inputs2, floating_mode=True)}\n")
+    print(f"Part 1: {decode_bitmask(inputs1)}")
+    print(f"Part 2: {decode_bitmask(inputs2, floating_mode=True)}\n")
 
 
 solve(sample_input1, sample_input2)
