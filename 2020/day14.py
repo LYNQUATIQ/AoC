@@ -21,7 +21,6 @@ mem[26] = 1"""
 
 def bit_mask_decoder(instructions, floating_mode=False):
     memory = defaultdict(int)
-    mask_1, mask_0, x_bits = 0, 0, []
     for token, value in [line.split(" = ") for line in instructions.split("\n")]:
         if token == "mask":
             x_bits = [2 ** i for i, b in enumerate(value[::-1]) if b == "X"]
