@@ -26,6 +26,7 @@ def solve(inputs):
 
     turn = 0
     when_said = defaultdict(list)
+    prior_spoken = {}
     last_spoken = {}
     last_number_said = None
     for number in numbers:
@@ -41,17 +42,17 @@ def solve(inputs):
             last_number_said = 0
         turn += 1
         when_said[last_number_said].append(turn)
-        print(f"Turn {turn}: {last_number_said}")
+        # print(f"Turn {turn}: {last_number_said}")
         if turn == 2020:
             print(f"Part 1: {last_number_said}")
             break
         if turn == 30000000:
             break
 
-    for k in sorted(when_said.keys()):
-        print(k, when_said[k])
-    # print(f"Part 2: {last_number_said}\n")
+    # for k in sorted(when_said.keys()):
+    #     print(k, when_said[k])
+    print(f"Part 2: {last_number_said}\n")
 
 
 solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
