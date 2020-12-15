@@ -20,6 +20,7 @@ with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:
 sample_input = """sample"""
 
 
+@print_time_taken
 def solve(inputs):
     # lines = inputs.split("\n")
     # values = [int(line) for line in inputs.split("\n")]

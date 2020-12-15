@@ -1,6 +1,7 @@
 import os
 
-from utils import powerset
+from utils import powerset, print_time_taken
+
 
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
@@ -36,6 +37,7 @@ def decode_bitmask(inputs, floating_mode=False):
     return sum(memory.values())
 
 
+@print_time_taken
 def solve(inputs1, inputs2):
     print(f"Part 1: {decode_bitmask(inputs1)}")
     print(f"Part 2: {decode_bitmask(inputs2, floating_mode=True)}\n")

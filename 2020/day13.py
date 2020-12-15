@@ -1,4 +1,5 @@
 import os
+from utils import print_time_taken
 
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
@@ -9,6 +10,7 @@ sample_input = """939
 7,13,x,x,59,x,31,19"""
 
 
+@print_time_taken
 def solve(inputs):
     lines = inputs.split("\n")
     timestamp = int(lines[0])
@@ -25,7 +27,7 @@ def solve(inputs):
         while solution % modulus != remainders[modulus]:
             solution += delta
         delta *= modulus
-    print(f"Part 2: {solution}\n")
+    print(f"Part 2: {solution}")
 
 
 solve(sample_input)

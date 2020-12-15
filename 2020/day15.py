@@ -1,3 +1,5 @@
+from utils import print_time_taken
+
 sample_input = [0, 3, 6]
 actual_input = [18, 11, 9, 0, 5, 1]
 
@@ -12,6 +14,7 @@ def play_game(seeds, max_rounds):
     return last_number
 
 
+@print_time_taken
 def solve(inputs):
     print(f"Part 1: {play_game(inputs, 2020)}")
     print(f"Part 2: {play_game(inputs, 30000000)}\n")
