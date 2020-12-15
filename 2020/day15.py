@@ -17,7 +17,7 @@ def play_game(seeds, max_rounds):
 @print_time_taken
 def solve(inputs):
     print(f"Part 1: {play_game(inputs, 2020)}")
-    print(f"Part 2: {play_game(inputs, 30000000)}\n")
+    print(f"Part 2: {play_game(inputs, 30_000_000)}\n")
 
 
 solve(sample_input)

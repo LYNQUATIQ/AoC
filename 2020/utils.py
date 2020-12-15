@@ -12,11 +12,11 @@ def print_time_taken(func):
         if time_taken > 1.0:
             time_str = f"{time_taken:.2f}s"
         elif time_taken > 0.001:
-            time_str = f"{time_taken*1000:.2f}ms"
-        elif time_taken > 0.000001:
-            time_str = f"{time_taken*1000000:.2f}µs"
+            time_str = f"{time_taken*1_000:.2f}ms"
+        elif time_taken > 0.000_001:
+            time_str = f"{time_taken*1_000_000:.2f}µs"
         else:
-            time_str = f"{time_taken*1000000000:.2f}ns"
+            time_str = f"{time_taken*1_000_000_000:.2f}ns"
         print(f"Time taken: {time_str}\n")
         return retval
 
