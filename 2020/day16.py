@@ -14,16 +14,17 @@ with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:
 
 @print_time_taken
 def solve(inputs):
-    rules, my_ticket, nearby = inputs.split("\n\n")
+    field_rules, my_ticket, nearby = inputs.split("\n\n")
 
+    my_ticket = list(map(int, my_ticket.splitlines()[1].split(",")))
+    nearby = [list(map(int, line.split(","))) for line in nearby.splitlines()[1:]]
     fields = {}
-    for field, rules in (tuple(line.split(":")) for line in rules.splitlines()):
+    for field, rules in (tuple(line.split(":")) for line in field_rules.splitlines()):
         fields[field] = set(
             map(lambda x: tuple(map(int, x.split("-"))), rules.split(" or "))
         )
 
     part1 = 0
-    nearby = [list(map(int, line.split(","))) for line in nearby.splitlines()[1:]]
     possible_fields = {i: set(fields.keys()) for i in range(len(fields))}
     for values in nearby:
         bad_fields = defaultdict(set)
@@ -45,7 +46,6 @@ def solve(inputs):
         for other in possible_fields:
             possible_fields[other].discard(field)
 
-    my_ticket = list(map(int, my_ticket.splitlines()[1].split(",")))
     part2 = (my_ticket[i] for k, i in field_idx.items() if k.startswith("departure"))
     print(f"Part 2: {math.prod(part2)}\n")
 
