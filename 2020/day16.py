@@ -14,40 +14,39 @@ with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:
 
 @print_time_taken
 def solve(inputs):
-    rule_lines, ticket, nearby = inputs.split("\n\n")
+    rules, my_ticket, nearby = inputs.split("\n\n")
 
-    ticket = list(map(int, ticket.splitlines()[1].split(",")))
-    nearby = [list(map(int, line.split(","))) for line in nearby.splitlines()[1:]]
-    rules = {}
-    for field, bounds in (tuple(line.split(":")) for line in rule_lines.splitlines()):
-        rules[field] = set(
-            map(lambda x: tuple(map(int, x.split("-"))), bounds.split(" or "))
+    fields = {}
+    for field, rules in (tuple(line.split(":")) for line in rules.splitlines()):
+        fields[field] = set(
+            map(lambda x: tuple(map(int, x.split("-"))), rules.split(" or "))
         )
 
-    possible_indices = {k: set(range(len(rules))) for k in rules}
     part1 = 0
+    nearby = [list(map(int, line.split(","))) for line in nearby.splitlines()[1:]]
+    possible_fields = {i: set(fields.keys()) for i in range(len(fields))}
     for values in nearby:
-        not_possible = defaultdict(set)
-        for index, value in enumerate(values):
-            for field, bounds in rules.items():
-                if not any((low <= value <= high for low, high in bounds)):
-                    not_possible[index].add(field)
-        invalid_indices = [i for i, v in not_possible.items() if len(v) == len(rules)]
-        if invalid_indices:
-            part1 += sum(values[i] for i in invalid_indices)
-            continue
-        for i, impossible_fields in not_possible.items():
-            for field in impossible_fields:
-                possible_indices[field].discard(i)
+        bad_fields = defaultdict(set)
+        for (i, value), (field, rules) in product(enumerate(values), fields.items()):
+            if not any((low <= value <= high for low, high in rules)):
+                bad_fields[i].add(field)
+        bad_values = [values[i] for i, v in bad_fields.items() if v == set(fields)]
+        if not bad_values:
+            for i, impossible_fields in bad_fields.items():
+                possible_fields[i] -= impossible_fields
+        part1 += sum(bad_values)
     print(f"Part 1: {part1}")
 
-    indices = {}
-    while indices.keys() != rules.keys():
-        field, index = next((k, v) for k, v in possible_indices.items() if len(v) == 1)
-        indices[field] = index.pop()
-        for other_field in possible_indices:
-            possible_indices[other_field].discard(indices[field])
-    part2 = (ticket[i] for k, i in indices.items() if k.startswith("departure"))
+    field_idx = {}
+    while set(field_idx) != set(fields):
+        bingoes = ((k, v.pop()) for k, v in possible_fields.items() if len(v) == 1)
+        index, field = next(bingoes)
+        field_idx[field] = index
+        for other in possible_fields:
+            possible_fields[other].discard(field)
+
+    my_ticket = list(map(int, my_ticket.splitlines()[1].split(",")))
+    part2 = (my_ticket[i] for k, i in field_idx.items() if k.startswith("departure"))
     print(f"Part 2: {math.prod(part2)}\n")
 
 
