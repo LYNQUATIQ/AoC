@@ -1,7 +1,10 @@
 import math
 import os
+
 from collections import defaultdict
-from utils import flatten, print_time_taken
+from itertools import product
+
+from utils import print_time_taken
 
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
@@ -11,45 +14,42 @@ with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:
 
 @print_time_taken
 def solve(inputs):
-    rules_list, your_ticket, nearby_tickets = inputs.split("\n\n")
+    rules_list, ticket, nearby = inputs.split("\n\n")
 
     rules_list = dict([tuple(line.split(":")) for line in rules_list.split("\n")])
+    ticket = [int(v) for v in ticket.split("\n")[1].split(",")]
+    nearby = [[int(v) for v in t.split(",")] for t in nearby.split("\n")[1:]]
+
     rules = defaultdict(list)
     for k, v in rules_list.items():
         for valid in v.split(" or "):
             lower, upper = valid.split("-")
             rules[k].append((int(lower), int(upper)))
-    all_rules = list(flatten(rules.values()))
-
-    invalid_values, valid_tickets = [], []
-    for line in nearby_tickets.split("\n")[1:]:
-        is_valid = True
-        ticket_values = [int(v) for v in line.split(",")]
-        for value in ticket_values:
-            if not any((lower <= value <= upper for lower, upper in all_rules)):
-                invalid_values.append(value)
-                is_valid = False
-        if is_valid:
-            valid_tickets.append(ticket_values)
-    print(f"Part 1: {sum(invalid_values)}")
 
     possible_indices = {k: set(range(len(rules))) for k in rules}
-    for ticket_values in valid_tickets:
-        for i, value in enumerate(ticket_values):
-            for k, valid_values in rules.items():
-                if not any((lower <= value <= upper for lower, upper in valid_values)):
-                    possible_indices[k].discard(i)
+    part1 = 0
+    for values in nearby:
+        not_possible = defaultdict(list)
+        for (i, v), (k, valid_values) in product(enumerate(values), rules.items()):
+            if not any((lower <= v <= upper for lower, upper in valid_values)):
+                not_possible[i].append(k)
+        invalid_i = [i for i, v in not_possible.items() if len(v) == len(rules)]
+        if invalid_i:
+            part1 += sum(values[i] for i in invalid_i)
+            continue
+        for i, impossible_fields in not_possible.items():
+            for field in impossible_fields:
+                possible_indices[field].discard(i)
+    print(f"Part 1: {part1}")
 
     field_index = {}
     while len(field_index) < len(rules):
-        field, index = [(k, v) for k, v in possible_indices.items() if len(v) == 1][0]
+        field, index = next((k, v) for k, v in possible_indices.items() if len(v) == 1)
         (index,) = index
         field_index[field] = index
         for field in possible_indices:
             possible_indices[field].discard(index)
-
-    values = [int(v) for v in your_ticket.split("\n")[1].split(",")]
-    part2 = (values[i] for k, i in field_index.items() if k.startswith("departure"))
+    part2 = (ticket[i] for k, i in field_index.items() if k.startswith("departure"))
     print(f"Part 2: {math.prod(part2)}\n")
 
 
