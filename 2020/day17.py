@@ -16,11 +16,9 @@ sample_input = """.#.
 class NDimensionPoint(tuple):
     @property
     def neighbours(self):
-        return set(
-            self + type(self)(direction)
-            for direction in product((-1, 0, 1), repeat=len(self))
-            if not all(d == 0 for d in direction)
-        )
+        for direction in product((-1, 0, 1), repeat=len(self)):
+            if not all(d == 0 for d in direction):
+                yield self + type(self)(direction)
 
     def __add__(self, other):
         return type(self)(a + b for a, b in zip(self, other))
