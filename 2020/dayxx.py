@@ -22,8 +22,8 @@ sample_input = """sample"""
 
 @print_time_taken
 def solve(inputs):
-    lines = inputs.splitlines()
-    values = list(map(int, inputs.splitlines()))
+    # lines = inputs.splitlines()
+    # values = list(map(int, inputs.splitlines()))
 
     print(f"Part 1: {False}")
 
