@@ -13,7 +13,7 @@ sample_input = """.#.
 ###"""
 
 
-class NDimensionsalPoint(tuple):
+class NDimensionPoint(tuple):
     @property
     def neighbours(self):
         return set(
@@ -32,8 +32,7 @@ class ConwayCubes:
         for y, line in enumerate(inputs.splitlines()):
             for x, c in enumerate(line):
                 if c == "#":
-                    pt = NDimensionsalPoint((x, y) + (0,) * (dimensions - 2))
-                    self.active.add(pt)
+                    self.active.add(NDimensionPoint((x, y) + (0,) * (dimensions - 2)))
 
     def boot_up(self):
         for _ in range(6):
@@ -45,9 +44,8 @@ class ConwayCubes:
                 n_count = sum(n in self.active for n in pt.neighbours)
                 if n_count not in [2, 3]:
                     continue
-                if pt not in self.active and n_count != 3:
-                    continue
-                new_active.add(pt)
+                if pt in self.active or n_count == 3:
+                    new_active.add(pt)
             self.active = new_active
         return len(self.active)
 
