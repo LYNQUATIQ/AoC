@@ -1,8 +1,6 @@
 import os
 import re
 
-import itertools as it
-
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
 with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:

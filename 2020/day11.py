@@ -43,7 +43,7 @@ class ChairSystem:
         max_x, max_y = x, y
 
         self.neighbours_considered = defaultdict(set)
-        for chair, direction in it.product(self.chairs, XY.all_directions()):
+        for chair, direction in it.product(self.chairs, XY.directions()):
             xy = chair
             while True:
                 xy += direction

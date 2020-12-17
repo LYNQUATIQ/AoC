@@ -1,7 +1,7 @@
 import os
 
-from itertools import product
 from utils import print_time_taken
+from grid import Point
 
 script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
@@ -13,24 +13,14 @@ sample_input = """.#.
 ###"""
 
 
-class NDimensionPoint(tuple):
-    @property
-    def neighbours(self):
-        for direction in product((-1, 0, 1), repeat=len(self)):
-            if not all(d == 0 for d in direction):
-                yield self + type(self)(direction)
-
-    def __add__(self, other):
-        return type(self)(a + b for a, b in zip(self, other))
-
-
 class ConwayCubes:
     def __init__(self, inputs, dimensions):
         self.active = set()
         for y, line in enumerate(inputs.splitlines()):
             for x, c in enumerate(line):
                 if c == "#":
-                    self.active.add(NDimensionPoint((x, y) + (0,) * (dimensions - 2)))
+                    pt = (x, y) + (0,) * (dimensions - 2)
+                    self.active.add(Point(*pt))
 
     def boot_up(self):
         for _ in range(6):

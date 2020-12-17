@@ -1,11 +1,43 @@
 import math
 
 from collections import deque
+from functools import lru_cache
 from itertools import product
-from typing import NamedTuple
 
 
-class XY(NamedTuple("XY", [("x", int), ("y", int)])):
+@lru_cache
+def _direction_vectors(dimensions):
+    return list(product((-1, 0, 1), repeat=dimensions))
+
+
+class Point(tuple):
+    def __new__(cls, *_tuple):
+        return tuple.__new__(cls, _tuple)
+
+    def __add__(self, other):
+        return type(self)(*(a + b for a, b in zip(self, other)))
+
+    def __sub__(self, other):
+        return type(self)(*(a - b for a, b in zip(self, other)))
+
+    @property
+    def neighbours(self):
+        for direction in _direction_vectors(len(self)):
+            if not all(d == 0 for d in direction):
+                yield self + type(self)(*direction)
+
+    @property
+    def immediate_neighbours(self):
+        for direction in _direction_vectors(len(self)):
+            if sum(abs(d) for d in direction) == 1:
+                yield self + type(self)(*direction)
+
+    @property
+    def manhattan_distance(self):
+        return sum(abs(d) for d in self)
+
+
+class XY(Point):
     @classmethod
     def direction(cls, direction):
         return {
@@ -15,34 +47,17 @@ class XY(NamedTuple("XY", [("x", int), ("y", int)])):
             "W": cls(-1, 0),
         }[direction.upper()[0]]
 
+    @property
+    def x(self):
+        return self[0]
+
+    @property
+    def y(self):
+        return self[1]
+
     @classmethod
     def directions(cls):
-        return [cls.direction[d] for d in "NEWS"]
-
-    @classmethod
-    def all_directions(cls):
-        return [cls(*xy) for xy in product([-1, 0, 1], [-1, 0, 1]) if xy != (0, 0)]
-
-    def __repr__(self):
-        return f"({self.x}, {self.y})"
-
-    def __add__(self, other):
-        return type(self)(self.x + other.x, self.y + other.y)
-
-    def __sub__(self, other):
-        return type(self)(self.x - other.x, self.y - other.y)
-
-    @property
-    def neighbours(self):
-        return [self + d for d in self.directions()]
-
-    @property
-    def all_neighbours(self):
-        return [self + d for d in self.all_directions()]
-
-    @property
-    def manhattan_distance(self):
-        return abs(self.x) + abs(self.y)
+        return [cls(*xy) for xy in product((-1, 0, 1), (-1, 0, 1)) if xy != (0, 0)]
 
     def in_bounds(self, *args):
         bounds = []
@@ -66,7 +81,7 @@ class ConnectedGrid:
     NORTH = XY(0, -1)
     SOUTH = XY(0, 1)
     EAST = XY(1, 0)
-    WEST = XY(-1, 0)
+    WEST = XY(0, 1)
 
     def __init__(self):
         self.grid = {}
