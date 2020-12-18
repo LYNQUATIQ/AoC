@@ -15,27 +15,26 @@ PLUS = re.compile(r"^(?P<left>[\d*+]+)(?P<operator>\+)(?P<right>[\d*]+)$")
 ANY = re.compile(r"^(?P<left>[\d*+]+)(?P<operator>[*+])(?P<right>\d+)$")
 
 
-def evaluate_expression(expression, regexes):
+def evaluate(expression, regexes):
     try:
         match = next(m for m in (r.match(expression) for r in regexes) if m is not None)
     except StopIteration:
         return expression
 
     if "brackets" in match.groupdict():
-        contents = evaluate_expression(match.group("brackets"), regexes)
-        expression = match["left"] + str(contents) + match["right"]
-        return evaluate_expression(expression, regexes)
+        contents = evaluate(match.group("brackets"), regexes)
+        return evaluate(match["left"] + str(contents) + match["right"], regexes)
 
-    a = int(evaluate_expression(match.group("left"), regexes))
-    b = int(evaluate_expression(match.group("right"), regexes))
+    a = int(evaluate(match.group("left"), regexes))
+    b = int(evaluate(match.group("right"), regexes))
     return {"*": math.prod, "+": sum}[match["operator"]]((a, b))
 
 
 def solve(inputs):
     part1, part2 = 0, 0
     for expression in (line.replace(" ", "") for line in inputs.splitlines()):
-        part1 += evaluate_expression(expression, [BRACKET, ANY])
-        part2 += evaluate_expression(expression, [BRACKET, STAR, PLUS])
+        part1 += evaluate(expression, [BRACKET, ANY])
+        part2 += evaluate(expression, [BRACKET, STAR, PLUS])
 
     print(f"Part 1: {part1}")
     print(f"Part 2: {part2}\n")
