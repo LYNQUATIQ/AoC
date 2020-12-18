@@ -9,16 +9,15 @@ with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:
 
 sample_input = """((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2"""
 
-BRACKET= re.compile(r"^(?P<left>[\d+*()]*)\((?P<brackets>[\d+*]+)\)(?P<right>[\d+*()]*)$")
-STAR= re.compile(r"^(?P<left>[\d*+]+)(?P<oper>\*)(?P<right>[\d+]+)$")
-PLUS= re.compile(r"^(?P<left>[\d*+]+)(?P<oper>\+)(?P<right>[\d*]+)$")
-ANY= re.compile(r"^(?P<left>[\d*+]+)(?P<oper>[*+])(?P<right>\d+)$")
+BRACKET= re.compile(r"^(?P<left>.*)\((?P<brackets>[\d+*]+)\)(?P<right>.*)$")
+STAR= re.compile(r"^(?P<left>[\d*+]+)(?P<operator>\*)(?P<right>[\d+]+)$")
+PLUS= re.compile(r"^(?P<left>[\d*+]+)(?P<operator>\+)(?P<right>[\d*]+)$")
+ANY= re.compile(r"^(?P<left>[\d*+]+)(?P<operator>[*+])(?P<right>\d+)$")
 
 
 def evaluate_expression(expression, regexes):
-    matches = (regex.match(expression) for regex in regexes)
     try:
-        match = next(m for m in matches if m is not None)
+        match = next(m for m in (r.match(expression) for r in regexes) if m is not None)
     except StopIteration:
         return expression
 
@@ -27,9 +26,9 @@ def evaluate_expression(expression, regexes):
         expression = match['left'] + str(contents) + match['right'] 
         return evaluate_expression(expression, regexes)
 
-    a = evaluate_expression(match.group('left'), regexes)
-    b = evaluate_expression(match.group('right'), regexes)
-    return { "*": math.prod, "+": sum }[match['oper']]((int(a), int(b)))
+    a = int(evaluate_expression(match.group('left'), regexes))
+    b = int(evaluate_expression(match.group('right'), regexes))
+    return { "*": math.prod, "+": sum }[match['operator']]((a, b))
 
 
 def solve(inputs):
