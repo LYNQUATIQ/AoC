@@ -4,9 +4,7 @@ import itertools as it
 
 from grid import XY
 
-script_dir = os.path.dirname(__file__)
-script_name = os.path.splitext(os.path.basename(__file__))[0]
-with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), f"inputs/day11_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """L.LL.LL.LL
