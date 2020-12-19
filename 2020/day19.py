@@ -91,8 +91,13 @@ def solve(inputs):
     r42 = re.compile("^(" + "|".join(patterns[42]) + "){2,}")
     r31 = re.compile("(" + "|".join(patterns[31]) + ")+$")
     part2 = sum(
-        bool(r42.match(m) and r31.search(m) and len(r42.match(m).group()) > len(m) // 2)
-        for m in messages
+        bool(
+            r42.match(message)
+            and r31.search(message)
+            and r42.match(message).group() + r31.search(message).group() == message
+            and len(r42.match(message).group()) > len(r31.search(message).group())
+        )
+        for message in messages
     )
     print(f"Part 2: {part2}\n")
 
