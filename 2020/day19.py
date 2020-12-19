@@ -86,7 +86,7 @@ def solve(inputs):
     rules, messages = map(lambda x: x.splitlines(), inputs.split("\n\n"))
 
     patterns = get_patterns(rules)
-    print(f"Part 1: {sum(p in patterns[0] for p in messages)}")
+    print(f"Part 1: {sum(message in patterns[0] for message in messages)}")
 
     r42 = re.compile("^(" + "|".join(patterns[42]) + "){2,}")
     r31 = re.compile("(" + "|".join(patterns[31]) + ")+$")
