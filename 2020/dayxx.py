@@ -10,11 +10,9 @@ import itertools as it
 from grid import XY, ConnectedGrid
 from utils import *
 
-script_dir = os.path.dirname(__file__)
-script_name = os.path.splitext(os.path.basename(__file__))[0]
-# log_file = os.path.join(script_dir, f"logs/{script_name}.log")
+# log_file = os.path.join(os.path.dirname(__file__), f"logs/dayxx.log")
 # logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
-with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), f"inputs/dayxx_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """sample"""
