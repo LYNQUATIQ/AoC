@@ -88,14 +88,13 @@ def solve(inputs):
     patterns = get_patterns(rules)
     print(f"Part 1: {sum(p in patterns[0] for p in messages)}")
 
-    regex42 = re.compile(r"^(" + "|".join(patterns[42]) + r"){2,}")
-    regex31 = re.compile(r"^(" + "|".join(patterns[31]) + r")+$")
+    re42 = re.compile("^(" + "|".join(patterns[42]) + "){2,}")
+    re31 = re.compile("(" + "|".join(patterns[31]) + ")+$")
     part2 = 0
-    for message in (m for m in messages if regex42.match(m)):
-        m42 = regex42.match(message).group(0)
-        if len(m42) <= len(message) // 2:
+    for message in (m for m in messages if re42.match(m)):
+        if len(re42.match(message).group(0)) <= len(message) // 2:
             continue
-        if regex31.match(message.replace(m42, "")):
+        if re31.search(message):
             part2 += 1
     print(f"Part 2: {part2}\n")
 
