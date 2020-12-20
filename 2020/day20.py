@@ -123,10 +123,7 @@ Tile 3079:
 
 TOP, RIGHT, BOTTOM, LEFT = 0, 1, 2, 3
 BORDERS = (TOP, RIGHT, BOTTOM, LEFT)
-
-ROT_0, ROT_90, ROT_180, ROT_270 = 0, 90, 180, 270
-ROTATIONS = (ROT_0, ROT_90, ROT_180, ROT_270)
-
+ROTATIONS = (0, 90, 180, 270)
 ORIENTATIONS = [orientation for orientation in product((False, True), ROTATIONS)]
 
 EDGE_DIRECTION = {XY(0, -1): TOP, XY(0, 1): BOTTOM, XY(1, 0): RIGHT, XY(-1, 0): LEFT}
@@ -145,7 +142,7 @@ class Tile:
         border_values = [self.rows[0], self.rows[-1], self.cols[0], self.cols[-1]]
         return tuple(border_values + [s[::-1] for s in border_values])
 
-    def get_clockwise_edge(self, border):
+    def get_edge(self, border):
         return {
             TOP: self.rows[0][:],
             RIGHT: self.cols[-1][:],
@@ -157,7 +154,7 @@ class Tile:
         for orientation in ORIENTATIONS:
             rows_backup, cols_backup = self.rows[:], self.cols[:]
             self.set_orientation(orientation)
-            edges = [self.get_clockwise_edge(edge) for edge in BORDERS]
+            edges = [self.get_edge(edge) for edge in BORDERS]
             self.rows, self.cols = rows_backup[:], cols_backup[:]
             if all(edges[e] == v for e, v in requirements):
                 return orientation
@@ -220,7 +217,7 @@ def solve(inputs):
                 neighbour_xy = neighbours[0]
                 edge = EDGE_DIRECTION[neighbour_xy - xy]
                 break
-        edge_value = grid[xy].get_clockwise_edge(edge)
+        edge_value = grid[xy].get_edge(edge)
         edge_to_find, value_to_find = CONNECTED_EDGE[edge], edge_value[::-1]
         for tile in tiles.values():
             orientation = tile.find_orientation([(edge_to_find, value_to_find)])
@@ -242,7 +239,6 @@ def solve(inputs):
     re1 = re.compile("..................#.")
     re2 = re.compile("#....##....##....###")
     re3 = re.compile(".#..#..#..#..#..#...")
-
     sea_monsters = 0
     for orientation in ORIENTATIONS:
         image = Tile(1, image_data)
