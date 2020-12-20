@@ -186,7 +186,7 @@ def solve(inputs):
     tiles = {t.id: t for t in tiles}
     image_size = int(len(tiles) ** 0.5)
 
-    # Find all thee possible neighbours for each tiles' sides
+    # Find all possible neighbours for each tiles' sides
     possible_neighbours = {t: defaultdict(set) for t in tiles}
     for this, other in (
         (tiles[a], tiles[b]) for a, b in product(tiles, tiles) if a != b
