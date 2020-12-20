@@ -5,7 +5,7 @@ import re
 import string
 
 from collections import defaultdict, Counter
-import itertools as it
+from itertools import product
 
 from grid import XY, ConnectedGrid
 from utils import *

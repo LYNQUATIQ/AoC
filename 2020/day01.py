@@ -1,6 +1,6 @@
 import os
 
-import itertools as it
+from itertools import combinations
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day01_input.txt")) as f:
     actual_input = f.read()
@@ -16,12 +16,12 @@ sample_input = """1721
 def solve(inputs):
     values = [int(value) for value in inputs.split("\n")]
 
-    for a, b in it.combinations(values, 2):
+    for a, b in combinations(values, 2):
         if a + b == 2020:
             print(f"Part 1: {a * b}")
             break
 
-    for a, b, c in it.combinations(values, 3):
+    for a, b, c in combinations(values, 3):
         if a + b + c == 2020:
             print(f"Part 2: {a * b * c}\n")
             break

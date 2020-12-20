@@ -24,10 +24,10 @@ class ConwayCubes:
         for _ in range(6):
             to_consider = set(self.active)
             for pt in self.active:
-                to_consider.update(pt.neighbours)
+                to_consider.update(pt.all_neighbours)
             new_active = set()
             for pt in to_consider:
-                n_count = sum(n in self.active for n in pt.neighbours)
+                n_count = sum(n in self.active for n in pt.all_neighbours)
                 if n_count not in [2, 3]:
                     continue
                 if pt in self.active or n_count == 3:

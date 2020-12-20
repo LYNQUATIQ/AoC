@@ -21,13 +21,13 @@ class Point(tuple):
         return type(self)(*(a - b for a, b in zip(self, other)))
 
     @property
-    def neighbours(self):
+    def all_neighbours(self):
         for direction in _direction_vectors(len(self)):
             if not all(d == 0 for d in direction):
                 yield self + type(self)(*direction)
 
     @property
-    def immediate_neighbours(self):
+    def neighbours(self):
         for direction in _direction_vectors(len(self)):
             if sum(abs(d) for d in direction) == 1:
                 yield self + type(self)(*direction)
@@ -67,6 +67,8 @@ class XY(Point):
             else:
                 bounds += [arg]
         min_x, min_y, max_x, max_y = 0, 0, 0, 0
+        if len(bounds) == 1:
+            max_x, max_y = bounds[0], bounds[0]
         if len(bounds) == 2:
             max_x, max_y = bounds[0], bounds[1]
         elif len(bounds) == 4:
@@ -113,7 +115,8 @@ class ConnectedGrid:
             for x in range(min_x, max_x):
                 print(self.get_symbol(XY(x, y)), end="")
             if show_headers:
-                print(f" {y:<3d} ")
+                print(f" {y:<3d} ", end="")
+            print()
         if show_headers:
             print(header2)
             print(header1)
