@@ -144,10 +144,10 @@ class Tile:
 
     def get_edge(self, border):
         return {
-            TOP: self.rows[0][:],
-            RIGHT: self.cols[-1][:],
-            BOTTOM: self.rows[-1][::-1],
-            LEFT: self.cols[0][::-1],
+            TOP: self.rows[0],
+            RIGHT: self.cols[-1],
+            BOTTOM: self.rows[-1],
+            LEFT: self.cols[0],
         }[border]
 
     def find_orientation(self, requirements):
@@ -186,6 +186,7 @@ def solve(inputs):
     tiles = {t.id: t for t in tiles}
     image_size = int(len(tiles) ** 0.5)
 
+    # Find all thee possible neighbours for each tiles' sides
     possible_neighbours = {t: defaultdict(set) for t in tiles}
     for this, other in (
         (tiles[a], tiles[b]) for a, b in product(tiles, tiles) if a != b
@@ -193,69 +194,67 @@ def solve(inputs):
         for border in (s for s in other.border_values if s in this.border_values):
             possible_neighbours[this.id][border].add(other.id)
 
+    # Find corners - only have neighbours on two side (each side has two orientations)
     corners = set(t for t in tiles if len(possible_neighbours[t]) == 4)
     print(f"Part 1: {math.prod(corners)}")
 
+    # Assign one corner to top left and orient it so neignbours are to right and below
     top_corner = tiles[corners.pop()]
-    orientation = None
     for right, bottom in combinations(possible_neighbours[top_corner.id], 2):
         orientation = top_corner.find_orientation([(RIGHT, right), (BOTTOM, bottom)])
         if orientation:
-            break
-    top_corner.set_orientation(orientation)
+            top_corner.set_orientation(orientation)
 
+    # Find tile with empty space next to it and look for neighbour with matching edge
     grid[XY(0, 0)] = tiles.pop(top_corner.id)
     while tiles:
-        xy, edge, neighbour_xy, found_tile = None, None, None, None
+        xy, edge, empty_xy, found_tile = None, None, None, None
         for xy in grid:
-            neighbours = [
+            spaces = [
                 n
                 for n in xy.neighbours
                 if n.in_bounds(image_size - 1) and n not in grid
             ]
-            if neighbours:
-                neighbour_xy = neighbours[0]
-                edge = EDGE_DIRECTION[neighbour_xy - xy]
+            if spaces:
+                empty_xy = spaces[0]
+                edge = EDGE_DIRECTION[empty_xy - xy]
                 break
         edge_value = grid[xy].get_edge(edge)
-        edge_to_find, value_to_find = CONNECTED_EDGE[edge], edge_value[::-1]
+        edge_to_find, value_to_find = CONNECTED_EDGE[edge], edge_value
         for tile in tiles.values():
             orientation = tile.find_orientation([(edge_to_find, value_to_find)])
             if orientation:
                 tile.set_orientation(orientation)
                 found_tile = tile
                 break
-        grid[neighbour_xy] = tiles.pop(found_tile.id)
+        grid[empty_xy] = tiles.pop(found_tile.id)
 
+    # Consolidate grid tiles into a single image
     image_data = []
-    tile_size = top_corner.size
-    total_hashes = 0
-    for y in range(image_size):
-        for r in range(1, tile_size - 1):
-            raster = "".join(grid[(x, y)].rows[r][1:-1] for x in range(image_size))
-            total_hashes += raster.count("#")
-            image_data.append(raster)
+    for y, row in product(range(image_size), range(1, top_corner.size - 1)):
+        raster = "".join(grid[(x, y)].rows[row][1:-1] for x in range(image_size))
+        image_data.append(raster)
 
+    # Search for sea monsters
     re1 = re.compile("..................#.")
     re2 = re.compile("#....##....##....###")
     re3 = re.compile(".#..#..#..#..#..#...")
-    sea_monsters = 0
+    monsters = 0
     for orientation in ORIENTATIONS:
         image = Tile(1, image_data)
         image.set_orientation(orientation)
         for r in range(0, image.size - 2):
-            row1, row2, row3 = image.rows[r], image.rows[r + 1], image.rows[r + 2]
-            match = re2.search(row2)
+            r1, r2, r3 = image.rows[r], image.rows[r + 1], image.rows[r + 2]
+            match = re2.search(r2)
             if match:
                 while True:
-                    start_pos = match.start()
-                    if re1.match(row1, start_pos) and re3.match(row3, start_pos):
-                        sea_monsters += 1
-                    match = re2.search(row2, start_pos + 1)
+                    if re1.match(r1, match.start()) and re3.match(r3, match.start()):
+                        monsters += 1
+                    match = re2.search(r2, match.start() + 1)
                     if not match:
                         break
 
-    print(f"Part 2: {total_hashes - sea_monsters * 15}\n")
+    print(f"Part 2: {sum(r.count('#') for r in image_data) - monsters * 15}\n")
 
 
 solve(sample_input)
