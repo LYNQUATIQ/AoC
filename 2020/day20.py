@@ -121,11 +121,11 @@ Tile 3079:
 ..#.###...
 """
 
-TOP, RIGHT, BOTTOM, LEFT = 0, 1, 2, 3
-BORDERS = (TOP, RIGHT, BOTTOM, LEFT)
 ROTATIONS = (0, 90, 180, 270)
-ORIENTATIONS = [orientation for orientation in product((False, True), ROTATIONS)]
+FLIPPED = (True, False)
+ORIENTATIONS = [orientation for orientation in product(FLIPPED, ROTATIONS)]
 
+TOP, RIGHT, BOTTOM, LEFT = 0, 1, 2, 3
 EDGE_DIRECTION = {XY(0, -1): TOP, XY(0, 1): BOTTOM, XY(1, 0): RIGHT, XY(-1, 0): LEFT}
 CONNECTED_EDGE = {TOP: BOTTOM, RIGHT: LEFT, BOTTOM: TOP, LEFT: RIGHT}
 
@@ -137,27 +137,24 @@ class Tile:
         self.cols = ["".join(row[i] for row in self.rows) for i in range(self.size)]
 
     @property
-    def border_values(self):
-        border_values = [self.rows[0], self.rows[-1], self.cols[0], self.cols[-1]]
-        return tuple(border_values + [s[::-1] for s in border_values])
+    def edge_values(self):
+        edge_values = [self.rows[0], self.rows[-1], self.cols[0], self.cols[-1]]
+        return tuple(edge_values + [s[::-1] for s in edge_values])
 
-    def get_edge(self, border):
+    def get_edge(self, edge):
         return {
             TOP: self.rows[0],
             RIGHT: self.cols[-1],
             BOTTOM: self.rows[-1],
             LEFT: self.cols[0],
-        }[border]
+        }[edge]
 
-    def find_orientation(self, requirements):
-        for orientation in ORIENTATIONS:
-            rows_backup, cols_backup = self.rows[:], self.cols[:]
-            self.set_orientation(orientation)
-            edges = [self.get_edge(edge) for edge in BORDERS]
-            self.rows, self.cols = rows_backup[:], cols_backup[:]
-            if all(edges[e] == v for e, v in requirements):
-                return orientation
-        return None
+    def set_orientation(self, orientation):
+        flipped, rotation = orientation
+        if flipped:
+            self.flip()
+        for _ in range(rotation // 90):
+            self.rotate()
 
     def flip(self):
         self.rows = [r[::-1] for r in self.rows]
@@ -167,12 +164,15 @@ class Tile:
         self.rows = [col[::-1] for col in self.cols]
         self.cols = ["".join(row[i] for row in self.rows) for i in range(self.size)]
 
-    def set_orientation(self, orientation):
-        flipped, rotation = orientation
-        if flipped:
-            self.flip()
-        for _ in range(rotation // 90):
-            self.rotate()
+    def find_orientation(self, requirements):
+        for orientation in ORIENTATIONS:
+            rows_backup, cols_backup = self.rows[:], self.cols[:]
+            self.set_orientation(orientation)
+            edges = [self.get_edge(edge) for edge in (TOP, RIGHT, BOTTOM, LEFT)]
+            self.rows, self.cols = rows_backup[:], cols_backup[:]
+            if all(edges[e] == v for e, v in requirements):
+                return orientation
+        return None
 
 
 @print_time_taken
@@ -188,8 +188,8 @@ def solve(inputs):
     possible_neighbours = {t: defaultdict(set) for t in tiles}
     for this_id, other_id in ((a, b) for a, b in product(tiles, tiles) if a != b):
         this, other = tiles[this_id], tiles[other_id]
-        for border in (s for s in other.border_values if s in this.border_values):
-            possible_neighbours[this_id][border].add(other_id)
+        for edge in (s for s in other.edge_values if s in this.edge_values):
+            possible_neighbours[this_id][edge].add(other_id)
 
     # Find corners - only have neighbours on two side (each side has two orientations)
     corners = set(t for t in tiles if len(possible_neighbours[t]) == 4)
