@@ -182,8 +182,7 @@ def solve(inputs):
         (int(t[0].split()[1][:-1]), Tile(t[1:]))
         for t in map(lambda x: x.splitlines(), inputs.split("\n\n"))
     )
-    image_size = int(len(tiles) ** 0.5)
-    tile_size = len(list(tiles.values())[0].rows)
+    image_size, tile_size = int(len(tiles) ** 0.5), next(iter(tiles.values())).size
 
     # Find all possible neighbours for each tiles' sides
     possible_neighbours = {t: defaultdict(set) for t in tiles}
