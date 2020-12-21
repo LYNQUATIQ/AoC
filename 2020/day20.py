@@ -131,7 +131,8 @@ CONNECTED_EDGE = {TOP: BOTTOM, RIGHT: LEFT, BOTTOM: TOP, LEFT: RIGHT}
 
 
 class Tile:
-    def __init__(self, tile_data):
+    def __init__(self, tile_data, tile_id=None):
+        self.id = tile_id
         self.size = len(tile_data)
         self.rows = [row for row in tile_data]
         self.cols = ["".join(row[i] for row in self.rows) for i in range(self.size)]
@@ -179,51 +180,44 @@ class Tile:
 def solve(inputs):
     grid = {}
     tiles = dict(
-        (int(t[0].split()[1][:-1]), Tile(t[1:]))
+        (int(t[0].split()[1][:-1]), Tile(t[1:], int(t[0].split()[1][:-1])))
         for t in map(lambda x: x.splitlines(), inputs.split("\n\n"))
     )
     image_size, tile_size = int(len(tiles) ** 0.5), next(iter(tiles.values())).size
 
-    # Find all possible neighbours for each tiles' sides
-    possible_neighbours = {t: defaultdict(set) for t in tiles}
+    # Find the neighbour for each tiles' sides
+    neighbouring_tiles = {t: {} for t in tiles}
     for this_id, other_id in ((a, b) for a, b in product(tiles, tiles) if a != b):
         this, other = tiles[this_id], tiles[other_id]
         for edge in (s for s in other.edge_values if s in this.edge_values):
-            possible_neighbours[this_id][edge].add(other_id)
+            neighbouring_tiles[this_id][edge] = other_id
 
-    # Find corners - only have neighbours on two side (each side has two orientations)
-    corners = set(t for t in tiles if len(possible_neighbours[t]) == 4)
+    # Find corners - only have two neighbouring_tiles (each with two orientations)
+    corners = set(t for t in tiles if len(neighbouring_tiles[t]) == 4)
     print(f"Part 1: {math.prod(corners)}")
 
-    # Assign one corner to top left and orient it so neignbours are to right and below
+    # Assign one corner to top left orienting it so neignbours are to right and below
     corner_id = corners.pop()
-    for right, bottom in combinations(possible_neighbours[corner_id], 2):
+    for right, bottom in combinations(neighbouring_tiles[corner_id], 2):
         orient = tiles[corner_id].find_orientation([(RIGHT, right), (BOTTOM, bottom)])
         if orient:
             tiles[corner_id].set_orientation(orient)
 
-    # Find tile with empty space next to it and look for neighbour with matching edge
+    # Loop until done finding tiles with matching edges to go in empty spaces
     grid[XY(0, 0)] = tiles.pop(corner_id)
     while tiles:
         xy, edge, empty_xy = None, None, None
         for xy in grid:
-            empty_spaces = [
-                n
-                for n in xy.neighbours
-                if n not in grid and n.in_bounds(image_size - 1)
-            ]
-            if empty_spaces:
-                empty_xy = empty_spaces[0]
+            neighbours = [n for n in xy.neighbours if n.in_bounds(image_size - 1)]
+            spaces = [n for n in neighbours if n not in grid]
+            if spaces:
+                empty_xy = spaces[0]
                 break
-        edge = EDGE_DIRECTION[empty_xy - xy]
-        edge_value = grid[xy].get_edge(edge)
-        edge_to_find, value_to_find = CONNECTED_EDGE[edge], edge_value
-        for tile_id, tile in tiles.items():
-            orient = tile.find_orientation([(edge_to_find, value_to_find)])
-            if orient:
-                tile.set_orientation(orient)
-                grid[empty_xy] = tiles.pop(tile_id)
-                break
+        edge_to_find = CONNECTED_EDGE[EDGE_DIRECTION[empty_xy - xy]]
+        edge_value = grid[xy].get_edge(EDGE_DIRECTION[empty_xy - xy])
+        tile = tiles[neighbouring_tiles[grid[xy].id][edge_value]]
+        tile.set_orientation(tile.find_orientation([(edge_to_find, edge_value)]))
+        grid[empty_xy] = tiles.pop(tile.id)
 
     # Consolidate grid tiles into a single image
     image_data = []
@@ -241,14 +235,12 @@ def solve(inputs):
         image.set_orientation(orientation)
         for r in range(image.size - 2):
             r1, r2, r3 = image.rows[r], image.rows[r + 1], image.rows[r + 2]
-            match = re2.search(r2)
+            match = re1.search(r1)
             if match:
-                while True:
-                    if re1.match(r1, match.start()) and re3.match(r3, match.start()):
+                while match:
+                    if re2.match(r2, match.start()) and re3.match(r3, match.start()):
                         monsters += 1
-                    match = re2.search(r2, match.start() + 1)
-                    if not match:
-                        break
+                    match = re1.search(r1, match.start() + 1)
 
     print(f"Part 2: {sum(r.count('#') for r in image_data) - monsters * 15}\n")
 
