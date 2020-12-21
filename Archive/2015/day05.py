@@ -2,9 +2,7 @@ import os
 import re
 
 
-script_dir = os.path.dirname(__file__)
-script_name = os.path.splitext(os.path.basename(__file__))[0]
-with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), f"inputs/day05_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -25,7 +23,7 @@ def solve(inputs):
         bool(re.search(r"([a-z]{2}).*\1", word) and re.search(r"([a-z]).\1", word))
         for word in words
     )
-    print(f"Part 2: {part2}")
+    print(f"Part 2: {part2}\n")
 
 
 solve(actual_input)

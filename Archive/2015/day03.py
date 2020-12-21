@@ -2,9 +2,7 @@ import os
 
 from grid_system import XY
 
-script_dir = os.path.dirname(__file__)
-script_name = os.path.splitext(os.path.basename(__file__))[0]
-with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), f"inputs/day03_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """^v^v^v^v^v"""

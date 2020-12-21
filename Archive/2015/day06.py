@@ -3,11 +3,8 @@ import re
 
 from collections import defaultdict
 from itertools import product
-from grid_system import XY
 
-script_dir = os.path.dirname(__file__)
-script_name = os.path.splitext(os.path.basename(__file__))[0]
-with open(os.path.join(script_dir, f"inputs/{script_name}_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), f"inputs/day06_input.txt")) as f:
     actual_input = f.read()
 
 TOG, ON, OFF = "toggle", "turn on", "turn off"
@@ -18,19 +15,17 @@ regex = re.compile(
 
 def solve(inputs):
     instructions = (regex.match(line).groupdict() for line in inputs.splitlines())
-
-    lights1, lights2 = defaultdict(bool), defaultdict(int)
+    part1, part2 = defaultdict(bool), defaultdict(int)
     for instruction in instructions:
         x_range = range(int(instruction["x1"]), int(instruction["x2"]) + 1)
         y_range = range(int(instruction["y1"]), int(instruction["y2"]) + 1)
-        for xy in (XY(x, y) for x, y in product(x_range, y_range)):
-            phrase = instruction["phrase"]
-            lights1[xy] = {TOG: not lights1[xy], ON: True, OFF: False}[phrase]
-            lights2[xy] += {TOG: 2, ON: 1, OFF: -1}[phrase]
-            lights2[xy] = max(lights2[xy], 0)
+        phrase = instruction["phrase"]
+        for xy in product(x_range, y_range):
+            part1[xy] = {TOG: not part1[xy], ON: True, OFF: False}[phrase]
+            part2[xy] += {TOG: 2, ON: 1, OFF: -1 if part2[xy] else 0}[phrase]
 
-    print(f"Part 1: {sum(lights1.values())}")
-    print(f"Part 2: {sum(lights2.values())}")
+    print(f"Part 1: {sum(part1.values())}")
+    print(f"Part 2: {sum(part2.values())}\n")
 
 
 solve(actual_input)
