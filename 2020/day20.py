@@ -131,9 +131,8 @@ CONNECTED_EDGE = {TOP: BOTTOM, RIGHT: LEFT, BOTTOM: TOP, LEFT: RIGHT}
 
 
 class Tile:
-    def __init__(self, tile_id, tile_data):
+    def __init__(self, tile_data):
         self.size = len(tile_data)
-        self.id = tile_id
         self.rows = [row for row in tile_data]
         self.cols = ["".join(row[i] for row in self.rows) for i in range(self.size)]
 
@@ -179,59 +178,57 @@ class Tile:
 @print_time_taken
 def solve(inputs):
     grid = {}
-    tiles = set(
-        Tile(int(t[0].split()[1][:-1]), t[1:])
+    tiles = dict(
+        (int(t[0].split()[1][:-1]), Tile(t[1:]))
         for t in map(lambda x: x.splitlines(), inputs.split("\n\n"))
     )
-    tiles = {t.id: t for t in tiles}
     image_size = int(len(tiles) ** 0.5)
+    tile_size = len(list(tiles.values())[0].rows)
 
     # Find all possible neighbours for each tiles' sides
     possible_neighbours = {t: defaultdict(set) for t in tiles}
-    for this, other in (
-        (tiles[a], tiles[b]) for a, b in product(tiles, tiles) if a != b
-    ):
+    for this_id, other_id in ((a, b) for a, b in product(tiles, tiles) if a != b):
+        this, other = tiles[this_id], tiles[other_id]
         for border in (s for s in other.border_values if s in this.border_values):
-            possible_neighbours[this.id][border].add(other.id)
+            possible_neighbours[this_id][border].add(other_id)
 
     # Find corners - only have neighbours on two side (each side has two orientations)
     corners = set(t for t in tiles if len(possible_neighbours[t]) == 4)
     print(f"Part 1: {math.prod(corners)}")
 
     # Assign one corner to top left and orient it so neignbours are to right and below
-    top_corner = tiles[corners.pop()]
-    for right, bottom in combinations(possible_neighbours[top_corner.id], 2):
-        orientation = top_corner.find_orientation([(RIGHT, right), (BOTTOM, bottom)])
-        if orientation:
-            top_corner.set_orientation(orientation)
+    corner_id = corners.pop()
+    for right, bottom in combinations(possible_neighbours[corner_id], 2):
+        orient = tiles[corner_id].find_orientation([(RIGHT, right), (BOTTOM, bottom)])
+        if orient:
+            tiles[corner_id].set_orientation(orient)
 
     # Find tile with empty space next to it and look for neighbour with matching edge
-    grid[XY(0, 0)] = tiles.pop(top_corner.id)
+    grid[XY(0, 0)] = tiles.pop(corner_id)
     while tiles:
-        xy, edge, empty_xy, found_tile = None, None, None, None
+        xy, edge, empty_xy = None, None, None
         for xy in grid:
-            spaces = [
+            empty_spaces = [
                 n
                 for n in xy.neighbours
-                if n.in_bounds(image_size - 1) and n not in grid
+                if n not in grid and n.in_bounds(image_size - 1)
             ]
-            if spaces:
-                empty_xy = spaces[0]
-                edge = EDGE_DIRECTION[empty_xy - xy]
+            if empty_spaces:
+                empty_xy = empty_spaces[0]
                 break
+        edge = EDGE_DIRECTION[empty_xy - xy]
         edge_value = grid[xy].get_edge(edge)
         edge_to_find, value_to_find = CONNECTED_EDGE[edge], edge_value
-        for tile in tiles.values():
-            orientation = tile.find_orientation([(edge_to_find, value_to_find)])
-            if orientation:
-                tile.set_orientation(orientation)
-                found_tile = tile
+        for tile_id, tile in tiles.items():
+            orient = tile.find_orientation([(edge_to_find, value_to_find)])
+            if orient:
+                tile.set_orientation(orient)
+                grid[empty_xy] = tiles.pop(tile_id)
                 break
-        grid[empty_xy] = tiles.pop(found_tile.id)
 
     # Consolidate grid tiles into a single image
     image_data = []
-    for y, row in product(range(image_size), range(1, top_corner.size - 1)):
+    for y, row in product(range(image_size), range(1, tile_size - 1)):
         raster = "".join(grid[(x, y)].rows[row][1:-1] for x in range(image_size))
         image_data.append(raster)
 
@@ -241,9 +238,9 @@ def solve(inputs):
     re3 = re.compile(".#..#..#..#..#..#...")
     monsters = 0
     for orientation in ORIENTATIONS:
-        image = Tile(1, image_data)
+        image = Tile(image_data)
         image.set_orientation(orientation)
-        for r in range(0, image.size - 2):
+        for r in range(image.size - 2):
             r1, r2, r3 = image.rows[r], image.rows[r + 1], image.rows[r + 2]
             match = re2.search(r2)
             if match:
