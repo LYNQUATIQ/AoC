@@ -192,7 +192,7 @@ def solve(inputs):
         for edge in (s for s in other.edge_values if s in this.edge_values):
             neighbouring_tiles[this_id][edge] = other_id
 
-    # Find corners - only have two neighbouring_tiles (each with two orientations)
+    # Find corners - only have two neighbouring tiles (each with two orientations)
     corners = set(t for t in tiles if len(neighbouring_tiles[t]) == 4)
     print(f"Part 1: {math.prod(corners)}")
 
