@@ -42,7 +42,7 @@ def play_recursive(deck1, deck2):
     return (deck1, deck2)
 
 
-def calculate_winning_score(deck1, deck2):
+def calculate_score(deck1, deck2):
     winner = deck1 if len(deck1) > len(deck2) else deck2
     return sum(c * i for c, i in zip(winner, range(len(winner), 0, -1)))
 
@@ -54,11 +54,11 @@ def solve(inputs):
     while deck1 and deck2:
         card1, card2 = deck1.popleft(), deck2.popleft()
         deck1.extend((card1, card2)) if card1 > card2 else deck2.extend((card2, card1))
-    print(f"Part 1: {calculate_winning_score(deck1, deck2)}")
+    print(f"Part 1: {calculate_score(deck1, deck2)}")
 
     deck1, deck2 = (deque(map(int, x.splitlines()[1:])) for x in inputs.split("\n\n"))
     deck1, deck2 = play_recursive(deck1, deck2)
-    print(f"Part 2: {calculate_winning_score(deck1, deck2)}\n")
+    print(f"Part 2: {calculate_score(deck1, deck2)}\n")
 
 
 solve(sample_input)
