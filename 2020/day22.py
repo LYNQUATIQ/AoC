@@ -24,44 +24,40 @@ Player 2:
 """
 
 
-def play_recursive_combat(deck1, deck2):
+def play_recursive(deck1, deck2):
     seen_before1, seen_before2 = set(), set()
     while deck1 and deck2:
         if tuple(deck1) in seen_before1 or tuple(deck2) in seen_before2:
-            return (deck1, deque([]))
-        seen_before1.add(tuple(deck1))
-        seen_before2.add(tuple(deck2))
+            return (deck1, ())
+        seen_before1.add(tuple(deck1)), seen_before2.add(tuple(deck2))
 
-        card1, card2 = deck1.popleft(), deck2.popleft()
-        one_winner = card1 > card2
+        c1, c2 = deck1.popleft(), deck2.popleft()
+        one_winner = c1 > c2
+        if len(deck1) >= c1 and len(deck2) >= c2:
+            r1, r2 = play_recursive(deque(list(deck1)[:c1]), deque(list(deck2)[:c2]))
+            one_winner = len(r1) > len(r2)
 
-        if len(deck1) >= card1 and len(deck2) >= card2:
-            sub_deck1, sub_deck2 = play_recursive_combat(
-                deque(list(deck1)[:card1]), deque(list(deck2)[:card2])
-            )
-            one_winner = len(sub_deck1) > len(sub_deck2)
-
-        deck1.extend((card1, card2)) if one_winner else deck2.extend((card2, card1))
+        deck1.extend((c1, c2)) if one_winner else deck2.extend((c2, c1))
 
     return (deck1, deck2)
 
 
 def calculate_winning_score(deck1, deck2):
     winner = deck1 if len(deck1) > len(deck2) else deck2
-    winner.reverse()
-    return sum(c * i for c, i in zip(winner, range(1, len(winner) + 1)))
+    return sum(c * i for c, i in zip(winner, range(len(winner), 0, -1)))
 
 
 @print_time_taken
 def solve(inputs):
     deck1, deck2 = (deque(map(int, x.splitlines()[1:])) for x in inputs.split("\n\n"))
+
     while deck1 and deck2:
         card1, card2 = deck1.popleft(), deck2.popleft()
         deck1.extend((card1, card2)) if card1 > card2 else deck2.extend((card2, card1))
     print(f"Part 1: {calculate_winning_score(deck1, deck2)}")
 
     deck1, deck2 = (deque(map(int, x.splitlines()[1:])) for x in inputs.split("\n\n"))
-    deck1, deck2 = play_recursive_combat(deck1, deck2)
+    deck1, deck2 = play_recursive(deck1, deck2)
     print(f"Part 2: {calculate_winning_score(deck1, deck2)}\n")
 
 
