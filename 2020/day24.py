@@ -31,7 +31,7 @@ wseweeenwnesenwwwswnew"""
 
 
 class TileFloor:
-    DIRECTION = {
+    MOVE = {
         "e": (2, 0),
         "se": (1, 1),
         "sw": (-1, 1),
@@ -41,16 +41,16 @@ class TileFloor:
     }
     BLACK, WHITE = True, False
 
-    @classmethod
-    def tile_neighbours(cls, tile):
-        return ((tile[0] + d[0], tile[1] + d[1]) for d in cls.DIRECTION.values())
+    def tile_neighbours(self, tile):
+        for x, y in self.MOVE.values():
+            yield (tile[0] + x, tile[1] + y)
 
     def __init__(self, instructions):
-        self.grid = defaultdict(lambda: self.WHITE)
-        for instruction in instructions:
+        self.grid = defaultdict(lambda: False)
+        for line in instructions:
             tile = (0, 0)
-            for d in re.findall(r"|".join(self.DIRECTION), instruction):
-                tile = (tile[0] + self.DIRECTION[d][0], tile[1] + self.DIRECTION[d][1])
+            for x, y in (self.MOVE[d] for d in re.findall(r"|".join(self.MOVE), line)):
+                tile = (tile[0] + x, tile[1] + y)
             self.grid[tile] = not self.grid[tile]
 
     def iterate(self, rounds):
