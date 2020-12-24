@@ -40,22 +40,19 @@ class TileFloor:
     }
     BLACK, WHITE = True, False
 
-    def tile_neighbours(self, tile):
-        return ((tile[0] + d[0], tile[1] + d[1]) for d in self.DIRECTIONS.values())
+    @classmethod
+    def tile_neighbours(cls, tile):
+        return ((tile[0] + d[0], tile[1] + d[1]) for d in cls.DIRECTIONS.values())
 
     def __init__(self, instructions):
         self.grid = defaultdict(lambda: self.WHITE)
-        for instruction in instructions:
+        for instruction in ([c for c in i[::-1]] for i in instructions):
             tile = (0, 0)
-            i = 0
-            while i < len(instruction):
-                direction = instruction[i]
-                i += 1
-                if direction in ["s", "n"]:
-                    direction += instruction[i]
-                    i += 1
-                d = self.DIRECTIONS[direction]
-                tile = (tile[0] + d[0], tile[1] + d[1])
+            while instruction:
+                direction = instruction.pop()
+                direction += instruction.pop() if direction in ["s", "n"] else ""
+                direction = self.DIRECTIONS[direction]
+                tile = (tile[0] + direction[0], tile[1] + direction[1])
             self.grid[tile] = not self.grid[tile]
 
     def iterate(self, rounds):
@@ -73,7 +70,6 @@ class TileFloor:
 @print_time_taken
 def solve(inputs):
     floor = TileFloor(inputs.splitlines())
-
     print(f"Part 1: {sum(floor.grid.values())}")
     print(f"Part 2: {floor.iterate(100)}\n")
 
