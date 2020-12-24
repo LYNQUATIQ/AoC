@@ -1,4 +1,5 @@
 import os
+import re
 
 from collections import defaultdict
 
@@ -30,7 +31,7 @@ wseweeenwnesenwwwswnew"""
 
 
 class TileFloor:
-    DIRECTIONS = {
+    DIRECTION = {
         "e": (2, 0),
         "se": (1, 1),
         "sw": (-1, 1),
@@ -42,17 +43,14 @@ class TileFloor:
 
     @classmethod
     def tile_neighbours(cls, tile):
-        return ((tile[0] + d[0], tile[1] + d[1]) for d in cls.DIRECTIONS.values())
+        return ((tile[0] + d[0], tile[1] + d[1]) for d in cls.DIRECTION.values())
 
     def __init__(self, instructions):
         self.grid = defaultdict(lambda: self.WHITE)
-        for instruction in ([c for c in i[::-1]] for i in instructions):
+        for instruction in instructions:
             tile = (0, 0)
-            while instruction:
-                direction = instruction.pop()
-                direction += instruction.pop() if direction in ["s", "n"] else ""
-                direction = self.DIRECTIONS[direction]
-                tile = (tile[0] + direction[0], tile[1] + direction[1])
+            for d in re.findall(r"|".join(self.DIRECTION), instruction):
+                tile = (tile[0] + self.DIRECTION[d][0], tile[1] + self.DIRECTION[d][1])
             self.grid[tile] = not self.grid[tile]
 
     def iterate(self, rounds):
