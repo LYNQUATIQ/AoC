@@ -11,7 +11,7 @@ def solve(card_public_key, door_public_key):
     # Because 20201227 is prime we can use the multiplicative inverse of 7 and
     # repeatedly *multiply* by that until we get to 7.
     # We can calculate the multiplicative inverse from Fermat's Little Theorem:
-    #                     Multiplicative Inverse of a:  1/a  =  a^(n-2)  (mod n)
+    #                      Multiplicative Inverse of a:  1/a  =  a^(n-2)  (mod n)
     u = pow(7, 20201225, 20201227)
     x, card_loop_size = card_public_key, 1
     while x != 7:
