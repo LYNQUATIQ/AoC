@@ -24,7 +24,7 @@ sample_input = sample_input
 class Passport:
     @staticmethod
     def _valid_number(x, min_value, max_value):
-        return re.match(r"^\d+$", x) and min_value <= int(x) <= max_value
+        return x.isdigit() and min_value <= int(x) <= max_value
 
     @staticmethod
     def _valid_height(x, valid_heights):
