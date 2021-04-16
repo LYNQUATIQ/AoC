@@ -53,8 +53,8 @@ class HandheldComputer:
 
 def solve(inputs):
     program = {}
-    for i, line in enumerate(inputs.split("\n")):
-        instruction, param = line.split(" ")
+    for i, line in enumerate(inputs.splitlines()):
+        instruction, param = line.split()
         program[i] = (instruction, int(param))
 
     computer = HandheldComputer(program)
@@ -62,16 +62,14 @@ def solve(inputs):
     print(f"Part 1: {computer.accumulator}")
 
     stack_trace = computer.stack_trace
-    part2 = None
     for pointer, (instruction, _, _) in stack_trace.items():
         if instruction == "acc":
             continue
         patch = {pointer: {"nop": "jmp", "jmp": "nop"}[instruction]}
-        test_computer = HandheldComputer(program, patches=patch)
-        if test_computer.run_program() == HandheldComputer.TERMINATED:
-            part2 = test_computer.accumulator
+        computer = HandheldComputer(program, patches=patch)
+        if computer.run_program() == HandheldComputer.TERMINATED:
             break
-    print(f"Part 2: {part2}\n")
+    print(f"Part 2: {computer.accumulator}\n")
 
 
 solve(sample_input)
