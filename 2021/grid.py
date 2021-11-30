@@ -1,4 +1,6 @@
+from __future__ import annotations
 import math
+from typing import Dict, Iterator, List, Optional, Tuple, Union
 
 from collections import deque
 from functools import lru_cache
@@ -6,7 +8,7 @@ from itertools import product
 
 
 @lru_cache
-def _direction_vectors(dimensions):
+def _direction_vectors(dimensions: int):
     return list(product((-1, 0, 1), repeat=dimensions))
 
 
@@ -14,10 +16,10 @@ class Point(tuple):
     def __new__(cls, *_tuple):
         return tuple.__new__(cls, _tuple)
 
-    def __add__(self, other):
+    def __add__(self, other: Point):
         return type(self)(*(a + b for a, b in zip(self, other)))
 
-    def __sub__(self, other):
+    def __sub__(self, other: Point):
         return type(self)(*(a - b for a, b in zip(self, other)))
 
     @property
@@ -39,7 +41,7 @@ class Point(tuple):
 
 class XY(Point):
     @classmethod
-    def direction(cls, direction):
+    def direction(cls, direction: str):
         return {
             "N": cls(0, -1),
             "S": cls(0, 1),
@@ -56,10 +58,10 @@ class XY(Point):
         return self[1]
 
     @classmethod
-    def directions(cls):
-        return [cls(*xy) for xy in product((-1, 0, 1), (-1, 0, 1)) if xy != (0, 0)]
+    def directions(cls) -> Iterator[Point]:
+        return (cls(*xy) for xy in product((-1, 0, 1), (-1, 0, 1)) if xy != (0, 0))
 
-    def in_bounds(self, *args):
+    def in_bounds(self, *args) -> bool:
         bounds = []
         for arg in args:
             if isinstance(arg, tuple):
@@ -73,9 +75,10 @@ class XY(Point):
             max_x, max_y = bounds[0], bounds[1]
         elif len(bounds) == 4:
             min_x, min_y, max_x, max_y = bounds[0], bounds[1], bounds[2], bounds[3]
-        return (
-            self.x >= min_x and self.x <= max_x and self.y >= min_y and self.y <= max_y
-        )
+        return (min_x <= self.x <= max_x) and (min_y <= self.y <= max_y)
+
+
+Direction = XY
 
 
 class ConnectedGrid:
@@ -88,7 +91,7 @@ class ConnectedGrid:
     def __init__(self):
         self.grid = {}
 
-    def get_limits(self):
+    def get_limits(self) -> Tuple[int, int, int, int]:
         min_x, min_y, max_x, max_y = math.inf, math.inf, -math.inf, -math.inf
         for pt in self.grid.keys():
             min_x = min(min_x, pt.x)
@@ -97,10 +100,10 @@ class ConnectedGrid:
             max_y = max(max_y, pt.y + 1)
         return min_x, min_y, max_x, max_y
 
-    def get_symbol(self, xy):
+    def get_symbol(self, xy: XY) -> str:
         return self.grid.get(xy, " ")
 
-    def print_grid(self, show_headers=True):
+    def print_grid(self, show_headers: bool = True) -> None:
         min_x, min_y, max_x, max_y = self.get_limits()
         header1 = "     " + "".join(
             [" " * 9 + str(x + 1) for x in range((max_x - 1) // 10)]
@@ -121,7 +124,7 @@ class ConnectedGrid:
             print(header2)
             print(header1)
 
-    def turn_left(self, facing):
+    def turn_left(self, facing: Direction) -> Direction:
         return {
             self.NORTH: self.WEST,
             self.WEST: self.SOUTH,
@@ -129,7 +132,7 @@ class ConnectedGrid:
             self.EAST: self.NORTH,
         }[facing]
 
-    def turn_right(self, facing):
+    def turn_right(self, facing: Direction) -> Direction:
         return {
             self.NORTH: self.EAST,
             self.EAST: self.SOUTH,
@@ -137,14 +140,16 @@ class ConnectedGrid:
             self.WEST: self.NORTH,
         }[facing]
 
-    def connected_nodes(self, node, blockages=None):
+    def connected_nodes(self, node, blockages=None) -> Iterator[XY]:
         connected_nodes = node.neighbours
         if blockages:
-            connected_nodes = [n for n in connected_nodes if n not in blockages]
+            connected_nodes = (n for n in connected_nodes if n not in blockages)
         return connected_nodes
 
     # Breadth first search returning all paths
-    def bfs_paths(self, start, max_steps=None):
+    def bfs_paths(
+        self, start: XY, max_steps=None
+    ) -> Dict[XY, Tuple[int, Optional[XY]]]:
         bfs_paths = {start: (0, None)}
         # List of points to visit (and their distance from the start)
         to_visit = deque([(start, 0)])
@@ -168,7 +173,9 @@ class ConnectedGrid:
         return bfs_paths
 
     # Find the shortest paths to all the goals
-    def paths_to_goals(self, start, goals, blockages=None):
+    def paths_to_goals(
+        self, start: XY, goals: List[XY], blockages: Optional[List[XY]] = None
+    ) -> Optional[Dict[XY, List[XY]]]:
         paths = self.bfs_paths(start)
         paths_to_goals = {}
         for destination, path in paths.items():
@@ -187,7 +194,9 @@ class ConnectedGrid:
         return paths_to_goals
 
     # Find the shortest path to the closest goal
-    def find_shortest_path(self, start, goals, blockages=None):
+    def find_shortest_path(
+        self, start, goals: Union[XY, List[XY]], blockages: Optional[List[XY]] = None
+    ) -> Optional[List[XY]]:
         if isinstance(goals, XY):
             goals = [goals]
 
