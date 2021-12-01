@@ -20,10 +20,8 @@ sample_input = """199
 @print_time_taken
 def solve(inputs):
     values = list(map(int, inputs.splitlines()))
-    print(f"Part 1: {sum(a < b for a, b in zip(values[:-1], values[1:]))}")
-
-    values = [a + b + c for a, b, c in zip(values[:-2], values[1:-1], values[2:])]
-    print(f"Part 2: {sum(a < b for a, b in zip(values[:-1], values[1:]))}")
+    print(f"Part 1: {sum(a < b for a, b in zip(values, values[1:]))}")
+    print(f"Part 2: {sum(a < b for a, b in zip(values, values[3:]))}")
 
 
 solve(sample_input)
