@@ -1,32 +1,31 @@
 # import logging
-import math
 import os
-import re
-import string
 
-from collections import defaultdict, Counter
-from itertools import product
+from utils import print_time_taken
 
-from grid import XY, ConnectedGrid
-from utils import flatten, grouper, powerset, print_time_taken
-
-# log_file = os.path.join(os.path.dirname(__file__), f"logs/day01.log")
-# logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day01_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """sample"""
+sample_input = """199
+200
+208
+210
+200
+207
+240
+269
+260
+263"""
 
 
 @print_time_taken
 def solve(inputs):
-    # lines = inputs.splitlines()
-    # values = list(map(int, inputs.splitlines()))
+    values = list(map(int, inputs.splitlines()))
+    print(f"Part 1: {sum(a < b for a, b in zip(values[:-1], values[1:]))}")
 
-    print(f"Part 1: {False}")
-
-    print(f"Part 2: {False}\n")
+    values = [a + b + c for a, b, c in zip(values[:-2], values[1:-1], values[2:])]
+    print(f"Part 2: {sum(a < b for a, b in zip(values[:-1], values[1:]))}")
 
 
 solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
