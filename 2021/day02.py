@@ -14,19 +14,14 @@ forward 2"""
 
 
 @print_time_taken
-def solve(inputs):
+def solve(input_txt):
 
     position, depth, aim = 0, 0, 0
-
-    for line in inputs.splitlines():
+    for line in input_txt.splitlines():
         match line.split():
-            case ('forward', x):
-                position += int(x)
-                depth += aim * int(x)
-            case ('up', x):
-                aim -= int(x)
-            case ('down', x):
-                aim += int(x)
+            case ('forward', x): position += int(x); depth += aim * int(x)
+            case ('up', x): aim -= int(x)
+            case ('down', x): aim += int(x)
 
     print(f"Part 1: {position * aim}")
     print(f"Part 2: {position * depth}\n")
