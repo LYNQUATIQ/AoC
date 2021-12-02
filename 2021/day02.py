@@ -22,7 +22,7 @@ def solve(inputs):
         match line.split():
             case ('forward', x):
                 position += int(x)
-                depth += aim *int(x)
+                depth += aim * int(x)
             case ('up', x):
                 aim -= int(x)
             case ('down', x):
