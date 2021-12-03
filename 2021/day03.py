@@ -1,32 +1,52 @@
-# import logging
-import math
 import os
-import re
-import string
 
-from collections import defaultdict, Counter
-from itertools import product
+from utils import print_time_taken
 
-from grid import XY, ConnectedGrid
-from utils import flatten, grouper, powerset, print_time_taken
-
-# log_file = os.path.join(os.path.dirname(__file__), f"logs/day03.log")
-# logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day03_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """sample"""
+sample_input = """00100
+11110
+10110
+10111
+10101
+01111
+00111
+11100
+10000
+11001
+00010
+01010"""
 
 
 @print_time_taken
 def solve(inputs):
-    # lines = inputs.splitlines()
-    # values = list(map(int, inputs.splitlines()))
+    values = inputs.splitlines()
+    bit_count = len(values[0])
 
-    print(f"Part 1: {False}")
+    columns = ["".join(column) for column in zip(*values)]
+    gamma_bits = [column.count("1") > column.count("0") for column in columns]
+    gamma = sum(2 ** i for i, c in enumerate(reversed(gamma_bits)) if c)
+    epsilon = gamma ^ (2 ** bit_count - 1)
+    print(f"Part 1: {gamma * epsilon}")
 
-    print(f"Part 2: {False}\n")
+    def get_rating(doing_o2: bool):
+        rating_values = values[:]
+        for i in range(bit_count):
+            ones, zeroes = [], []
+            for value in rating_values:
+                (ones if value[i] == "1" else zeroes).append(value)
+            more_ones = len(ones) >= len(zeroes)
+            if doing_o2:
+                rating_values = ones if more_ones else zeroes
+            else:
+                rating_values = zeroes if more_ones else ones
+            if len(rating_values) == 1:
+                break
+        return int(rating_values.pop(), 2)
+
+    print(f"Part 2: {get_rating(True) * get_rating(False)}\n")
 
 
 solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
