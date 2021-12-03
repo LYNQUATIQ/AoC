@@ -24,14 +24,13 @@ def solve(inputs):
     values = inputs.splitlines()
     bit_count = len(values[0])
 
-    columns = ["".join(column) for column in zip(*values)]
-    gamma_bits = [column.count("1") > column.count("0") for column in columns]
+    gamma_bits = [column.count("1") > column.count("0") for column in zip(*values)]
     gamma = sum(2 ** i for i, c in enumerate(reversed(gamma_bits)) if c)
     epsilon = gamma ^ (2 ** bit_count - 1)
     print(f"Part 1: {gamma * epsilon}")
 
     def get_rating(doing_o2: bool):
-        rating_values = values[:]
+        rating_values = values
         for i in range(bit_count):
             ones, zeroes = [], []
             for value in rating_values:
