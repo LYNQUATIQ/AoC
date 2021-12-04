@@ -1,15 +1,8 @@
 # import logging
-import math
 import os
-import re
-import string
-
-from collections import defaultdict, Counter
-from itertools import product
 from typing import Sequence
 
-from grid import XY, ConnectedGrid
-from utils import flatten, grouper, powerset, print_time_taken
+from utils import flatten, print_time_taken
 
 # log_file = os.path.join(os.path.dirname(__file__), f"logs/day04.log")
 # logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
