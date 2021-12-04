@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 import os
 
 from utils import flatten, print_time_taken
@@ -28,7 +28,7 @@ sample_input = """7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,1
 
 
 class BingoBoard:
-    def __init__(self, lines: list[str]) -> None:
+    def __init__(self, lines: Iterable[str]) -> None:
         self.rows = tuple(list(map(int, line.split())) for line in lines)
         self.columns = tuple(zip(*self.rows))
 
@@ -43,10 +43,10 @@ class BingoBoard:
 
 @print_time_taken
 def solve(inputs):
-    lines = inputs.splitlines()
+    draw_input, *board_inputs = inputs.split("\n\n")
 
-    draws = iter(map(int, lines[0].split(",")))
-    boards = {BingoBoard(lines[i : i + 5]) for i in range(2, len(lines), 6)}
+    draws = iter(map(int, draw_input.split(",")))
+    boards = {BingoBoard(board_input.splitlines()) for board_input in board_inputs}
 
     final_scores, drawn_numbers = [], []
     while boards:
