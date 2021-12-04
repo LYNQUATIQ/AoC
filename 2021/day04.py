@@ -1,11 +1,8 @@
-# import logging
 from collections.abc import Sequence
 import os
 
 from utils import flatten, print_time_taken
 
-# log_file = os.path.join(os.path.dirname(__file__), f"logs/day04.log")
-# logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day04_input.txt")) as f:
     actual_input = f.read()
 
