@@ -1,6 +1,6 @@
 # import logging
+from collections.abc import Sequence
 import os
-from typing import Sequence
 
 from utils import flatten, print_time_taken
 
@@ -31,16 +31,16 @@ sample_input = """7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,1
 
 
 class BingoBoard:
-    def __init__(self, lines) -> None:
+    def __init__(self, lines: list[str]) -> None:
         self.rows = tuple(list(map(int, line.split())) for line in lines)
         self.columns = tuple(zip(*self.rows))
 
-    def is_completed(self, draws: Sequence[int]) -> Sequence[int]:
+    def is_completed(self, draws: Sequence[int]) -> bool:
         return any(all(n in draws for n in row) for row in self.rows) or any(
             all(n in draws for n in column) for column in self.columns
         )
 
-    def final_score(self, draws: Sequence[int]) -> bool:
+    def final_score(self, draws: Sequence[int]) -> int:
         return draws[-1] * sum(n for n in flatten(self.rows) if n not in draws)
 
 
