@@ -6,6 +6,7 @@ import string
 
 from collections import defaultdict, Counter
 from itertools import product
+from typing import Sequence
 
 from grid import XY, ConnectedGrid
 from utils import flatten, grouper, powerset, print_time_taken
@@ -35,56 +36,38 @@ sample_input = """7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,1
 22 11 13  6  5
  2  0 12  3  7"""
 
-BOARD_SIZE = 5
 
-
-class Board:
+class BingoBoard:
     def __init__(self, lines) -> None:
         self.rows = tuple(list(map(int, line.split())) for line in lines)
         self.columns = tuple(zip(*self.rows))
-        self.drawn_numbers = set()
-        self.final_score = None
 
-    def __repr__(self) -> str:
-        return "\n".join(str(row) for row in self.rows)
+    def is_completed(self, draws: Sequence[int]) -> Sequence[int]:
+        return any(all(n in draws for n in row) for row in self.rows) or any(
+            all(n in draws for n in column) for column in self.columns
+        )
 
-    def _is_completed(self) -> bool:
-        for i in range(BOARD_SIZE):
-            if all(n in self.drawn_numbers for n in self.rows[i]):
-                return True
-            if all(n in self.drawn_numbers for n in self.columns[i]):
-                return True
-        return False
-
-    def add_draw(self, draw: int) -> bool:
-        if not self.final_score:
-            self.drawn_numbers.add(draw)
-            if self._is_completed():
-                self.final_score = draw * sum(
-                    n for n in flatten(self.rows) if n not in self.drawn_numbers
-                )
-                return True
-        return False
+    def final_score(self, draws: Sequence[int]) -> bool:
+        return draws[-1] * sum(n for n in flatten(self.rows) if n not in draws)
 
 
 @print_time_taken
 def solve(inputs):
     lines = inputs.splitlines()
-    numbers = map(int, lines[0].split(","))
 
-    boards = []
-    for i in range(2, len(lines), BOARD_SIZE + 1):
-        boards.append(Board(lines[i : i + BOARD_SIZE]))
+    draws = iter(map(int, lines[0].split(",")))
+    boards = {BingoBoard(lines[i : i + 5]) for i in range(2, len(lines), 6)}
 
-    first_board, last_board = None, None
-    for draw in numbers:
-        for board in boards:
-            if board.add_draw(draw):
-                first_board = first_board or board
-                last_board = board
+    final_scores, drawn_numbers = [], []
+    while boards:
+        drawn_numbers.append(next(draws))
+        for board in tuple(boards):
+            if board.is_completed(drawn_numbers):
+                final_scores.append(board.final_score(drawn_numbers))
+                boards.discard(board)
 
-    print(f"Part 1: {first_board.final_score}")
-    print(f"Part 2: {last_board.final_score}\n")
+    print(f"Part 1: {final_scores[0]}")
+    print(f"Part 2: {final_scores[-1]}\n")
 
 
 solve(sample_input)
