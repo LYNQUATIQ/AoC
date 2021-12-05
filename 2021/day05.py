@@ -21,13 +21,14 @@ sample_input = """0,9 -> 5,9
 
 @print_time_taken
 def solve(inputs):
+    unit_step = lambda s: -1 if s < 0 else s > 0
     vents1 = defaultdict(int)
     vents2 = defaultdict(int)
+
     for line in inputs.splitlines():
         x, y, end_x, end_y = map(int, re.findall(r"\d+", line))
-        straight_line = (x == end_x) ^ (y == end_y)
-        unit_step = lambda s: s / abs(s) if s != 0 else 0
         dx, dy = unit_step(end_x - x), unit_step(end_y - y)
+        straight_line = (x == end_x) ^ (y == end_y)
         while True:
             vents1[(x, y)] += straight_line
             vents2[(x, y)] += 1
