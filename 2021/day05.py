@@ -1,5 +1,5 @@
 import os
-
+import re
 from collections import defaultdict
 
 from grid import XY
@@ -22,24 +22,24 @@ sample_input = """0,9 -> 5,9
 
 @print_time_taken
 def solve(inputs):
-    grid1 = defaultdict(int)
-    grid2 = defaultdict(int)
+    vents1 = defaultdict(int)
+    vents2 = defaultdict(int)
     for line in inputs.splitlines():
-        a, b = line.split(" -> ")
-        start, end = XY(*map(int, a.split(","))), XY(*map(int, b.split(",")))
+        x1, y1, x2, y2 = map(int, re.findall(r"\d+", line))
+        start, end = XY(x1, y1), XY(x2, y2)
         straight_line = (start.x == end.x) ^ (start.y == end.y)
-        grid1[start] += straight_line
-        grid2[start] += 1
+        vents1[start] += straight_line
+        vents2[start] += 1
 
         unit_step = lambda s: s / abs(s) if s != 0 else 0
         step = XY(unit_step((end - start).x), unit_step((end - start).y))
         while start != end:
             start += step
-            grid1[start] += straight_line
-            grid2[start] += 1
+            vents1[start] += straight_line
+            vents2[start] += 1
 
-    print(f"Part 1: {len([c for c in grid1.values() if c > 1])}")
-    print(f"Part 2: {len([c for c in grid2.values() if c > 1])}\n")
+    print(f"Part 1: {sum(c > 1 for c in vents1.values())}")
+    print(f"Part 2: {sum(c > 1 for c in vents2.values())}\n")
 
 
 solve(sample_input)
