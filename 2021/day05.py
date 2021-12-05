@@ -2,7 +2,6 @@ import os
 import re
 from collections import defaultdict
 
-from grid import XY
 from utils import print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day05_input.txt")) as f:
@@ -26,17 +25,16 @@ def solve(inputs):
     vents2 = defaultdict(int)
     for line in inputs.splitlines():
         x1, y1, x2, y2 = map(int, re.findall(r"\d+", line))
-        start, end = XY(x1, y1), XY(x2, y2)
-        straight_line = (start.x == end.x) ^ (start.y == end.y)
+        straight_line = (x1 == x2) ^ (y1 == y2)
         unit_step = lambda s: s / abs(s) if s != 0 else 0
-        step = XY(unit_step((end - start).x), unit_step((end - start).y))
-
-        vents1[start] += straight_line
-        vents2[start] += 1
-        while start != end:
-            start += step
-            vents1[start] += straight_line
-            vents2[start] += 1
+        dx, dy = unit_step(x2 - x1), unit_step(y2 - y1)
+        xy, end = (x1, y1), (x2, y2)
+        while True:
+            vents1[xy] += straight_line
+            vents2[xy] += 1
+            if xy == end:
+                break
+            xy = (xy[0] + dx, xy[1] + dy)
 
     print(f"Part 1: {sum(c > 1 for c in vents1.values())}")
     print(f"Part 2: {sum(c > 1 for c in vents2.values())}\n")
