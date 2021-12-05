@@ -24,17 +24,16 @@ def solve(inputs):
     vents1 = defaultdict(int)
     vents2 = defaultdict(int)
     for line in inputs.splitlines():
-        x1, y1, x2, y2 = map(int, re.findall(r"\d+", line))
-        straight_line = (x1 == x2) ^ (y1 == y2)
+        x, y, end_x, end_y = map(int, re.findall(r"\d+", line))
+        straight_line = (x == end_x) ^ (y == end_y)
         unit_step = lambda s: s / abs(s) if s != 0 else 0
-        dx, dy = unit_step(x2 - x1), unit_step(y2 - y1)
-        xy, end = (x1, y1), (x2, y2)
+        dx, dy = unit_step(end_x - x), unit_step(end_y - y)
         while True:
-            vents1[xy] += straight_line
-            vents2[xy] += 1
-            if xy == end:
+            vents1[(x, y)] += straight_line
+            vents2[(x, y)] += 1
+            if (x, y) == (end_x, end_y):
                 break
-            xy = (xy[0] + dx, xy[1] + dy)
+            x, y = x + dx, y + dy
 
     print(f"Part 1: {sum(c > 1 for c in vents1.values())}")
     print(f"Part 2: {sum(c > 1 for c in vents2.values())}\n")
