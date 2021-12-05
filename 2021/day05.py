@@ -1,32 +1,49 @@
-# import logging
-import math
 import os
-import re
-import string
 
-from collections import defaultdict, Counter
-from itertools import product
+from collections import defaultdict
 
-from grid import XY, ConnectedGrid
-from utils import flatten, grouper, powerset, print_time_taken
+from grid import XY
+from utils import print_time_taken
 
-# log_file = os.path.join(os.path.dirname(__file__), f"logs/day05.log")
-# logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day05_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """sample"""
+sample_input = """0,9 -> 5,9
+8,0 -> 0,8
+9,4 -> 3,4
+2,2 -> 2,1
+7,0 -> 7,4
+6,4 -> 2,0
+0,9 -> 2,9
+3,4 -> 1,4
+0,0 -> 8,8
+5,5 -> 8,2"""
 
 
 @print_time_taken
 def solve(inputs):
-    # lines = inputs.splitlines()
-    # values = list(map(int, inputs.splitlines()))
+    grid1 = defaultdict(int)
+    grid2 = defaultdict(int)
+    for line in inputs.splitlines():
+        a, b = line.split(" -> ")
+        start, end = XY(*map(int, a.split(","))), XY(*map(int, b.split(",")))
+        straight_line = (start.x == end.x) ^ (start.y == end.y)
+        grid1[start] += straight_line
+        grid2[start] += 1
 
-    print(f"Part 1: {False}")
+        step = end - start
+        step = XY(
+            step.x / abs(step.x) if step.x != 0 else 0,
+            step.y / abs(step.y) if step.y != 0 else 0,
+        )
+        while start != end:
+            start += step
+            grid1[start] += straight_line
+            grid2[start] += 1
 
-    print(f"Part 2: {False}\n")
+    print(f"Part 1: {len([c for c in grid1.values() if c > 1])}")
+    print(f"Part 2: {len([c for c in grid2.values() if c > 1])}\n")
 
 
 solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
