@@ -31,11 +31,8 @@ def solve(inputs):
         grid1[start] += straight_line
         grid2[start] += 1
 
-        step = end - start
-        step = XY(
-            step.x / abs(step.x) if step.x != 0 else 0,
-            step.y / abs(step.y) if step.y != 0 else 0,
-        )
+        unit_step = lambda s: s / abs(s) if s != 0 else 0
+        step = XY(unit_step((end - start).x), unit_step((end - start).y))
         while start != end:
             start += step
             grid1[start] += straight_line
