@@ -28,11 +28,11 @@ def solve(inputs):
         x1, y1, x2, y2 = map(int, re.findall(r"\d+", line))
         start, end = XY(x1, y1), XY(x2, y2)
         straight_line = (start.x == end.x) ^ (start.y == end.y)
-        vents1[start] += straight_line
-        vents2[start] += 1
-
         unit_step = lambda s: s / abs(s) if s != 0 else 0
         step = XY(unit_step((end - start).x), unit_step((end - start).y))
+
+        vents1[start] += straight_line
+        vents2[start] += 1
         while start != end:
             start += step
             vents1[start] += straight_line
