@@ -1,32 +1,30 @@
-# import logging
-import math
 import os
-import re
-import string
 
-from collections import defaultdict, Counter
-from itertools import product
+from collections import Counter
 
-from grid import XY, ConnectedGrid
-from utils import flatten, grouper, powerset, print_time_taken
+from utils import print_time_taken
 
-# log_file = os.path.join(os.path.dirname(__file__), f"logs/day06.log")
-# logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day06_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """sample"""
+sample_input = """3,4,3,1,2"""
 
 
 @print_time_taken
 def solve(inputs):
-    # lines = inputs.splitlines()
-    # values = list(map(int, inputs.splitlines()))
+    def count_fish(n):
+        fish = Counter(map(int, inputs.split(",")))
+        for _ in range(n):
+            spawning_fish = fish.get(0, 0)
+            fish = {days: fish.get(days + 1, 0) for days in range(8)}
+            fish[8] = spawning_fish
+            fish[6] += spawning_fish
 
-    print(f"Part 1: {False}")
+        return sum(fish.values())
 
-    print(f"Part 2: {False}\n")
+    print(f"Part 1: {count_fish(80)}")
+    print(f"Part 2: {count_fish(256)}\n")
 
 
 solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
