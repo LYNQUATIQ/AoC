@@ -1,6 +1,6 @@
 import os
 
-from collections import Counter
+from collections import Counter, defaultdict
 
 from utils import print_time_taken
 
@@ -13,10 +13,10 @@ sample_input = """3,4,3,1,2"""
 @print_time_taken
 def solve(inputs):
     def count_fish(n):
-        fish = Counter(map(int, inputs.split(",")))
+        fish = defaultdict(int, Counter(map(int, inputs.split(","))))
         for _ in range(n):
-            spawning_fish = fish.get(0, 0)
-            fish = {days: fish.get(days + 1, 0) for days in range(8)}
+            spawning_fish = fish[0]
+            fish = {k: fish[k + 1] for k in range(8)}
             fish[8] = spawning_fish
             fish[6] += spawning_fish
 
