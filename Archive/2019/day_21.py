@@ -7,7 +7,9 @@ from intcode_computer import IntCodeComputer
 script_dir = os.path.dirname(__file__)
 file_path = os.path.join(script_dir, "logs/day_21.log")
 logging.basicConfig(
-    level=logging.DEBUG, filename=file_path, filemode="w",
+    level=logging.DEBUG,
+    filename=file_path,
+    filemode="w",
 )
 
 file_path = os.path.join(script_dir, "inputs/day_21_input.txt")
@@ -21,7 +23,10 @@ def run_script(script):
     for line in script:
         computer.run_program([ord(c) for c in line] + [10])
         if line in ["WALK", "RUN"]:
-            print(computer.ascii_output())
+            if computer.last_output() > 256:
+                print(computer.last_output())
+            else:
+                print(computer.ascii_output())
 
 
 pt1_script = [
@@ -54,4 +59,3 @@ run_script(pt1_script)
 
 print("Part 2:")
 run_script(pt2_script)
-

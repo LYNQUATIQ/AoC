@@ -32,7 +32,7 @@ class IntCodeComputer:
     def ascii_output(self, clear_output=False):
         ascii_ouput = ""
         for c in self.output(clear_output):
-            ascii_ouput += str(c)
+            ascii_ouput += chr(c)
         return ascii_ouput
 
     def last_output(self):
