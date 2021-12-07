@@ -23,3 +23,9 @@ def solve(inputs):
 
 solve(sample_input)
 solve(actual_input)
+
+from intcode_computer import IntCodeComputer
+
+computer = IntCodeComputer(map(int, actual_input.split(",")))
+computer.run_program()
+print(computer.ascii_output())
