@@ -12,7 +12,7 @@ sample_input = """16,1,2,0,4,2,7,1,2,14"""
 def solve(inputs):
     positions = list(map(int, inputs.split(",")))
     part1, part2 = set(), set()
-    for x in range(max(positions)):
+    for x in range(min(positions), max(positions) + 1):
         distances = [abs(x - p) for p in positions]
         part1.add(sum(distances))
         part2.add(sum(d * (d + 1) // 2 for d in distances))
