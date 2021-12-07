@@ -1,32 +1,25 @@
-# import logging
-import math
 import os
-import re
-import string
+import sys
 
-from collections import defaultdict, Counter
-from itertools import product
+from utils import print_time_taken
 
-from grid import XY, ConnectedGrid
-from utils import flatten, grouper, powerset, print_time_taken
-
-# log_file = os.path.join(os.path.dirname(__file__), f"logs/day07.log")
-# logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day07_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """sample"""
+sample_input = """16,1,2,0,4,2,7,1,2,14"""
 
 
 @print_time_taken
 def solve(inputs):
-    # lines = inputs.splitlines()
-    # values = list(map(int, inputs.splitlines()))
-
-    print(f"Part 1: {False}")
-
-    print(f"Part 2: {False}\n")
+    positions = list(map(int, inputs.split(",")))
+    part1, part2 = sys.maxsize, sys.maxsize
+    for x in range(min(positions), max(positions) + 1):
+        distances = [abs(x - p) for p in positions]
+        part1 = min(part1, sum(distances))
+        part2 = min(part2, sum(d * (d + 1) // 2 for d in distances))
+    print(f"Part 1: {part1}")
+    print(f"Part 2: {part2}\n")
 
 
 solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
