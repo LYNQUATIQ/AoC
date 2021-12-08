@@ -1,17 +1,7 @@
-# import logging
-import math
 import os
-import re
-import string
 
-from collections import defaultdict, Counter
-from itertools import product
+from utils import flatten, print_time_taken
 
-from grid import XY, ConnectedGrid
-from utils import flatten, grouper, powerset, print_time_taken
-
-# log_file = os.path.join(os.path.dirname(__file__), f"logs/day08.log")
-# logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day08_input.txt")) as f:
     actual_input = f.read()
 
@@ -26,19 +16,6 @@ bdfegc cbegaf gecbf dfcage bdacg ed bedf ced adcbefg gebcd | ed bcgafe cdgba cbg
 egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
 gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce"""
 
-
-SEGMENTS = {
-    1: ("c", "f"),
-    7: ("a", "c", "f"),
-    4: ("b", "c", "d", "f"),
-    2: ("a", "c", "d", "e", "g"),
-    3: ("a", "c", "d", "f", "g"),
-    5: ("a", "b", "d", "f", "g"),
-    0: ("a", "b", "c", "e", "f", "g"),
-    6: ("a", "b", "d", "e", "f", "g"),
-    9: ("a", "b", "c", "d", "f", "g"),
-    8: ("a", "b", "c", "d", "e", "f", "g"),
-}
 
 LENGTHS = {2: 1, 3: 7, 4: 4, 7: 8}
 
