@@ -17,47 +17,47 @@ egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
 gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce"""
 
 
-UNIQUE_LENGTHS = {2: 1, 3: 7, 4: 4, 7: 8}
+UNIQUE_LENGTHS = {2: "1", 3: "7", 4: "4", 7: "8"}
 
 
-def decode(patterns, outputs):
-    answers = {}
+def decode(patterns, values):
+    coding = {}
 
     # Find 1, 4, 7 and 8
     for pattern in (p for p in patterns if len(p) in UNIQUE_LENGTHS):
-        answers[UNIQUE_LENGTHS[len(pattern)]] = pattern
+        coding[UNIQUE_LENGTHS[len(pattern)]] = pattern
 
     # Find 0, 6 and 9
     for pattern in (p for p in patterns if len(p) == 6):
-        if answers[4].issubset(pattern):
-            answers[9] = pattern
-        elif answers[1].issubset(pattern):
-            answers[0] = pattern
+        if coding["4"].issubset(pattern):
+            coding["9"] = pattern
+        elif coding["1"].issubset(pattern):
+            coding["0"] = pattern
         else:
-            answers[6] = pattern
+            coding["6"] = pattern
 
     # Find 2, 3 and 5
     for pattern in (p for p in patterns if len(p) == 5):
-        if answers[1].issubset(pattern):
-            answers[3] = pattern
-        elif pattern.issubset(answers[6]):
-            answers[5] = pattern
+        if coding["1"].issubset(pattern):
+            coding["3"] = pattern
+        elif pattern.issubset(coding["6"]):
+            coding["5"] = pattern
         else:
-            answers[2] = pattern
+            coding["2"] = pattern
 
-    decoder = {v: str(k) for k, v in answers.items()}
-    return int("".join(decoder[v] for v in outputs))
+    decoder = {value: pattern for pattern, value in coding.items()}
+    return int("".join(decoder[value] for value in values))
 
 
 @print_time_taken
 def solve(inputs):
-    patterns, outputs = [], []
-    for pattern, output in map(lambda x: x.split(" | "), inputs.splitlines()):
+    patterns, values = [], []
+    for pattern, value in map(lambda x: x.split(" | "), inputs.splitlines()):
         patterns.append(list(map(frozenset, pattern.split())))
-        outputs.append(list(map(frozenset, output.split())))
+        values.append(list(map(frozenset, value.split())))
 
-    print(f"Part 1: {sum(len(v) in UNIQUE_LENGTHS for v in flatten(outputs))}")
-    print(f"Part 2: {sum(decode(a, b) for a, b in zip(patterns, outputs))}\n")
+    print(f"Part 1: {sum(len(v) in UNIQUE_LENGTHS for v in flatten(values))}")
+    print(f"Part 2: {sum(decode(p, v) for p, v in zip(patterns, values))}\n")
 
 
 solve(sample_input)
