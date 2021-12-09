@@ -52,7 +52,7 @@ def decode(patterns, values):
 @print_time_taken
 def solve(inputs):
     patterns, values = [], []
-    for pattern, value in map(lambda x: x.split(" | "), inputs.splitlines()):
+    for pattern, value in map(lambda x: x.split("|"), inputs.splitlines()):
         patterns.append(list(map(frozenset, pattern.split())))
         values.append(list(map(frozenset, value.split())))
 
