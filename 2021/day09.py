@@ -1,7 +1,6 @@
 import math
 import os
 
-from grid import XY
 from utils import print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day09_input.txt")) as f:
@@ -16,29 +15,31 @@ sample_input = """2199943210
 
 @print_time_taken
 def solve(inputs):
-    lava_map = {}
-    for y, line in enumerate(inputs.splitlines()):
-        for x, height in enumerate(line):
-            lava_map[XY(x, y)] = int(height)
+    lava_map = {
+        (x, y): int(height)
+        for y, line in enumerate(inputs.splitlines())
+        for x, height in enumerate(line)
+    }
 
-    low_points, risk_levels = [], []
+    get_neighbours = lambda x, y: ((x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1))
+
+    low_points = []
     for xy, height in lava_map.items():
-        if all(lava_map.get(n, 9) > height for n in xy.neighbours):
+        if all(lava_map.get(n, 9) > height for n in get_neighbours(*xy)):
             low_points.append(xy)
-            risk_levels.append(height + 1)
-    print(f"Part 1: {sum(risk_levels)}")
+    print(f"Part 1: {sum(lava_map[low_point]+1 for low_point in low_points)}")
 
-    basins = []
+    basin_sizes = []
     for low_point in low_points:
         basin, to_visit = {low_point}, {low_point}
         while to_visit:
-            for n in to_visit.pop().neighbours:
-                if n not in basin and n in lava_map and lava_map[n] != 9:
-                    basin.add(n)
-                    to_visit.add(n)
-        basins.append(len(basin))
-    basins.sort(reverse=True)
-    print(f"Part 2: {math.prod(basins[:3])}\n")
+            xy = to_visit.pop()
+            for neighbour in get_neighbours(*xy):
+                if neighbour not in basin and lava_map.get(neighbour, 9) != 9:
+                    basin.add(neighbour)
+                    to_visit.add(neighbour)
+        basin_sizes.append(len(basin))
+    print(f"Part 2: {math.prod(sorted(basin_sizes)[-3:])}\n")
 
 
 solve(sample_input)
