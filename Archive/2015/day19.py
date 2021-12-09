@@ -6,7 +6,9 @@ with open(os.path.join(os.path.dirname(__file__), f"inputs/day19_input.txt")) as
     actual_input = f.read()
 
 data, medicine = actual_input.split("\n\n")
-replacements = dict((l.split(" => ")[::-1] for l in data.splitlines()))
+replacements = dict(
+    (replacement.split(" => ")[::-1] for replacement in data.splitlines())
+)
 
 
 possible_molecules = set()
@@ -22,31 +24,28 @@ class DeadEnd(Exception):
     """Used to indicate dead end"""
 
 
-DEAD_ENDS = set()
-NEXT_STEPS = {}
-
-
-def path_length(seed, path_so_far=0):
+# An A* search algorithm to find the recipe length
+def recipe_length(seed, length=0):
     if seed == "e":
-        return path_so_far
+        return length
 
-    try:
-        next_steps = NEXT_STEPS[seed]
-    except KeyError:
-        next_steps = set()
-        for initial, replacement in replacements.items():
-            for m in re.finditer(initial, seed):
-                next_steps.add(seed[: m.span()[0]] + replacement + seed[m.span()[1] :])
-        NEXT_STEPS[seed] = next_steps
+    # Grab the possible next steps
+    next_steps = set()
+    for initial, replacement in replacements.items():
+        for m in re.finditer(initial, seed):
+            next_steps.add(seed[: m.span()[0]] + replacement + seed[m.span()[1] :])
 
-    next_steps = sorted((p for p in next_steps if p not in DEAD_ENDS), key=len)
+    # Sort the next steps by length (proxy for estimated cost)
+    next_steps = sorted(next_steps, key=len)
+
+    # Try the next steps until we find one that isn't a dead end
     while next_steps:
         next_step = next_steps.pop(0)
         try:
-            return path_length(next_step, path_so_far + 1)
+            return recipe_length(next_step, length + 1)
         except DeadEnd:
-            DEAD_ENDS.add(next_step)
+            ...
     raise DeadEnd
 
 
-print(f"Part 2: {path_length(medicine)}\n")
+print(f"Part 2: {recipe_length(medicine)}\n")
