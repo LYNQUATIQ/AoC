@@ -5,64 +5,48 @@ import re
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day19_input.txt")) as f:
     actual_input = f.read()
 
-actual_input = actual_input.replace("Rn", "<")
-actual_input = actual_input.replace("Ar", ">")
-
 data, medicine = actual_input.split("\n\n")
-print(medicine)
-replacements = dict(list(l.split(" => ")[::-1] for l in data.splitlines()))
-
-REPLACEMENTS = re.compile("(?P<replacement>(" + "|".join(set(replacements)) + "))")
-RN_AR = re.compile("<(?P<contents>[A-QS-Za-z]*)>")
-RN_AR_SEEDS = set(
-    m.group("contents") for m in (RN_AR.search(r) for r in replacements) if m
-)
-SEED = "e"
-
-# print(RN_AR_CONTENTS)
-# input()
+replacements = dict((l.split(" => ")[::-1] for l in data.splitlines()))
 
 
-def find_recipe(target):
-
-    print(f"FINDING RECIPE FOR:\n{target}\n{'0123456789' * (len(target)//10)}\n")
-    steps = []
-
-    if target == SEED or target in RN_AR_SEEDS:
-        return target, steps
-
-    for match in RN_AR.finditer(target):
-        print(f"  RESOLVING RN_AR: {match}")
-        if match.group("contents") in RN_AR_SEEDS:
-            continue
-        rn_ar_seed, sub_recipe = find_recipe(match.group("contents"))
-        assert sub_recipe is not None
-        steps += sub_recipe
-        left, right = match.span()
-        target = target[:left] + f"<{rn_ar_seed}>" + target[right:]
-        print(f"  TARGET NOW: {target}")
-
-    for match in REPLACEMENTS.finditer(target):
-        print(f"  CHECKING: {match}")
-        replacement = match.group("replacement")
-        left, right = match.span()
-        new_target = target[:left] + replacements[replacement] + target[right:]
-        seed, recipe = find_recipe(new_target)
-        if recipe is not None:
-            return seed, steps + [replacement] + recipe
-
-    return target, None
+possible_molecules = set()
+for replacement, initial in replacements.items():
+    for m in re.finditer(initial, medicine):
+        possible_molecules.add(
+            medicine[: m.span()[0]] + replacement + medicine[m.span()[1] :]
+        )
+print(f"Part 1: {len(possible_molecules)}")
 
 
-def possible_molecules(seed):
-    molecules = set()
-    for target, source in replacements.items():
-        for m in re.finditer(source, seed):
-            molecules.add(seed[: m.span()[0]] + target + seed[m.span()[1] :])
-    return molecules
+class DeadEnd(Exception):
+    """Used to indicate dead end"""
 
 
-print(f"Part 1: {len(possible_molecules(medicine))}")
+DEAD_ENDS = set()
+NEXT_STEPS = {}
 
-recipe = find_recipe(medicine)
-print(f"Part 2: {len(recipe)}\n")
+
+def path_length(seed, path_so_far=0):
+    if seed == "e":
+        return path_so_far
+
+    try:
+        next_steps = NEXT_STEPS[seed]
+    except KeyError:
+        next_steps = set()
+        for initial, replacement in replacements.items():
+            for m in re.finditer(initial, seed):
+                next_steps.add(seed[: m.span()[0]] + replacement + seed[m.span()[1] :])
+        NEXT_STEPS[seed] = next_steps
+
+    next_steps = sorted((p for p in next_steps if p not in DEAD_ENDS), key=len)
+    while next_steps:
+        next_step = next_steps.pop(0)
+        try:
+            return path_length(next_step, path_so_far + 1)
+        except DeadEnd:
+            DEAD_ENDS.add(next_step)
+    raise DeadEnd
+
+
+print(f"Part 2: {path_length(medicine)}\n")
