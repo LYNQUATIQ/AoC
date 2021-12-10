@@ -1,32 +1,50 @@
-# import logging
-import math
 import os
-import re
-import string
+from statistics import median
 
-from collections import defaultdict, Counter
-from itertools import product
+from functools import reduce
 
-from grid import XY, ConnectedGrid
-from utils import flatten, grouper, powerset, print_time_taken
+from utils import print_time_taken
 
-# log_file = os.path.join(os.path.dirname(__file__), f"logs/day10.log")
-# logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day10_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """sample"""
+sample_input = """[({(<(())[]>[[{[]{<()<>>
+[(()[<>])]({[<{<<[]>>(
+{([(<{}[<>[]}>{[]{[(<()>
+(((({<>}<{<{<>}{[]{[]{}
+[[<[([]))<([[{}[[()]]]
+[{[{({}]{}}([{[{{{}}([]
+{<[[]]>}<{[{[{[]{()[[[]
+[<(<(<(<{}))><([]([]()
+<{([([[(<>()){}]>(<<{{
+<{([{{}}[<[[[<>{}]]]>[]]"""
+
+
+CLOSING = {")": "(", "]": "[", "}": "{", ">": "<"}
+PART1 = {")": 3, "]": 57, "}": 1197, ">": 25137}
+PART2 = {"(": 1, "[": 2, "{": 3, "<": 4}
 
 
 @print_time_taken
 def solve(inputs):
-    # lines = inputs.splitlines()
-    # values = list(map(int, inputs.splitlines()))
+    part1, part2 = 0, []
+    for line in inputs.splitlines():
+        opening = []
+        for bracket in line:
+            if bracket in CLOSING:
+                incorrect = opening.pop() != CLOSING[bracket]
+                if incorrect:
+                    break
+            else:
+                opening.append(bracket)
+        if incorrect:
+            part1 += PART1[bracket]
+        else:
+            part2.append(reduce(lambda a, b: a * 5 + PART2[b], opening[::-1], 0))
 
-    print(f"Part 1: {False}")
-
-    print(f"Part 2: {False}\n")
+    print(f"Part 1: {part1}")
+    print(f"Part 2: {median(part2)}\n")
 
 
 solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
