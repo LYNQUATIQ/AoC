@@ -24,7 +24,7 @@ class DeadEnd(Exception):
     """Used to indicate dead end"""
 
 
-# An A* search algorithm to find the recipe length
+# A* search to find the recipe length
 def recipe_length(seed, length=0):
     if seed == "e":
         return length
@@ -35,14 +35,13 @@ def recipe_length(seed, length=0):
         for m in re.finditer(initial, seed):
             next_steps.add(seed[: m.span()[0]] + replacement + seed[m.span()[1] :])
 
-    # Sort the next steps by length (proxy for estimated cost)
-    next_steps = sorted(next_steps, key=len)
+    # A* bit... sort the options by estimated cost (use length as proxy)
+    next_steps = sorted(sorted(next_steps, reverse=True), key=len)
 
     # Try the next steps until we find one that isn't a dead end
     while next_steps:
-        next_step = next_steps.pop(0)
         try:
-            return recipe_length(next_step, length + 1)
+            return recipe_length(next_steps.pop(0), length + 1)
         except DeadEnd:
             ...
     raise DeadEnd
