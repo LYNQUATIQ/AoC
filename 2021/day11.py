@@ -1,8 +1,8 @@
 import os
 
 from itertools import product
+from types import NoneType
 
-from grid import XY
 from utils import print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day11_input.txt")) as f:
@@ -20,50 +20,38 @@ sample_input = """5483143223
 5283751526"""
 
 
-class Octopi:
-    def __init__(self, inputs):
-        self.octopi = {}
-        for y, line in enumerate(inputs.splitlines()):
-            for x, level in enumerate(line):
-                self.octopi[XY(x, y)] = int(level)
-        self.bounds = XY(x, y)
-
-    def flashing_octopus(self):
-        for octopus, level in self.octopi.items():
-            if level > 9:
-                return octopus
-        return None
-
-    def octopus_neighbours(self, octopus):
-        return (n for n in octopus.all_neighbours if n.in_bounds(self.bounds))
-
-    def take_step(self):
-        for octopus, level in self.octopi.items():
-            self.octopi[octopus] = level + 1
-
-        flashed = set()
-        while flasher := self.flashing_octopus():
-            self.octopi[flasher] = 0
-            flashed.add(flasher)
-            for neighbour in self.octopus_neighbours(flasher):
-                if neighbour not in flashed:
-                    self.octopi[neighbour] += 1
-
-        return len(flashed)
-
-
 @print_time_taken
 def solve(inputs):
-    octopi = Octopi(inputs)
+    octopi = {
+        complex(x, y): int(level)
+        for y, line in enumerate(inputs.splitlines())
+        for x, level in enumerate(line)
+    }
+    directions = [complex(*d) for d in product((-1, 0, 1), repeat=2) if d != (0, 0)]
+    neighbours = {
+        xy: tuple(n for n in (xy + d for d in directions) if n in octopi)
+        for xy in octopi
+    }
 
     flashes, step = 0, 0
     while True:
         step += 1
-        flashed = octopi.take_step()
-        flashes += flashed
+        for xy in octopi:
+            octopi[xy] += 1
+        flashed = set()
+        while True:
+            flasher = next((xy for xy, level in octopi.items() if level > 9), None)
+            if flasher is None:
+                break
+            octopi[flasher] = 0
+            flashed.add(flasher)
+            for neighbour in (n for n in neighbours[flasher] if n not in flashed):
+                octopi[neighbour] += 1
+
+        flashes += len(flashed)
         if step == 100:
             print(f"Part 1: {flashes}")
-        if flashed == 100:
+        if len(flashed) == 100:
             print(f"Part 2: {step}\n")
             break
 
