@@ -1,4 +1,3 @@
-from itertools import product
 import os
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day11_input.txt")) as f:
@@ -24,9 +23,9 @@ def solve(inputs):
         for y, line in enumerate(inputs.splitlines())
         for x, level in enumerate(line)
     }
-    directions = [XY(*d) for d in product((-1, 0, 1), repeat=2) if d != (0, 0)]
+    directions = ((0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1))
     neighbours = {
-        xy: tuple(n for n in (xy + d for d in directions) if n in octopi)
+        xy: tuple(n for n in (xy + XY(*d) for d in directions) if n in octopi)
         for xy in octopi
     }
 
