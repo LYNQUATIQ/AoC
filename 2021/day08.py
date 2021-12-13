@@ -51,8 +51,8 @@ def decode(patterns, values):
 def solve(inputs):
     patterns, values = [], []
     for pattern, value in map(lambda x: x.split("|"), inputs.splitlines()):
-        patterns.append(list(map(frozenset, pattern.split())))
-        values.append(list(map(frozenset, value.split())))
+        patterns.append(tuple(map(frozenset, pattern.split())))
+        values.append(tuple(map(frozenset, value.split())))
 
     print(f"Part 1: {sum(len(v) in UNIQUE for v in chain.from_iterable(values))}")
     print(f"Part 2: {sum(decode(p, v) for p, v in zip(patterns, values))}\n")

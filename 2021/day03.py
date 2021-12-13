@@ -21,7 +21,7 @@ def solve(inputs):
     values = inputs.splitlines()
     bit_count = len(values[0])
 
-    gamma_bits = [column.count("1") > column.count("0") for column in zip(*values)]
+    gamma_bits = tuple(column.count("1") > column.count("0") for column in zip(*values))
     gamma = sum(2 ** i for i, c in enumerate(reversed(gamma_bits)) if c)
     epsilon = gamma ^ (2 ** bit_count - 1)
     print(f"Part 1: {gamma * epsilon}")
