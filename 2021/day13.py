@@ -1,7 +1,5 @@
 import os
 
-from utils import print_time_taken
-
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day13_input.txt")) as f:
     actual_input = f.read()
 
@@ -28,11 +26,10 @@ fold along y=7
 fold along x=5"""
 
 
-@print_time_taken
 def solve(inputs):
     dots, folds = inputs.split("\n\n")
-    dots = {map(int, xy.split(",")) for xy in dots.splitlines()}
 
+    dots = {map(int, xy.split(",")) for xy in dots.splitlines()}
     for step, fold in enumerate(folds.splitlines()):
         xy, value = fold.split()[-1].split("=")
         fold_line = int(value)
@@ -43,9 +40,9 @@ def solve(inputs):
             new_dots.add((x, y))
         dots = new_dots
         if step == 0:
-            print(f"Part 1: {len(dots)}")
+            print(f"\nPart 1: {len(dots)}")
 
-    print(f"Part 2:\n")
+    print("Part 2: ")
     max_x, max_y = max(xy[0] for xy in dots), max(xy[1] for xy in dots)
     for y in range(max_y + 1):
         print("".join("\u2588" if (x, y) in dots else " " for x in range(max_x + 1)))
