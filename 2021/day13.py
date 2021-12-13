@@ -27,18 +27,18 @@ fold along x=5"""
 
 
 def solve(inputs):
-    dots, folds = inputs.split("\n\n")
+    dots, folds = map(lambda x: x.splitlines(), inputs.split("\n\n"))
+    dots = {map(int, xy.split(",")) for xy in dots}
+    folds = map(lambda f: (f[0], int(f[1])), (f.split()[-1].split("=") for f in folds))
 
-    dots = {map(int, xy.split(",")) for xy in dots.splitlines()}
-    for step, fold in enumerate(folds.splitlines()):
-        xy, value = fold.split()[-1].split("=")
-        fold_line = int(value)
-        new_dots = set()
-        for x, y in dots:
-            x = 2 * fold_line - x if xy == "x" and x >= fold_line else x
-            y = 2 * fold_line - y if xy == "y" and y >= fold_line else y
-            new_dots.add((x, y))
-        dots = new_dots
+    for step, (xy, fold_line) in enumerate(folds):
+        dots = {
+            (
+                2 * fold_line - x if xy == "x" and x >= fold_line else x,
+                2 * fold_line - y if xy == "y" and y >= fold_line else y,
+            )
+            for x, y in dots
+        }
         if step == 0:
             print(f"\nPart 1: {len(dots)}")
 
