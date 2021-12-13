@@ -16,7 +16,7 @@ sample_input = """199
 
 
 def solve(inputs):
-    values = list(map(int, inputs.splitlines()))
+    values = tuple(map(int, inputs.splitlines()))
     print(f"Part 1: {sum(a < b for a, b in zip(values, values[1:]))}")
     print(f"Part 2: {sum(a < b for a, b in zip(values, values[3:]))}\n")
 
