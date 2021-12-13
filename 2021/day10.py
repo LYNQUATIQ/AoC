@@ -1,9 +1,6 @@
+from functools import reduce
 import os
 from statistics import median
-
-from functools import reduce
-
-from utils import print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day10_input.txt")) as f:
     actual_input = f.read()
@@ -24,7 +21,6 @@ CLOSING = {")": "(", "]": "[", "}": "{", ">": "<"}
 POINTS = {")": 3, "]": 57, "}": 1197, ">": 25137, "(": 1, "[": 2, "{": 3, "<": 4}
 
 
-@print_time_taken
 def solve(inputs):
     part1, part2 = 0, []
     for line in inputs.splitlines():

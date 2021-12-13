@@ -1,8 +1,6 @@
 import math
 import os
 
-from utils import print_time_taken
-
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day09_input.txt")) as f:
     actual_input = f.read()
 
@@ -13,7 +11,6 @@ sample_input = """2199943210
 9899965678"""
 
 
-@print_time_taken
 def solve(inputs):
     lava_map = {
         (x, y): int(height)

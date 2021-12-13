@@ -1,6 +1,5 @@
+from itertools import chain
 import os
-
-from utils import flatten, print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day08_input.txt")) as f:
     actual_input = f.read()
@@ -17,15 +16,15 @@ egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
 gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce"""
 
 
-UNIQUE_LENGTHS = {2: "1", 3: "7", 4: "4", 7: "8"}
+UNIQUE = {2: "1", 3: "7", 4: "4", 7: "8"}
 
 
 def decode(patterns, values):
     coding = {}
 
     # Find 1, 4, 7 and 8
-    for pattern in (p for p in patterns if len(p) in UNIQUE_LENGTHS):
-        coding[UNIQUE_LENGTHS[len(pattern)]] = pattern
+    for pattern in (p for p in patterns if len(p) in UNIQUE):
+        coding[UNIQUE[len(pattern)]] = pattern
 
     # Find 0, 6 and 9
     for pattern in (p for p in patterns if len(p) == 6):
@@ -49,14 +48,13 @@ def decode(patterns, values):
     return int("".join(decoder[value] for value in values))
 
 
-@print_time_taken
 def solve(inputs):
     patterns, values = [], []
     for pattern, value in map(lambda x: x.split("|"), inputs.splitlines()):
         patterns.append(list(map(frozenset, pattern.split())))
         values.append(list(map(frozenset, value.split())))
 
-    print(f"Part 1: {sum(len(v) in UNIQUE_LENGTHS for v in flatten(values))}")
+    print(f"Part 1: {sum(len(v) in UNIQUE for v in chain.from_iterable(values))}")
     print(f"Part 2: {sum(decode(p, v) for p, v in zip(patterns, values))}\n")
 
 

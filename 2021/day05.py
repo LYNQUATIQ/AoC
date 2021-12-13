@@ -1,8 +1,6 @@
+from collections import defaultdict
 import os
 import re
-from collections import defaultdict
-
-from utils import print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day05_input.txt")) as f:
     actual_input = f.read()
@@ -19,7 +17,6 @@ sample_input = """0,9 -> 5,9
 5,5 -> 8,2"""
 
 
-@print_time_taken
 def solve(inputs):
     unit_step = lambda s: -1 if s < 0 else s > 0
     vents1 = defaultdict(int)

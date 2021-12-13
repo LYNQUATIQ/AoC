@@ -1,7 +1,6 @@
 from collections.abc import Iterable, Sequence
+from itertools import chain
 import os
-
-from utils import flatten, print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day04_input.txt")) as f:
     actual_input = f.read()
@@ -38,10 +37,11 @@ class BingoBoard:
         )
 
     def final_score(self, draws: Sequence[int]) -> int:
-        return draws[-1] * sum(n for n in flatten(self.rows) if n not in draws)
+        return draws[-1] * sum(
+            n for n in chain.from_iterable(self.rows) if n not in draws
+        )
 
 
-@print_time_taken
 def solve(inputs):
     draw_input, *board_inputs = inputs.split("\n\n")
 

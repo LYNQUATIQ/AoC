@@ -1,7 +1,5 @@
 import os
 
-from utils import print_time_taken
-
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day02_input.txt")) as f:
     actual_input = f.read()
 
@@ -13,9 +11,7 @@ down 8
 forward 2"""
 
 
-@print_time_taken
 def solve(input_txt):
-
     position, depth, aim = 0, 0, 0
     for line in input_txt.splitlines():
         match line.split():

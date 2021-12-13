@@ -1,7 +1,5 @@
 import os
 
-from utils import print_time_taken
-
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day03_input.txt")) as f:
     actual_input = f.read()
 
@@ -19,7 +17,6 @@ sample_input = """00100
 01010"""
 
 
-@print_time_taken
 def solve(inputs):
     values = inputs.splitlines()
     bit_count = len(values[0])

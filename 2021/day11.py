@@ -1,9 +1,5 @@
-import os
-
 from itertools import product
-from types import NoneType
-
-from utils import print_time_taken
+import os
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day11_input.txt")) as f:
     actual_input = f.read()
@@ -19,15 +15,16 @@ sample_input = """5483143223
 4846848554
 5283751526"""
 
+XY = complex
 
-@print_time_taken
+
 def solve(inputs):
     octopi = {
-        complex(x, y): int(level)
+        XY(x, y): int(level)
         for y, line in enumerate(inputs.splitlines())
         for x, level in enumerate(line)
     }
-    directions = [complex(*d) for d in product((-1, 0, 1), repeat=2) if d != (0, 0)]
+    directions = [XY(*d) for d in product((-1, 0, 1), repeat=2) if d != (0, 0)]
     neighbours = {
         xy: tuple(n for n in (xy + d for d in directions) if n in octopi)
         for xy in octopi
