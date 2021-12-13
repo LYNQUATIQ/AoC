@@ -31,7 +31,8 @@ def solve(inputs):
     dots = {map(int, xy.split(",")) for xy in dots}
     folds = map(lambda f: (f[0], int(f[1])), (f.split()[-1].split("=") for f in folds))
 
-    for step, (xy, fold_line) in enumerate(folds):
+    part1 = 0
+    for xy, fold_line in folds:
         dots = {
             (
                 2 * fold_line - x if xy == "x" and x >= fold_line else x,
@@ -39,13 +40,12 @@ def solve(inputs):
             )
             for x, y in dots
         }
-        if step == 0:
-            print(f"\nPart 1: {len(dots)}")
+        part1 = part1 or len(dots)
 
-    print("Part 2: ")
-    max_x, max_y = max(xy[0] for xy in dots), max(xy[1] for xy in dots)
-    for y in range(max_y + 1):
-        print("".join("\u2588" if (x, y) in dots else " " for x in range(max_x + 1)))
+    print(f"\nPart 1: {part1}\nPart 2:")
+    rows, columns = max(xy[1] + 1 for xy in dots), max(xy[0] + 1 for xy in dots)
+    for y in range(rows):
+        print("".join("\u2588" if (x, y) in dots else " " for x in range(columns)))
 
 
 solve(sample_input)
