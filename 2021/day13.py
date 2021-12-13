@@ -32,18 +32,18 @@ def solve(inputs):
     folds = map(lambda f: (f[0], int(f[1])), (f.split()[-1].split("=") for f in folds))
 
     part1 = 0
-    for xy, fold_line in folds:
+    for fold_along, fold_line in folds:
         dots = {
             (
-                2 * fold_line - x if xy == "x" and x >= fold_line else x,
-                2 * fold_line - y if xy == "y" and y >= fold_line else y,
+                2 * fold_line - x if fold_along == "x" and x >= fold_line else x,
+                2 * fold_line - y if fold_along == "y" and y >= fold_line else y,
             )
             for x, y in dots
         }
         part1 = part1 or len(dots)
 
     print(f"\nPart 1: {part1}\nPart 2:")
-    rows, columns = max(xy[1] + 1 for xy in dots), max(xy[0] + 1 for xy in dots)
+    rows, columns = max(dot[1] + 1 for dot in dots), max(dot[0] + 1 for dot in dots)
     for y in range(rows):
         print("".join("\u2588" if (x, y) in dots else " " for x in range(columns)))
 
