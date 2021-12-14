@@ -28,20 +28,19 @@ def solve(inputs):
     template_polymer, replacements = inputs.split("\n\n")
     replacements = dict(tuple(r.split(" -> ")) for r in replacements.splitlines())
 
-    def get_answer(steps):
-        elements = Counter(template_polymer)
-        pairs = Counter({pair: template_polymer.count(pair) for pair in replacements})
-        for _ in range(steps):
-            for pair, occurences in pairs.copy().items():
-                replacement = replacements[pair]
-                pairs[pair] -= occurences
-                pairs[pair[0] + replacement] += occurences
-                pairs[replacement + pair[1]] += occurences
-                elements[replacement] += occurences
-        return max(elements.values()) - min(elements.values())
+    elements = Counter(template_polymer)
+    pairs = Counter({pair: template_polymer.count(pair) for pair in replacements})
+    for step in range(40):
+        for pair, occurences in pairs.copy().items():
+            replacement = replacements[pair]
+            elements[replacement] += occurences
+            pairs[pair] -= occurences
+            pairs[pair[0] + replacement] += occurences
+            pairs[replacement + pair[1]] += occurences
+        if step == 9:
+            print(f"Part 1: {max(elements.values()) - min(elements.values())}")
 
-    print(f"Part 1: {get_answer(10)}")
-    print(f"Part 2: {get_answer(40)}\n")
+    print(f"Part 2: {max(elements.values()) - min(elements.values())}\n")
 
 
 solve(sample_input)
