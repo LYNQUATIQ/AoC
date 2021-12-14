@@ -38,7 +38,6 @@ def solve(inputs):
                 pairs[pair[0] + replacement] += occurences
                 pairs[replacement + pair[1]] += occurences
                 elements[replacement] += occurences
-
         return max(elements.values()) - min(elements.values())
 
     print(f"Part 1: {get_answer(10)}")
