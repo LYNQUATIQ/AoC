@@ -1,5 +1,4 @@
 from collections import Counter
-from functools import cache
 import os
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day14_input.txt")) as f:
@@ -26,24 +25,24 @@ CN -> C"""
 
 
 def solve(inputs):
-    polymer, replacements = inputs.split("\n\n")
+    template_polymer, replacements = inputs.split('\n\n')
     replacements = dict(tuple(r.split(" -> ")) for r in replacements.splitlines())
-
-    @cache
-    def get_counts(a, b, steps):
-        if not steps:
-            return Counter()
-        x = replacements[a + b]
-        return Counter(x) + get_counts(a, x, steps - 1) + get_counts(x, b, steps - 1)
-
+    
     def get_answer(steps):
-        counts = Counter(polymer)
-        for a, b in zip(polymer[:-1], polymer[1:]):
-            counts += get_counts(a, b, steps)
-        return max(counts.values()) - min(counts.values())
+        elements = Counter(template_polymer)
+        pair_counts = { ab: template_polymer.count(ab) for ab in replacements }
+        for _ in range(steps):
+            new_pair_counts = Counter()
+            for (a, b), x in replacements.items():
+                elements[x] += pair_counts[a + b]
+                new_pair_counts[a + x] += pair_counts[a + b]
+                new_pair_counts[x + b] += pair_counts[a + b]
+            pair_counts = new_pair_counts
 
-    print(f"Part 1: {get_answer(10)}")
-    print(f"Part 2: {get_answer(40)}\n")
+        return max(elements.values()) - min(elements.values())
+
+    print(f'Part 1: {get_answer(10)}')
+    print(f'Part 2: {get_answer(40)}\n')
 
 
 solve(sample_input)
