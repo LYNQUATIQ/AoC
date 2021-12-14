@@ -30,15 +30,15 @@ def solve(inputs):
 
     def get_answer(steps):
         elements = Counter(template_polymer)
-        pair_counts = {ab: template_polymer.count(ab) for ab in replacements}
+        ab_counts = {ab: template_polymer.count(ab) for ab in replacements}
         for _ in range(steps):
-            new_pair_counts = Counter()
+            new_ab_counts = Counter()
             for (a, b), x in replacements.items():
-                occurences = pair_counts[a + b]
-                new_pair_counts[a + x] += occurences
-                new_pair_counts[x + b] += occurences
-                elements[x] += occurences
-            pair_counts = new_pair_counts
+                if ab_occurences := ab_counts[a + b]:
+                    new_ab_counts[a + x] += ab_occurences
+                    new_ab_counts[x + b] += ab_occurences
+                    elements[x] += ab_occurences
+            ab_counts = new_ab_counts
 
         return max(elements.values()) - min(elements.values())
 
