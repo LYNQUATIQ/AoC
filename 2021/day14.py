@@ -25,18 +25,19 @@ CN -> C"""
 
 
 def solve(inputs):
-    template_polymer, replacements = inputs.split("\n\n")
-    replacements = dict(tuple(r.split(" -> ")) for r in replacements.splitlines())
+    template_polymer, rule_inputs = inputs.split("\n\n")
+    insertion_rules = dict(tuple(r.split(" -> ")) for r in rule_inputs.splitlines())
 
     elements = Counter(template_polymer)
-    pairs = Counter({pair: template_polymer.count(pair) for pair in replacements})
+    pairs = Counter({pair: template_polymer.count(pair) for pair in insertion_rules})
+
     for step in range(40):
-        for pair, occurences in pairs.copy().items():
-            replacement = replacements[pair]
-            elements[replacement] += occurences
+        for pair, occurences in dict(pairs).items():
+            inserted_element = insertion_rules[pair]
+            elements[inserted_element] += occurences
+            pairs[pair[0] + inserted_element] += occurences
+            pairs[inserted_element + pair[1]] += occurences
             pairs[pair] -= occurences
-            pairs[pair[0] + replacement] += occurences
-            pairs[replacement + pair[1]] += occurences
         if step == 9:
             print(f"Part 1: {max(elements.values()) - min(elements.values())}")
 
