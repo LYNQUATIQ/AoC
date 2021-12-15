@@ -1,7 +1,8 @@
 import os
 import sys
 
-from itertools import product
+from heapq import heappush, heappop
+from itertools import product, count
 
 from utils import print_time_taken
 
@@ -38,20 +39,21 @@ def solve(inputs):
 
     def find_shortest_path(grid):
         start, target = (0, 0), (max(xy[0] for xy in grid), max(xy[1] for xy in grid))
-        to_visit = {start: 0}
-        total_risk_levels = dict()
+        risk_level = {xy: sys.maxsize for xy in grid}
+        risk_level[start] = 0
+        to_visit = []
+        heappush(to_visit, (0, start))
         while to_visit:
-            this_node = min(to_visit, key=to_visit.get)
-            grid.pop(this_node)
-            total_risk_levels[this_node] = to_visit.pop(this_node)
+            risk_to_here, this_node = heappop(to_visit)
             if this_node == target:
                 break
             for next_node in (n for n in neighbours(*this_node) if n in grid):
-                total_risk_next_node = grid[next_node] + total_risk_levels[this_node]
-                if total_risk_next_node < to_visit.get(next_node, sys.maxsize):
-                    to_visit[next_node] = total_risk_next_node
+                total_risk_next_node = risk_to_here + grid[next_node]
+                if total_risk_next_node < risk_level[next_node]:
+                    risk_level[next_node] = total_risk_next_node
+                    heappush(to_visit, (total_risk_next_node, next_node))
 
-        return total_risk_levels[target]
+        return risk_level[target]
 
     print(f"Part 1: {find_shortest_path(small_grid)}")
     print(f"Part 2: {find_shortest_path(big_grid)}\n")
