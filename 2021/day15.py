@@ -2,9 +2,7 @@ import os
 import sys
 
 from heapq import heappush, heappop
-from itertools import product, count
-
-from utils import print_time_taken
+from itertools import product
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day15_input.txt")) as f:
     actual_input = f.read()
@@ -21,7 +19,6 @@ sample_input = """1163751742
 2311944581"""
 
 
-@print_time_taken
 def solve(inputs):
     small_grid = {
         (x, y): int(height)
@@ -32,8 +29,8 @@ def solve(inputs):
     w, h = (max(xy[0] for xy in small_grid) + 1, max(xy[1] for xy in small_grid) + 1)
     big_grid = {}
     for dx, dy in product(range(5), range(5)):
-        for xy, risk in small_grid.items():
-            big_grid[(xy[0] + dx * w, xy[1] + dy * h)] = (risk - 1 + dx + dy) % 9 + 1
+        for (x, y), risk in small_grid.items():
+            big_grid[(x + dx * w, y + dy * h)] = (risk - 1 + dx + dy) % 9 + 1
 
     neighbours = lambda x, y: ((x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1))
 
