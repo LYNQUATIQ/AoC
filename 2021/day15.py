@@ -41,16 +41,15 @@ def solve(inputs):
         to_visit = {start: 0}
         total_risk_levels = dict()
         while to_visit:
-            current_node = min(to_visit, key=to_visit.get)
-            grid.pop(current_node)
-            risk_to_here = to_visit.pop(current_node)
-            total_risk_levels[current_node] = risk_to_here
-            if current_node == target:
+            this_node = min(to_visit, key=to_visit.get)
+            grid.pop(this_node)
+            total_risk_levels[this_node] = to_visit.pop(this_node)
+            if this_node == target:
                 break
-            for next_node in (n for n in neighbours(*current_node) if n in grid):
-                total_risk_to_next_node = grid[next_node] + risk_to_here
-                if total_risk_to_next_node < to_visit.get(next_node, sys.maxsize):
-                    to_visit[next_node] = total_risk_to_next_node
+            for next_node in (n for n in neighbours(*this_node) if n in grid):
+                total_risk_next_node = grid[next_node] + total_risk_levels[this_node]
+                if total_risk_next_node < to_visit.get(next_node, sys.maxsize):
+                    to_visit[next_node] = total_risk_next_node
 
         return total_risk_levels[target]
 
