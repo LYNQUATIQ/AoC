@@ -4,23 +4,24 @@ from typing import Callable, Sequence
 
 
 class Packet(ABC):
-    def __init__(self, version: int) -> None:
+    def __init__(self, version: int, type_id: int) -> None:
         self.version = version
+        self.type_id = type_id
         self.subpackets: list[Packet] = []
 
     @abstractmethod
     def value(self) -> int:
         """Returns packet value"""
 
-    def version_total(self) -> int:
-        return self.version + sum(p.version_total() for p in self.subpackets)
+    def version_sum(self) -> int:
+        return self.version + sum(p.version_sum() for p in self.subpackets)
 
 
 class LiteralPacket(Packet):
     LITERAL_TYPE = 4
 
-    def __init__(self, literal_value: int, version: int) -> None:
-        super().__init__(version)
+    def __init__(self, literal_value: int, version: int, type_id: int) -> None:
+        super().__init__(version, type_id)
         self.literal_value = literal_value
 
     def value(self) -> int:
@@ -37,71 +38,72 @@ class OperatorPacket(Packet):
     EQUAL_TO_TYPE = 7
 
     OPERATIONS = {
-        SUM_TYPE: lambda values: sum(values),
-        PRODUCT_TYPE: lambda values: math.prod(values),
-        MIN_TYPE: lambda values: min(values),
-        MAX_TYPE: lambda values: max(values),
-        GREATER_THAN_TYPE: lambda values: values[0] > values[1],
-        LESS_THAN_TYPE: lambda values: values[0] < values[1],
-        EQUAL_TO_TYPE: lambda values: values[0] == values[1],
+        SUM_TYPE: lambda x: sum(x),
+        PRODUCT_TYPE: lambda x: math.prod(x),
+        MIN_TYPE: lambda x: min(x),
+        MAX_TYPE: lambda x: max(x),
+        GREATER_THAN_TYPE: lambda x: x[0] > x[1],
+        LESS_THAN_TYPE: lambda x: x[0] < x[1],
+        EQUAL_TO_TYPE: lambda x: x[0] == x[1],
     }
 
-    def __init__(self, operation: int, version: int) -> None:
-        super().__init__(version)
+    def __init__(self, operation: int, version: int, type_id: int) -> None:
+        super().__init__(version, type_id)
         self.operation: Callable[[Sequence[int]], int] = self.OPERATIONS[operation]
 
     def add_subpacket(self, packet: Packet):
         self.subpackets.append(packet)
 
     def value(self) -> int:
-        values = [subpacket.value() for subpacket in self.subpackets]
-        return self.operation(values)
+        return self.operation([p.value() for p in self.subpackets])
 
 
 class PacketReader:
     def __init__(self, input_hex) -> None:
-        self.bit_stream: str = "".join("{:04b}".format(int(c, 16)) for c in input_hex)
+        self.bitstream: str = bin(int(input_hex, 16))[2:].zfill(len(input_hex) * 4)
         self.pointer: int = 0
-        self.outer_packet: Packet = self.read_packet()
+        self.packet: Packet = self._read_packet()
 
+    @property
     def packet_value(self) -> int:
-        return self.outer_packet.value()
+        return self.packet.value()
 
+    @property
     def version_sum(self) -> int:
-        return self.outer_packet.version_total()
+        return self.packet.version_sum()
 
-    def read_packet(self) -> Packet:
-        version, type_id = self.read_value(3), self.read_value(3)
+    def _read_packet(self) -> Packet:
+        version, type_id = self._read_value(3), self._read_value(3)
 
         if type_id == LiteralPacket.LITERAL_TYPE:
-            return LiteralPacket(self.read_literal(), version)
+            return LiteralPacket(self._read_literal(), version, type_id)
 
-        operator_packet = OperatorPacket(type_id, version)
-        length_type = self.read_flag()
+        operator_packet = OperatorPacket(type_id, version, type_id)
+        length_type = self._read_flag()
         if length_type:
-            for _ in range(self.read_value(11)):
-                operator_packet.add_subpacket(self.read_packet())
+            for _ in range(self._read_value(11)):
+                operator_packet.add_subpacket(self._read_packet())
         else:
-            length = self.read_value(15)
+            length = self._read_value(15)
             packet_end = self.pointer + length
             while self.pointer != packet_end:
-                operator_packet.add_subpacket(self.read_packet())
+                operator_packet.add_subpacket(self._read_packet())
         return operator_packet
 
-    def read_literal(self) -> int:
+    def _read_literal(self) -> int:
         bits = ""
         while True:
-            leading_bit = self.read_flag()
-            bits += self.consume_bits(4)
+            leading_bit = self._read_flag()
+            bits += self._consume_bits(4)
             if not leading_bit:
                 return int(bits, 2)
 
-    def read_value(self, number_of_bits: int) -> int:
-        return int(self.consume_bits(number_of_bits), 2)
+    def _read_value(self, number_of_bits: int) -> int:
+        return int(self._consume_bits(number_of_bits), 2)
 
-    def read_flag(self) -> bool:
-        return self.consume_bits(1) == "1"
+    def _read_flag(self) -> bool:
+        return self._consume_bits(1) == "1"
 
-    def consume_bits(self, number_of_bits: int) -> str:
+    def _consume_bits(self, number_of_bits: int) -> str:
         self.pointer += number_of_bits
-        return self.bit_stream[self.pointer - number_of_bits : self.pointer]
+        return self.bitstream[self.pointer - number_of_bits : self.pointer]

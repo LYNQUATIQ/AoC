@@ -1,6 +1,6 @@
 import os
 
-from packet_reader import PacketReader
+from packet_decoder import BitStream, Packet
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day16_input.txt")) as f:
     actual_input = f.read()
@@ -12,7 +12,6 @@ SAMPLES_PART1 = {
     "C0015000016115A2E0802F182340": 23,
     "A0016C880162017C3686B18A3D4780": 31,
 }
-
 SAMPLES_PART2 = {
     "C200B40A82": 3,  # finds the sum of 1 and 2
     "04005AC33890": 54,  # finds the product of 6 and 9
@@ -24,18 +23,17 @@ SAMPLES_PART2 = {
     "9C0141080250320F1802104A08": 1,  # because 1 + 3 = 2 * 2
 }
 
-
 for sample, answer in SAMPLES_PART1.items():
-    assert PacketReader(sample).version_sum() == answer
+    assert Packet(BitStream(sample)).version_sum == answer
 
 for sample, answer in SAMPLES_PART2.items():
-    assert PacketReader(sample).packet_value() == answer
+    assert Packet(BitStream(sample)).value == answer
 
 
 def solve(inputs):
-    packet_reader = PacketReader(inputs)
-    print(f"Part 1: {packet_reader.version_sum()}")
-    print(f"Part 2: {packet_reader.packet_value()}\n")
+    packet = Packet(BitStream(inputs))
+    print(f"Part 1: {packet.version_sum}")
+    print(f"Part 2: {packet.value}\n")
 
 
 solve(actual_input)

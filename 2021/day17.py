@@ -1,32 +1,27 @@
-# import logging
-import math
 import os
-import re
-import string
 
-from collections import defaultdict, Counter
-from itertools import product
+from packet_decoder import BitStream, Packet
 
-from grid import XY, ConnectedGrid
-from utils import flatten, grouper, powerset, print_time_taken
-
-# log_file = os.path.join(os.path.dirname(__file__), f"logs/day17.log")
-# logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day17_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), f"inputs/day16_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """sample"""
+
+SAMPLES_PART1 = {}
+SAMPLES_PART2 = {}
+
+p = Packet(BitStream("38006F45291200"))
+
+for sample, answer in SAMPLES_PART1.items():
+    assert Packet(BitStream(sample)).version_sum == answer
+
+for sample, answer in SAMPLES_PART2.items():
+    assert Packet(BitStream(sample)).value == answer
 
 
-@print_time_taken
 def solve(inputs):
-    # lines = inputs.splitlines()
-    # values = list(map(int, inputs.splitlines()))
-
-    print(f"Part 1: {False}")
-
-    print(f"Part 2: {False}\n")
+    packet = Packet(BitStream(inputs))
+    print(f"Part 1: {packet.version_sum}")
+    print(f"Part 2: {packet.value}\n")
 
 
-solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
