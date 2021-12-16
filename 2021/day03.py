@@ -29,7 +29,8 @@ def solve(inputs):
     def get_rating(doing_o2: bool):
         rating_values = values
         for i in range(bit_count):
-            ones, zeroes = [], []
+            ones: list[str] = []
+            zeroes: list[str] = []
             for value in rating_values:
                 (ones if value[i] == "1" else zeroes).append(value)
             more_ones = len(ones) >= len(zeroes)
