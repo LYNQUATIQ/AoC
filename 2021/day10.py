@@ -1,5 +1,6 @@
-from functools import reduce
+"""https://adventofcode.com/2021/day/10"""
 import os
+from functools import reduce
 from statistics import median
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day10_input.txt")) as f:

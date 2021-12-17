@@ -1,5 +1,6 @@
-from itertools import chain
+"""https://adventofcode.com/2021/day/8"""
 import os
+from itertools import chain
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day08_input.txt")) as f:
     actual_input = f.read()

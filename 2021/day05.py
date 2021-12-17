@@ -1,6 +1,7 @@
-from collections import defaultdict
+"""https://adventofcode.com/2021/day/5"""
 import os
 import re
+from collections import defaultdict
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day05_input.txt")) as f:
     actual_input = f.read()

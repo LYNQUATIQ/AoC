@@ -1,6 +1,7 @@
+"""https://adventofcode.com/2021/day/4"""
+import os
 from collections.abc import Iterable, Sequence
 from itertools import chain
-import os
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day04_input.txt")) as f:
     actual_input = f.read()

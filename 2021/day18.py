@@ -1,3 +1,4 @@
+"""https://adventofcode.com/2021/day/18"""
 # import logging
 import math
 import os
