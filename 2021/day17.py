@@ -7,22 +7,18 @@ sample_input = """target area: x=20..30, y=-10..-5"""
 actual_input = """target area: x=96..125, y=-144..-98"""
 
 
-class Target:
-    LONG = "Long"
-    SHORT = "Short"
-    HIT = "HIT!"
+def solve(inputs):
 
-    def __init__(self, target_string) -> None:
-        self.left, self.right, self.bottom, self.top = map(
-            int,
-            re.match(
-                r"^target area: x=([-]?\d+)..([-]?\d+), y=([-]?\d+)..([-]?\d+)$",
-                target_string,
-            ).groups(),
-        )
+    left, right, bottom, top = map(int, re.findall(r"-?\d+", inputs))
 
-    def hit(self, x, y) -> bool:
-        return self.left <= x <= self.right and self.bottom <= y <= self.top
+    # The highest shot will be the one that hits the water and in the next step hits the
+    # bottom. It hits the water at the same velocity it rose at so the velocity needs to
+    # equal the (absolute) depth (and will also be the maximum velocity)
+
+    min_vx, max_vx = 1, right
+    min_vy, max_vy = bottom, abs(bottom)
+
+    print(f"Part 1: {sum(range(max_vy))}")
 
     def test_shot(self, vx, vy):
         x, y = 0, 0
@@ -36,34 +32,16 @@ class Target:
             return self.SHORT
         return self.LONG
 
-
-def solve(inputs):
-    target = Target(inputs)
-
-    min_vx, max_vx = 1, target.right + 1
-    min_vy, max_vy = target.bottom - 1, 0
-
-    vy, best_height = 1, 0
-    while True:
-        vx = 1
-        result = target.test_shot(vx, vy)
-        while result != target.LONG and vx < max_vx:
-            if result == target.HIT:
-                max_vy = max(max_vy, vy + 1)
-                best_height = max(best_height, (vy * (vy + 1)) // 2)
-            vx += 1
-            result = target.test_shot(vx, vy)
-        vy += 1
-        if vy > 20 * abs(target.top):
-            break
-
-    print(f"Part 1: {best_height}")
-
     valid_velocities = set()
-    for vx, vy in product(range(min_vx, max_vx), range(min_vy, max_vy)):
-        if target.test_shot(vx, vy) == Target.HIT:
-            valid_velocities.add((vx, vy))
-    print(f"Part 2: {len(valid_velocities)}")
+    for vx0, vy0 in product(range(min_vx, max_vx + 1), range(min_vy, max_vy + 1)):
+        x, y, vx, vy = 0, 0, vx0, vy0
+        while y >= bottom:
+            x, y = x + vx, y + vy
+            if left <= x <= right and bottom <= y <= top:
+                valid_velocities.add((vx0, vy0))
+            vx, vy = max(vx - 1, 0), vy - 1
+
+    print(f"Part 2: {len(valid_velocities)}\n")
 
 
 solve(sample_input)
