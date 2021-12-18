@@ -1,46 +1,13 @@
 """https://adventofcode.com/2021/day/18"""
 from __future__ import annotations
 
-import logging
 import os
 import re
 from functools import reduce
 from itertools import product
 
-from utils import  print_time_taken
-
-log_file = os.path.join(os.path.dirname(__file__), f"logs/day18.log")
-logging.basicConfig(level=logging.DEBUG, filename=log_file, filemode="w")
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day18_input.txt")) as f:
     actual_input = f.read()
-
-
-REDUCTION_TESTS = {
-    "[[[[[9,8],1],2],3],4]" : "[[[[0,9],2],3],4]",
-    "[7,[6,[5,[4,[3,2]]]]]" : "[7,[6,[5,[7,0]]]]",
-    "[[6,[5,[4,[3,2]]]],1]" : "[[6,[5,[7,0]]],3]",
-    "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]" : "[[3,[2,[8,0]]],[9,[5,[7,0]]]]",
-    "[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]" : "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]",
-    "[[[[[7,0],[7,7]],[[7,7],[7,8]]],[[[7,7],[8,8]],[[7,7],[8,7]]]],[7,[5,[[3,8],[1,4]]]]]":"[[[[7,7],[7,8]],[[9,5],[8,7]]],[[[6,8],[0,8]],[[9,9],[9,0]]]]"
-}
-
-RANGE_TESTS = {
-    4: "[[[[1,1],[2,2]],[3,3]],[4,4]]",
-    5: "[[[[3,0],[5,3]],[4,4]],[5,5]]",
-    6: "[[[[5,0],[7,4]],[5,5]],[6,6]]",
-}
-
-SUM_TEST = """[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
-[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
-[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]
-[[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]
-[7,[5,[[3,8],[1,4]]]]
-[[2,[2,2]],[8,[8,1]]]
-[2,9]
-[1,[[[9,3],9],[[9,0],[0,7]]]]
-[[[5,[7,4]],7],1]
-[[[[4,2],2],6],[8,7]]""" 
-SUM_TEST_ANSWER = "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]"
 
 
 sample_input = """[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
@@ -94,9 +61,8 @@ class SnailfishNumber:
 
     @property
     def magnitude(self)-> int:
-        left = self.left if isinstance(self.left, int) else self.left.magnitude
-        right = self.right if isinstance(self.right, int) else self.right.magnitude
-        return 3 * left + 2 * right
+        _magnitude = lambda x: x if isinstance(x, int) else x.magnitude
+        return 3 * _magnitude(self.left) + 2 * _magnitude(self.right)
     
     def depth_four(self):
         if self.depth == 4:
@@ -131,7 +97,6 @@ class SnailfishNumber:
     def reduce(self):
         while self.depth_four() or self.above_nine():
             while pair_to_explode := self.depth_four():
-                # logging.info(f'Exploding: {pair_to_explode}')
                 ordered_nodes = self.ordered_ints()
                 for i, (node, _) in enumerate(ordered_nodes):
                     if node == pair_to_explode:
@@ -153,42 +118,27 @@ class SnailfishNumber:
                     pair_to_explode.parent.left = 0
                 else:
                     pair_to_explode.parent.right = 0
-                # logging.info(f'After explosion: {self}')
 
             if pair_above_nine:=self.above_nine():
-                # logging.info(f'Splitting: {pair_above_nine}')
                 if isinstance(pair_above_nine.left, int) and pair_above_nine.left > 9:
                     pair_above_nine.left = self.split(pair_above_nine.left, pair_above_nine)
                 else:
                     pair_above_nine.right = self.split(pair_above_nine.right, pair_above_nine)
-                # logging.info(f'After split: {self}')
         return self
 
 
-for n, answer in RANGE_TESTS.items():
-    test_numbers = [SnailfishNumber(f'[{i},{i}]') for i in range(1, n+1)]
-    assert str(reduce(lambda a,b:a+b, test_numbers))== answer
 
-for test, answer in REDUCTION_TESTS.items():
-    assert str(SnailfishNumber(test).reduce()) == answer
-    
-test_numbers = [SnailfishNumber(line) for line in SUM_TEST.splitlines()]
-assert str(reduce(lambda a,b:a+b, test_numbers)) == SUM_TEST_ANSWER
-
-
-@print_time_taken
 def solve(inputs):
     numbers = [SnailfishNumber(line) for line in inputs.splitlines()]
     
-    final_sum = reduce(lambda a,b:a+b, numbers)
-    print(f"Part 1: {final_sum.magnitude}")
+    print(f"Part 1: {reduce(lambda a,b:a+b, numbers).magnitude}")
 
-    max_magnitude = 0
+    magnitude = 0
     for a, b in product(inputs.splitlines(), inputs.splitlines()):
         if a != b:
-            max_magnitude=max((SnailfishNumber(a)+SnailfishNumber(b)).magnitude,max_magnitude )
-    print(f"Part 2: {max_magnitude}\n")
+            magnitude=max((SnailfishNumber(a)+SnailfishNumber(b)).magnitude,magnitude)
+    print(f"Part 2: {magnitude}\n")
 
 
 solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
