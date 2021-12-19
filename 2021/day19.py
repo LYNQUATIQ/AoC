@@ -1,7 +1,8 @@
 """https://adventofcode.com/2021/day/19"""
 import os
 
-from itertools import combinations, product
+from collections import Counter
+from itertools import combinations, permutations, product
 
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day19_input.txt")) as f:
@@ -151,31 +152,41 @@ ROTATIONS = (0, 90, 180, 270)
 
 class Scanner:
     def __init__(self, readings_data: str) -> None:
-        self._readings = [tuple(map(int, r.split(","))) for r in readings_data]
-        self._origin = (0, 0, 0)
+        self.beacons = {tuple(map(int, r.split(","))) for r in readings_data}
+        self.distances = Counter(
+            (ax - bx) ** 2 + (ay - by) ** 2 + (az - bz) ** 2
+            for (ax, ay, az), (bx, by, bz) in permutations(self.beacons, 2)
+        )
+        self.position = (0, 0, 0)
 
-    @property
-    def beacons(self):
-        x0, y0, z0 = self._origin
-        return set((x0 + x, y0 + y, z0 + z) for x, y, z in self._readings)
+    def offset_readings(self, offset):
+        dx, dy, dz = offset
+        return {(x + dx, y + dy, z + dz) for x, y, z in self.beacons}
+
+    def set_position(self, position=None):
+        self.position = position
+        self.beacons = self.offset_readings(position)
 
     def reorient(self):
-        self._readings = [(y, z, x) for x, y, z in self._readings]
+        self.beacons = {(y, z, x) for x, y, z in self.beacons}
 
     def switch_direction(self):
-        self._readings = [(x, -y, -z) for x, y, z in self._readings]
+        self.beacons = {(x, -y, -z) for x, y, z in self.beacons}
 
     def rotate(self):
-        self._readings = [(-y, x, z) for x, y, z in self._readings]
+        self.beacons = {(-y, x, z) for x, y, z in self.beacons}
 
-    def orient_to(self, other_beacons):
+    def orient(self, other):
+        if sum((self.distances & other.distances).values()) < 12:
+            return
         for _ in ORIENTATIONS:
             for _ in DIRECTIONS:
                 for _ in ROTATIONS:
-                    self._origin = (0, 0, 0)
-                    for (x, y, z), (bx, by, bz) in product(self.beacons, other_beacons):
-                        self._origin = (bx - x, by - y, bz - z)
-                        if len(self.beacons.intersection(other_beacons)) >= 12:
+                    for (x, y, z), (x0, y0, z0) in product(self.beacons, other.beacons):
+                        offset = (x0 - x, y0 - y, z0 - z)
+                        offset_readings = self.offset_readings(offset)
+                        if len(offset_readings.intersection(other.beacons)) >= 12:
+                            self.set_position(offset)
                             return True
                     self.rotate()
                 self.switch_direction()
@@ -186,20 +197,19 @@ class Scanner:
 def solve(inputs):
     scanners = [Scanner(lines.splitlines()[1:]) for lines in inputs.split("\n\n")]
 
-    oriented_scanners = {scanners[0]}
-    unoriented_scanners = set(scanners[1:])
+    oriented_scanners, unoriented_scanners = {scanners[0]}, set(scanners[1:])
     while unoriented_scanners:
-        beacons = oriented_scanners.pop().beacons
-        matched_scanners = {s for s in unoriented_scanners if s.orient_to(beacons)}
+        to_match = oriented_scanners.pop()
+        matched_scanners = {s for s in unoriented_scanners if s.orient(to_match)}
         unoriented_scanners.difference_update(matched_scanners)
         oriented_scanners |= matched_scanners
 
-    beacon_field = set().union(*[s.beacons for s in scanners])
-    print(f"Part 1: {len(beacon_field)}")
+    beacons = set().union(*[s.beacons for s in scanners])
+    print(f"Part 1: {len(beacons)}")
 
     max_distance = 0
-    for scanner1, scanner2 in combinations(scanners, 2):
-        distance = sum(abs(a - b) for a, b in zip(scanner1._origin, scanner2._origin))
+    for s1, s2 in combinations(scanners, 2):
+        distance = sum(abs(a - b) for a, b in zip(s1.position, s2.position))
         max_distance = max(distance, max_distance)
     print(f"Part 2: {max_distance}\n")
 
