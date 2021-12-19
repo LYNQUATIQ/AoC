@@ -1,10 +1,8 @@
 """https://adventofcode.com/2021/day/19"""
-from collections import defaultdict
 import os
 
-from itertools import combinations, permutations, product
+from itertools import combinations, product
 
-from utils import print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day19_input.txt")) as f:
     actual_input = f.read()
@@ -185,18 +183,16 @@ class Scanner:
         return False
 
 
-@print_time_taken
 def solve(inputs):
-
     scanners = [Scanner(lines.splitlines()[1:]) for lines in inputs.split("\n\n")]
 
-    scanners_to_match = {scanners[0]}
+    oriented_scanners = {scanners[0]}
     unoriented_scanners = set(scanners[1:])
     while unoriented_scanners:
-        beacons = scanners_to_match.pop().beacons
+        beacons = oriented_scanners.pop().beacons
         matched_scanners = {s for s in unoriented_scanners if s.orient_to(beacons)}
         unoriented_scanners.difference_update(matched_scanners)
-        scanners_to_match |= matched_scanners
+        oriented_scanners |= matched_scanners
 
     beacon_field = set().union(*[s.beacons for s in scanners])
     print(f"Part 1: {len(beacon_field)}")
