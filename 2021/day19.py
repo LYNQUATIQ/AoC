@@ -1,18 +1,11 @@
 """https://adventofcode.com/2021/day/19"""
-# import logging
-import math
+from collections import defaultdict
 import os
-import re
-import string
 
-from collections import defaultdict, Counter, deque
-from itertools import combinations, product
+from itertools import combinations, permutations, product
 
-from grid import XY, ConnectedGrid
-from utils import flatten, grouper, powerset, print_time_taken
+from utils import print_time_taken
 
-# log_file = os.path.join(os.path.dirname(__file__), f"logs/day19.log")
-# logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day19_input.txt")) as f:
     actual_input = f.read()
 
@@ -153,27 +146,20 @@ sample_input = """--- scanner 0 ---
 -652,-548,-490
 30,-46,-14"""
 
-DIRECTIONS = 2
-ORIENTATIONS = 3
-ROTATIONS = 4
+DIRECTIONS = (+1, -1)
+ORIENTATIONS = ("XYZ", "YZX", "ZXY")
+ROTATIONS = (0, 90, 180, 270)
 
 
 class Scanner:
-    def __init__(self, id: int, readings_data: str) -> None:
-        self.id = id
+    def __init__(self, readings_data: str) -> None:
         self._readings = [tuple(map(int, r.split(","))) for r in readings_data]
         self._origin = (0, 0, 0)
-
-    def __repr__(self) -> str:
-        return f"Scanner {self.id} @ {self._origin}"
 
     @property
     def beacons(self):
         x0, y0, z0 = self._origin
         return set((x0 + x, y0 + y, z0 + z) for x, y, z in self._readings)
-
-    def set_origin(self, xyz):
-        self._origin = xyz
 
     def reorient(self):
         self._readings = [(y, z, x) for x, y, z in self._readings]
@@ -184,50 +170,35 @@ class Scanner:
     def rotate(self):
         self._readings = [(-y, x, z) for x, y, z in self._readings]
 
-    def orient_to_field(self, beacon_field):
-        for _ in range(ORIENTATIONS):
-            for _ in range(DIRECTIONS):
-                for _ in range(ROTATIONS):
-                    for (x, y, z), (bx, by, bz) in product(self.beacons, beacon_field):
-                        self.set_origin((bx - x, by - y, bz - z))
-                        if self.aligned(beacon_field):
+    def orient_to(self, other_beacons):
+        for _ in ORIENTATIONS:
+            for _ in DIRECTIONS:
+                for _ in ROTATIONS:
+                    self._origin = (0, 0, 0)
+                    for (x, y, z), (bx, by, bz) in product(self.beacons, other_beacons):
+                        self._origin = (bx - x, by - y, bz - z)
+                        if len(self.beacons.intersection(other_beacons)) >= 12:
                             return True
-                    self.set_origin((0, 0, 0))
                     self.rotate()
                 self.switch_direction()
             self.reorient()
         return False
 
-    def aligned(self, beacon_field):
-        matching_beacons = self.beacons.intersection(beacon_field)
-        return len(matching_beacons) >= 12
-
-
-class ScannerOriented(Exception):
-    """Used to break out of search when a scanner has matched"""
-
 
 @print_time_taken
 def solve(inputs):
 
-    scanners = [
-        Scanner(i, lines.splitlines()[1:])
-        for i, lines in enumerate(inputs.split("\n\n"))
-    ]
+    scanners = [Scanner(lines.splitlines()[1:]) for lines in inputs.split("\n\n")]
 
+    scanners_to_match = {scanners[0]}
     unoriented_scanners = set(scanners[1:])
-    beacon_field = scanners[0].beacons
     while unoriented_scanners:
-        # Try and match an unoriented scanner to the current beacon field
-        try:
-            for scanner in unoriented_scanners:
-                if scanner.orient_to_field(beacon_field):
-                    raise ScannerOriented
-            raise ValueError("No matching scanner found")
-        except ScannerOriented:
-            beacon_field |= scanner.beacons
-            unoriented_scanners.remove(scanner)
+        beacons = scanners_to_match.pop().beacons
+        matched_scanners = {s for s in unoriented_scanners if s.orient_to(beacons)}
+        unoriented_scanners.difference_update(matched_scanners)
+        scanners_to_match |= matched_scanners
 
+    beacon_field = set().union(*[s.beacons for s in scanners])
     print(f"Part 1: {len(beacon_field)}")
 
     max_distance = 0
@@ -238,4 +209,4 @@ def solve(inputs):
 
 
 solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
