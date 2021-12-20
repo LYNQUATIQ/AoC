@@ -1,6 +1,5 @@
 """https://adventofcode.com/2021/day/20"""
 import os
-from collections import deque
 
 from utils import print_time_taken
 
@@ -16,46 +15,54 @@ sample_input = """..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....
 ..###"""
 
 
-BINARY = {f"{x:03b}": x for x in range(8)}
-DECODE = str.maketrans("#.", "10")
-ENCODE = str.maketrans("10", "#.")
+BINARY_VALUE = {f"{x:03b}": x for x in range(8)}
+BINARY_ENCODE = str.maketrans("#.", "10")
+DARK, LIT = "0", "1"
 
 
-def enhanced_pixel_count(steps, image_data, algorithm):
-    rasters = deque(r.translate(DECODE) for r in image_data.splitlines())
-    image_size = len(rasters)
-
-    padding = "0"
+def enhance_image(steps, image, algorithm, padding=DARK):
     for _ in range(steps):
-        image_size = len(rasters) + 4
-        rasters = deque((padding * 2 + r + padding * 2 for r in rasters))
-        rasters.extendleft([padding * image_size] * 2)
-        rasters.extend([padding * image_size] * 2)
+        # Pad the image by two pixels for convenience
+        image_size = len(image) + 4
+        image = (
+            [padding * image_size] * 2
+            + [padding * 2 + raster + padding * 2 for raster in image]
+            + [padding * image_size] * 2
+        )
 
-        padding = algorithm[-1] if padding == "1" else algorithm[0]
-        enhanced_rasters = deque()
+        # Adjust the padding (potentially changes state depending on algorithm)
+        padding = algorithm[-1] if padding == LIT else algorithm[0]
+
+        # Enhance the image (starting 1 pixel in from the padded image)
+        enhanced_image = []
         for y in range(1, image_size - 1):
             raster = "".join(
                 algorithm[
-                    64 * BINARY[rasters[y - 1][x - 1 : x + 2]]
-                    + 8 * BINARY[rasters[y][x - 1 : x + 2]]
-                    + BINARY[rasters[y + 1][x - 1 : x + 2]]
+                    64 * BINARY_VALUE[image[y - 1][x - 1 : x + 2]]
+                    + 8 * BINARY_VALUE[image[y][x - 1 : x + 2]]
+                    + BINARY_VALUE[image[y + 1][x - 1 : x + 2]]
                 ]
                 for x in range(1, image_size - 1)
             )
-            enhanced_rasters.append(raster)
-        rasters = enhanced_rasters
+            enhanced_image.append(raster)
+        image = enhanced_image
 
-    return sum(r.count("1") for r in rasters)
+    return image
 
 
 @print_time_taken
 def solve(inputs):
     algorithm, image_data = inputs.split("\n\n")
-    algorithm = tuple(str(int(a == "#")) for a in algorithm)
 
-    print(f"Part 1: {enhanced_pixel_count(2, image_data, algorithm)}")
-    print(f"Part 2: {enhanced_pixel_count(50, image_data, algorithm)}\n")
+    # Encode the algorithm and image rasters (rows) into binary strings for convenience
+    algorithm = algorithm.translate(BINARY_ENCODE)
+    image = [raster.translate(BINARY_ENCODE) for raster in image_data.splitlines()]
+
+    image = enhance_image(2, image, algorithm)
+    print(f"Part 1: {sum(raster.count(LIT) for raster in image)}")
+
+    image = enhance_image(48, image, algorithm)
+    print(f"Part 2: {sum(raster.count(LIT) for raster in image)}\n")
 
 
 solve(sample_input)
