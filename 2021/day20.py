@@ -1,8 +1,6 @@
 """https://adventofcode.com/2021/day/20"""
 import os
 
-from utils import print_time_taken
-
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day20_input.txt")) as f:
     actual_input = f.read()
 
@@ -30,9 +28,6 @@ def enhance_image(steps, image, algorithm, padding=DARK):
             + [padding * image_size] * 2
         )
 
-        # Adjust the padding (potentially changes state depending on algorithm)
-        padding = algorithm[-1] if padding == LIT else algorithm[0]
-
         # Enhance the image (starting 1 pixel in from the padded image)
         enhanced_image = []
         for y in range(1, image_size - 1):
@@ -47,10 +42,12 @@ def enhance_image(steps, image, algorithm, padding=DARK):
             enhanced_image.append(raster)
         image = enhanced_image
 
+        # Adjust whether padding is lit/dark (potentially changes depending on algo)
+        padding = algorithm[-1] if padding == LIT else algorithm[0]
+
     return image
 
 
-@print_time_taken
 def solve(inputs):
     algorithm, image_data = inputs.split("\n\n")
 
