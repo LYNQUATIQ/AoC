@@ -1,6 +1,8 @@
 """https://adventofcode.com/2021/day/20"""
 import os
-from itertools import product
+from collections import deque
+
+from utils import print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day20_input.txt")) as f:
     actual_input = f.read()
@@ -13,42 +15,47 @@ sample_input = """..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....
 ..#..
 ..###"""
 
-NOT_LIT, LIT = ".", "#"
+
+BINARY = {f"{x:03b}": x for x in range(8)}
+DECODE = str.maketrans("#.", "10")
+ENCODE = str.maketrans("10", "#.")
 
 
-def enhanced_image(steps, image_data, algorithm):
-    pixels = set()
-    for y, row in enumerate(image_data.splitlines()):
-        for x, pixel in enumerate(row):
-            if pixel == LIT:
-                pixels.add((x, y))
+def enhanced_pixel_count(steps, image_data, algorithm):
+    rasters = deque(r.translate(DECODE) for r in image_data.splitlines())
+    image_size = len(rasters)
 
-    image_size = x + 1
-    off_image_lit = False
+    padding = "0"
     for _ in range(steps):
-        output_pixels = set()
-        for x, y in product(range(-1, image_size + 1), range(-1, image_size + 1)):
-            algo_index = 0
-            for yi, xi in product(range(y - 1, y + 2), range(x - 1, x + 2)):
-                if 0 <= xi < image_size and 0 <= yi < image_size:
-                    lit = (xi, yi) in pixels
-                else:
-                    lit = off_image_lit
-                algo_index = algo_index * 2 + (1 if lit else 0)
-            if algorithm[algo_index]:
-                output_pixels.add((x + 1, y + 1))
-        off_image_lit = algorithm[-1] if off_image_lit else algorithm[0]
-        image_size += 2
-        pixels = output_pixels
-    return pixels
+        image_size = len(rasters) + 4
+        rasters = deque((padding * 2 + r + padding * 2 for r in rasters))
+        rasters.extendleft([padding * image_size] * 2)
+        rasters.extend([padding * image_size] * 2)
+
+        padding = algorithm[-1] if padding == "1" else algorithm[0]
+        enhanced_rasters = deque()
+        for y in range(1, image_size - 1):
+            raster = "".join(
+                algorithm[
+                    64 * BINARY[rasters[y - 1][x - 1 : x + 2]]
+                    + 8 * BINARY[rasters[y][x - 1 : x + 2]]
+                    + BINARY[rasters[y + 1][x - 1 : x + 2]]
+                ]
+                for x in range(1, image_size - 1)
+            )
+            enhanced_rasters.append(raster)
+        rasters = enhanced_rasters
+
+    return sum(r.count("1") for r in rasters)
 
 
+@print_time_taken
 def solve(inputs):
-    algorithm, rasters = inputs.split("\n\n")
-    algorithm = tuple(a == LIT for a in algorithm)
+    algorithm, image_data = inputs.split("\n\n")
+    algorithm = tuple(str(int(a == "#")) for a in algorithm)
 
-    print(f"Part 1: {len(enhanced_image(2, rasters, algorithm))}")
-    print(f"Part 2: {len(enhanced_image(50, rasters, algorithm))}\n")
+    print(f"Part 1: {enhanced_pixel_count(2, image_data, algorithm)}")
+    print(f"Part 2: {enhanced_pixel_count(50, image_data, algorithm)}\n")
 
 
 solve(sample_input)
