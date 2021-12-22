@@ -6,6 +6,7 @@ import re
 import string
 
 from collections import defaultdict, Counter
+from dataclasses import dataclass, field
 from itertools import product
 
 from grid import XY, ConnectedGrid
