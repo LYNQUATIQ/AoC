@@ -84,18 +84,11 @@ class Cube:
     z1: int
     z2: int
 
-    def __repr__(self) -> str:
-        return f"x={self.x1}..{self.x2},y={self.y1}..{self.y2},z={self.z1}..{self.z2}"
-
     @property
     def volume(self):
         return (
             (self.x2 + 1 - self.x1) * (self.y2 + 1 - self.y1) * (self.z2 + 1 - self.z1)
         )
-
-    @property
-    def dimensions(self):
-        return (self.x1, self.x2, self.y1, self.y2, self.z1, self.z2)
 
     def intersects(self, other: Cube) -> bool:
         if self.x1 > other.x2 or self.x2 < other.x1:
@@ -107,16 +100,15 @@ class Cube:
         return True
 
     def encloses(self, other: Cube) -> bool:
-        return (
-            self.x1 <= other.x1
-            and self.x2 >= other.x2
-            and self.y1 <= other.y1
-            and self.y2 >= other.y2
-            and self.z1 <= other.z1
-            and self.z2 >= other.z2
-        )
+        if self.x1 > other.x1 or self.x2 < other.x2:
+            return False
+        if self.y1 > other.y1 or self.y2 < other.y2:
+            return False
+        if self.z1 > other.z1 or self.z2 < other.z2:
+            return False
+        return True
 
-    def disjoint_cube(self, c: Cube) -> tuple[Cube, ...]:
+    def disjoint(self, c: Cube) -> tuple[Cube, ...]:
         if self.encloses(c):
             return tuple()
         if not self.intersects(c):
@@ -140,14 +132,11 @@ class Cube:
 
 
 def test_reboot(instructions):
-    shortened_instructions = [
-        (switch, x1, x2, y1, y2, z1, z2)
-        for switch, x1, x2, y1, y2, z1, z2 in instructions
-        if all(-50 <= p <= 50 for p in (x1, x2, y1, y2, z1, z2))
-    ]
-
     grid = set()
-    for switch, x1, x2, y1, y2, z1, z2 in shortened_instructions:
+    for switch, dimensions in instructions:
+        if not all(-50 <= p <= 50 for p in dimensions):
+            continue
+        x1, x2, y1, y2, z1, z2 = dimensions
         for x, y, z in product(range(x1, x2 + 1), range(y1, y2 + 1), range(z1, z2 + 1)):
             if switch == ON:
                 grid.add((x, y, z))
@@ -159,12 +148,9 @@ def test_reboot(instructions):
 def reboot_reactor(instructions):
     cubes = set()
     for instruction in instructions:
-        switch, *dimensions = instruction
+        switch, dimensions = instruction
         new_cube = Cube(*dimensions)
-        updated_cubes = set()
-        for cube in cubes:
-            updated_cubes.update(new_cube.disjoint_cube(cube))
-        cubes = updated_cubes
+        cubes = set(chain.from_iterable((new_cube.disjoint(cube)) for cube in cubes))
         if switch == ON:
             cubes.add(new_cube)
     return sum(cube.volume for cube in cubes)
@@ -174,8 +160,8 @@ def solve(inputs):
     instructions = []
     for line in inputs.splitlines():
         switch, cube_dimensions = line.split()
-        x1, x2, y1, y2, z1, z2 = map(int, re.findall(r"-?\d+", cube_dimensions))
-        instructions.append((switch, x1, x2, y1, y2, z1, z2))
+        dimensions = tuple(map(int, re.findall(r"-?\d+", cube_dimensions)))
+        instructions.append((switch, dimensions))
 
     print(f"Part 1: {test_reboot(instructions)}")
     print(f"Part 2: {reboot_reactor(instructions)}\n")
