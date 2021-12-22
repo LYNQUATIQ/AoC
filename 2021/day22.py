@@ -77,6 +77,9 @@ ON, OFF = "on", "off"
 
 @dataclass(frozen=True)
 class Cube:
+    """Dataclass for a 3D cube - initialised by the giving three vectors in space
+    representing the edges of the cube - (x1, x2), (y1, y2), (z1, z2)"""
+
     x1: int
     x2: int
     y1: int
@@ -86,11 +89,13 @@ class Cube:
 
     @property
     def volume(self):
+        """The volume/size property of this cube."""
         return (
             (self.x2 + 1 - self.x1) * (self.y2 + 1 - self.y1) * (self.z2 + 1 - self.z1)
         )
 
     def intersects(self, other: Cube) -> bool:
+        """Returns true if other cube intersects with this cube."""
         if self.x1 > other.x2 or self.x2 < other.x1:
             return False
         if self.y1 > other.y2 or self.y2 < other.y1:
@@ -100,6 +105,7 @@ class Cube:
         return True
 
     def encloses(self, other: Cube) -> bool:
+        """Returns true if other cube is enclosed by this cube."""
         if self.x1 > other.x1 or self.x2 < other.x2:
             return False
         if self.y1 > other.y1 or self.y2 < other.y2:
@@ -108,52 +114,59 @@ class Cube:
             return False
         return True
 
-    def disjoint(self, c: Cube) -> tuple[Cube, ...]:
-        if self.encloses(c):
-            return tuple()
-        if not self.intersects(c):
-            return (c,)
-        cubes = []
-        if c.x1 < self.x1:
-            cubes.append(Cube(c.x1, self.x1 - 1, c.y1, c.y2, c.z1, c.z2))
-        if c.x2 > self.x2:
-            cubes.append(Cube(self.x2 + 1, c.x2, c.y1, c.y2, c.z1, c.z2))
-        x1, x2 = max(self.x1, c.x1), min(self.x2, c.x2)
-        if c.y1 < self.y1:
-            cubes.append(Cube(x1, x2, c.y1, self.y1 - 1, c.z1, c.z2))
-        if c.y2 > self.y2:
-            cubes.append(Cube(x1, x2, self.y2 + 1, c.y2, c.z1, c.z2))
-        y1, y2 = max(self.y1, c.y1), min(self.y2, c.y2)
-        if c.z1 < self.z1:
-            cubes.append(Cube(x1, x2, y1, y2, c.z1, self.z1 - 1))
-        if c.z2 > self.z2:
-            cubes.append(Cube(x1, x2, y1, y2, self.z2 + 1, c.z2))
-        return tuple(cubes)
+    def disjoint(self, other: Cube) -> tuple[Cube, ...]:
+        """Break the other cube apart if it intersects with this one, returrning a set
+        of cubes representing the distinct parts of other that are not in this cube."""
+        if self.encloses(other):
+            return set()
+        if not self.intersects(other):
+            return {other}
+        cubes = set()
+        if other.x1 < self.x1:
+            cubes.add(
+                Cube(other.x1, self.x1 - 1, other.y1, other.y2, other.z1, other.z2)
+            )
+        if other.x2 > self.x2:
+            cubes.add(
+                Cube(self.x2 + 1, other.x2, other.y1, other.y2, other.z1, other.z2)
+            )
+        x1, x2 = max(self.x1, other.x1), min(self.x2, other.x2)
+        if other.y1 < self.y1:
+            cubes.add(Cube(x1, x2, other.y1, self.y1 - 1, other.z1, other.z2))
+        if other.y2 > self.y2:
+            cubes.add(Cube(x1, x2, self.y2 + 1, other.y2, other.z1, other.z2))
+        y1, y2 = max(self.y1, other.y1), min(self.y2, other.y2)
+        if other.z1 < self.z1:
+            cubes.add(Cube(x1, x2, y1, y2, other.z1, self.z1 - 1))
+        if other.z2 > self.z2:
+            cubes.add(Cube(x1, x2, y1, y2, self.z2 + 1, other.z2))
+        return cubes
 
 
 def test_reboot(instructions):
-    grid = set()
+    reactor_core = set()
     for switch, dimensions in instructions:
         if not all(-50 <= p <= 50 for p in dimensions):
             continue
         x1, x2, y1, y2, z1, z2 = dimensions
         for x, y, z in product(range(x1, x2 + 1), range(y1, y2 + 1), range(z1, z2 + 1)):
             if switch == ON:
-                grid.add((x, y, z))
+                reactor_core.add((x, y, z))
             else:
-                grid.discard((x, y, z))
-    return len(grid)
+                reactor_core.discard((x, y, z))
+    return len(reactor_core)
 
 
 def reboot_reactor(instructions):
-    cubes = set()
-    for instruction in instructions:
-        switch, dimensions = instruction
-        new_cube = Cube(*dimensions)
-        cubes = set(chain.from_iterable((new_cube.disjoint(cube)) for cube in cubes))
+    reactor_core = set()
+    for switch, dimensions in instructions:
+        cube = Cube(*dimensions)
+        reactor_core = set(
+            chain.from_iterable((cube.disjoint(c)) for c in reactor_core)
+        )
         if switch == ON:
-            cubes.add(new_cube)
-    return sum(cube.volume for cube in cubes)
+            reactor_core.add(cube)
+    return sum(cube.volume for cube in reactor_core)
 
 
 def solve(inputs):
