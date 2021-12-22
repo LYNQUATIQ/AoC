@@ -105,7 +105,7 @@ class Cube:
         return True
 
     def encloses(self, other: Cube) -> bool:
-        """Returns true if other cube is enclosed by this cube."""
+        """Returns true if other cube is fully enclosed by this cube."""
         if self.x1 > other.x1 or self.x2 < other.x2:
             return False
         if self.y1 > other.y1 or self.y2 < other.y2:
@@ -145,12 +145,12 @@ class Cube:
 
 def test_reboot(instructions):
     reactor_core = set()
-    for switch, dimensions in instructions:
+    for on_off, dimensions in instructions:
         if not all(-50 <= p <= 50 for p in dimensions):
             continue
         x1, x2, y1, y2, z1, z2 = dimensions
         for x, y, z in product(range(x1, x2 + 1), range(y1, y2 + 1), range(z1, z2 + 1)):
-            if switch == ON:
+            if on_off == ON:
                 reactor_core.add((x, y, z))
             else:
                 reactor_core.discard((x, y, z))
@@ -159,12 +159,12 @@ def test_reboot(instructions):
 
 def reboot_reactor(instructions):
     reactor_core = set()
-    for switch, dimensions in instructions:
+    for on_off, dimensions in instructions:
         cube = Cube(*dimensions)
         reactor_core = set(
             chain.from_iterable((cube.disjoint(c)) for c in reactor_core)
         )
-        if switch == ON:
+        if on_off == ON:
             reactor_core.add(cube)
     return sum(cube.volume for cube in reactor_core)
 
@@ -172,9 +172,9 @@ def reboot_reactor(instructions):
 def solve(inputs):
     instructions = []
     for line in inputs.splitlines():
-        switch, cube_dimensions = line.split()
+        on_off, cube_dimensions = line.split()
         dimensions = tuple(map(int, re.findall(r"-?\d+", cube_dimensions)))
-        instructions.append((switch, dimensions))
+        instructions.append((on_off, dimensions))
 
     print(f"Part 1: {test_reboot(instructions)}")
     print(f"Part 2: {reboot_reactor(instructions)}\n")
