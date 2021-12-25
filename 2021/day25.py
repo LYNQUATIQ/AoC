@@ -40,6 +40,7 @@ def solve(inputs):
                 east.add((x, y))
             if c == SOUTH:
                 south.add((x, y))
+
     width, height = x + 1, y + 1
     steps = 0
     while True:
@@ -59,7 +60,6 @@ def solve(inputs):
                 xy, moved = target_xy, True
             new_south.add(xy)
         south = new_south
-
         if not moved:
             break
 
