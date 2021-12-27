@@ -1,19 +1,6 @@
 """https://adventofcode.com/2021/day/25"""
-# import logging
-import math
 import os
-import re
-import string
 
-from collections import defaultdict, Counter
-from dataclasses import dataclass, field
-from itertools import product
-
-from grid import XY, ConnectedGrid
-from utils import flatten, grouper, powerset, print_time_taken
-
-# log_file = os.path.join(os.path.dirname(__file__), f"logs/day25.log")
-# logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day25_input.txt")) as f:
     actual_input = f.read()
 
@@ -27,19 +14,15 @@ v>v.vv.v..
 v.v..>>v.v
 ....v..v.>"""
 
-EAST, SOUTH = ">", "v"
 
-
-@print_time_taken
 def solve(inputs):
     east, south = set(), set()
 
     for y, line in enumerate(inputs.splitlines()):
         for x, c in enumerate(line):
-            if c == EAST:
-                east.add((x, y))
-            if c == SOUTH:
-                south.add((x, y))
+            match c:
+                case ">": east.add((x, y))
+                case "v": south.add((x, y))
 
     width, height = x + 1, y + 1
     steps = 0
