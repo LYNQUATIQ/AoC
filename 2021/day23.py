@@ -2,7 +2,7 @@
 import os
 import re
 
-from collections import defaultdict, deque
+from collections import defaultdict
 from functools import lru_cache
 from heapq import heappush, heappop
 from itertools import product
@@ -42,29 +42,9 @@ RoomAmphipods: TypeAlias = list[
     tuple[Amphipod, ...],
     tuple[Amphipod, ...],
 ]
-# HallwayAmphipods: TypeAlias = dict[int, Amphipod]
-# RoomAmphipods: TypeAlias = dict[int, list[Amphipod]]
 
 # State is energy so far, estimated cost to complete, and amphipods in rooms and halls
 State: TypeAlias = tuple[int, int, RoomAmphipods, HallwayAmphipods]
-
-# Energy change moving from hallway position to target room for given amphipod type
-# ENERGY_CHANGE = {
-#     AMBER: {0: 3, 1: 2, 3: 2, 5: 4, 7: 6, 9: 8, 10: 9},
-#     BRONZE: {0: 50, 1: 40, 3: 20, 5: 20, 7: 40, 9: 60, 10: 70},
-#     COPPER: {0: 700, 1: 600, 3: 400, 5: 200, 7: 200, 9: 400, 10: 500},
-#     DESERT: {0: 9000, 1: 8000, 3: 6000, 5: 4000, 7: 2000, 9: 2000, 10: 3000},
-# }
-# STEPS_TAKEN = {
-#     (s, d): abs(s - d)
-#     + (1 if s in (2, 4, 6, 8) else 0)
-#     + (1 if d in (2, 4, 6, 8) else 0)
-#     for s, d in product(range(BURROW_LENGTH), range(BURROW_LENGTH))
-#     # if s != d
-# }
-# ENERGY_TAKEN = {
-#     a: {k: v * ENERGY[a] for k, v in STEPS_TAKEN.items()} for a in AMPHIPODS
-# }
 
 
 @lru_cache(maxsize=None)
@@ -171,14 +151,11 @@ EXTRA_ROWS = (("D", "C", "B", "A"), ("D", "B", "A", "C"))
 def solve(inputs):
 
     amphipod_data = inputs.splitlines()
-    top_row = tuple(re.findall(r"[ABCD]", amphipod_data[2]))
-    bottom_row = tuple(re.findall(r"[ABCD]", amphipod_data[3]))
+    first_row = tuple(re.findall(r"[ABCD]", amphipod_data[2]))
+    last_row = tuple(re.findall(r"[ABCD]", amphipod_data[3]))
 
-    amphipod_rows = (top_row, bottom_row)
-    print(f"Part 1: {organise_amphipods(amphipod_rows)}")
-
-    # amphipod_rows = (top_row, *EXTRA_ROWS, bottom_row)
-    # print(f"Part 2: {organise_amphipods(amphipod_rows)}\n")
+    print(f"Part 1: {organise_amphipods((first_row, last_row))}")
+    # print(f"Part 2: {organise_amphipods( (first_row, *EXTRA_ROWS, last_row))}\n")
 
 
 solve(sample_input)
