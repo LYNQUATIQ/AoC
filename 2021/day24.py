@@ -21,11 +21,6 @@ DIGITS_9_TO_1 = tuple(reversed(DIGITS_1_TO_9))
 @lru_cache(maxsize=None)
 def get_next_z(w: int, z: int, args: tuple[int, int, int]) -> int | None:
     """Return the next value of z based on input w and arguments.
-
-    N.B. When Z_BASE is 1, FLAG_DELTA is *always* > 10, therefore flag will be 1 in
-    *all* cases and code reduces to:  new_z = z * 26 + (w + Z_DELTA)
-    ...essentially pushing a digit in base 26
-
     In cases where Z_BASE is 26 we pop a digit *unless* flag is 1 in which case we
     remultiply by 26. We therefore *need* flag too be 0 to ensure we pop digit,
     (as well as needing constants to tie up) or no chance of being zero at end!
@@ -33,14 +28,15 @@ def get_next_z(w: int, z: int, args: tuple[int, int, int]) -> int | None:
     """
     flag = int(((z % 26) + args[FLAG_DELTA]) != w)
     if args[Z_BASE] == 26 and flag:
-        return None
+        return None  # Pruning (when flag is 1 and Z_BASE is 26)
+
     z = z // args[Z_BASE]
     z *= 25 * flag + 1
     z += (w + args[Z_DELTA]) * flag
     return z
 
 
-def find_result(z, ordered_inputs, digits=[]):
+def find_result(ordered_inputs, z=0, digits=[]):
     digit_count = len(digits)
     if digit_count == 14:
         if z == 0:  # Success!
@@ -51,14 +47,14 @@ def find_result(z, ordered_inputs, digits=[]):
         next_z = get_next_z(w, z, PARAMS[digit_count])
         if next_z is None:
             continue  # Pruning (when flag is 1 and Z_BASE is 26)
-        result = find_result(next_z, ordered_inputs, digits + [w])
+        result = find_result(ordered_inputs, next_z, digits + [w])
         if result:
             return result
 
 
 def solve():
-    print(f"Part 1: {find_result(0, DIGITS_9_TO_1)}")
-    print(f"Part 2: {find_result(0, DIGITS_1_TO_9)}\n")
+    print(f"Part 1: {find_result(DIGITS_9_TO_1)}")
+    print(f"Part 2: {find_result(DIGITS_1_TO_9)}\n")
 
 
 solve()
