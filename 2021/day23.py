@@ -2,7 +2,7 @@
 import os
 import re
 
-from collections import defaultdict
+from collections import defaultdict, deque
 from functools import lru_cache
 from heapq import heappush, heappop
 from itertools import product
@@ -27,7 +27,6 @@ ENERGY = {AMBER: 1, BRONZE: 10, COPPER: 100, DESERT: 1000}
 
 BURROW_LENGTH = 11
 AMPHIPOD_ROOMS = {AMBER: 2, BRONZE: 4, COPPER: 6, DESERT: 8}
-AMPHIPOD_INDEX = {AMBER: 0, BRONZE: 1, COPPER: 2, DESERT: 3}
 HALLWAY_POSITIONS = tuple(i for i in range(11) if i not in AMPHIPOD_ROOMS.values())
 BETWEEN = {
     (s, d): tuple(h for h in HALLWAY_POSITIONS if s < h < d or d < h < s)
@@ -37,22 +36,42 @@ BETWEEN = {
 
 Amphipod: TypeAlias = str  # 'A', 'B', 'C' or 'D'
 HallwayAmphipods: TypeAlias = tuple[tuple[Amphipod, int], ...]
-RoomAmphipods: TypeAlias = tuple[
+RoomAmphipods: TypeAlias = list[
     tuple[Amphipod, ...],
     tuple[Amphipod, ...],
     tuple[Amphipod, ...],
     tuple[Amphipod, ...],
 ]
-Move: TypeAlias = tuple[Amphipod, int, int]
-# State is energy so far, cost so complet, amphipods in rooms, and amphipods in halls
+# HallwayAmphipods: TypeAlias = dict[int, Amphipod]
+# RoomAmphipods: TypeAlias = dict[int, list[Amphipod]]
+
+# State is energy so far, estimated cost to complete, and amphipods in rooms and halls
 State: TypeAlias = tuple[int, int, RoomAmphipods, HallwayAmphipods]
+
+# Energy change moving from hallway position to target room for given amphipod type
+# ENERGY_CHANGE = {
+#     AMBER: {0: 3, 1: 2, 3: 2, 5: 4, 7: 6, 9: 8, 10: 9},
+#     BRONZE: {0: 50, 1: 40, 3: 20, 5: 20, 7: 40, 9: 60, 10: 70},
+#     COPPER: {0: 700, 1: 600, 3: 400, 5: 200, 7: 200, 9: 400, 10: 500},
+#     DESERT: {0: 9000, 1: 8000, 3: 6000, 5: 4000, 7: 2000, 9: 2000, 10: 3000},
+# }
+# STEPS_TAKEN = {
+#     (s, d): abs(s - d)
+#     + (1 if s in (2, 4, 6, 8) else 0)
+#     + (1 if d in (2, 4, 6, 8) else 0)
+#     for s, d in product(range(BURROW_LENGTH), range(BURROW_LENGTH))
+#     # if s != d
+# }
+# ENERGY_TAKEN = {
+#     a: {k: v * ENERGY[a] for k, v in STEPS_TAKEN.items()} for a in AMPHIPODS
+# }
 
 
 @lru_cache(maxsize=None)
 def possible_next_states(state: State) -> list[State]:
     (energy_so_far, cost_to_complete, room_amphipods, hallway_amphipods) = state
-    blocked = {h for a, h in hallway_amphipods}
-    clear_hallway = {h for h in HALLWAY_POSITIONS if h not in blocked}
+    blocked = {h for _, h in hallway_amphipods}
+    available = {h for h in HALLWAY_POSITIONS if h not in blocked}
 
     next_states = []
 
@@ -61,14 +80,14 @@ def possible_next_states(state: State) -> list[State]:
         if not occupants:
             continue
         start = (i + 1) * 2
-        for destination in clear_hallway:
+        for destination in available:
             if any(h in blocked for h in BETWEEN[(start, destination)]):
                 continue  # There's somebody blocking the way en route to h
             amphipod = occupants[0]
             target = AMPHIPOD_ROOMS[amphipod]
             steps_sd = abs(start - destination) + 1  # Extra step to leave room
-            steps_st = abs(target - start) + 1 + 1  # Extra *steps* to leave/enter rooms
             steps_dt = abs(target - destination) + 1  # Extra step to enter room
+            steps_st = abs(target - start) + 1 + 1  # Extra *steps* to leave/enter rooms
             step_change = steps_dt - steps_st
             next_states.append(
                 (
@@ -82,15 +101,15 @@ def possible_next_states(state: State) -> list[State]:
     # Try and move amphipods in hallway to their destination
     for amphipod, start in hallway_amphipods:
         destination = AMPHIPOD_ROOMS[amphipod]
-        if room_amphipods[AMPHIPOD_INDEX[amphipod]]:
+        if room_amphipods[destination // 2 - 1]:
             continue  # There's somebody in the room who still needs to move
         if any(h in blocked for h in BETWEEN[(start, destination)]):
             continue  # There's somebody blocking the way en route to target
-        steps_taken = abs(start - destination) + 1
+        energy_change = (abs(start - destination) + 1) * ENERGY[amphipod]
         next_states.append(
             (
-                energy_so_far + steps_taken * ENERGY[amphipod],
-                cost_to_complete - steps_taken * ENERGY[amphipod],
+                energy_so_far + energy_change,
+                cost_to_complete - energy_change,
                 room_amphipods,
                 tuple((a, h) for a, h in hallway_amphipods if h != start),
             )
@@ -99,17 +118,21 @@ def possible_next_states(state: State) -> list[State]:
     return next_states
 
 
-def organise_amphipods(room_amphipods: RoomAmphipods) -> int:
+def organise_amphipods(
+    amphipod_rows: tuple[tuple[Amphipod, Amphipod, Amphipod, Amphipod], ...]
+) -> int:
 
-    # Strip out any amphipods who are already in place.
-    # Also calculate extra energy required as amphipods leaving their starting rooms...
-    initial_rooms = []
     extra_energy, amphipod_count = 0, defaultdict(int)
-    for room_variant, occupant_tuple in zip(AMPHIPODS, room_amphipods):
-        occupants = list(occupant_tuple)
+
+    # Build room tuples, stripping out any amphipods who are already in place.
+    # Also calculate extra energy required as amphipods leave their starting rooms...
+    room_occupants = defaultdict(list)
+    for amphipods in amphipod_rows:
+        for room_variant, amphipod in zip(AMPHIPODS, amphipods):
+            room_occupants[room_variant].append(amphipod)
+    for room_variant, occupants in room_occupants.items():
         while occupants and occupants[-1] == room_variant:
             occupants.pop()
-        initial_rooms.append(tuple(occupants))
         for position_in_room, amphipod in enumerate(occupants):
             amphipod_count[amphipod] += 1
             extra_energy += ENERGY[amphipod] * position_in_room
@@ -118,17 +141,18 @@ def organise_amphipods(room_amphipods: RoomAmphipods) -> int:
     for variant, count in amphipod_count.items():
         extra_energy += ENERGY[variant] * {1: 0, 2: 1, 3: 3, 4: 6}[count]
 
-    room_amphipods = tuple(initial_rooms)
+    room_amphipods = tuple(tuple(occupants) for occupants in room_occupants.values())
 
+    # Calculate the initial estimated 'cost to complete' (assumed everyone moves direct)
     cost_to_complete = 0
     for i, occupants in enumerate(room_amphipods):
-        start = (i + 1) * 2
-        for amphipod in occupants:
-            target = AMPHIPOD_ROOMS[amphipod]
-            cost_to_complete += (abs(target - start) + 2) * ENERGY[amphipod]
+        cost_to_complete += sum(
+            (abs(AMPHIPOD_ROOMS[a] - ((i + 1) * 2)) + 2) * ENERGY[a] for a in occupants
+        )
 
     initial_state = (0, cost_to_complete, tuple(room_amphipods), ())
     to_visit = [(cost_to_complete, initial_state)]
+
     while to_visit:
         _, state = heappop(to_visit)
         energy_so_far, cost_to_complete, _, _ = state
@@ -150,18 +174,11 @@ def solve(inputs):
     top_row = tuple(re.findall(r"[ABCD]", amphipod_data[2]))
     bottom_row = tuple(re.findall(r"[ABCD]", amphipod_data[3]))
 
-    def get_room_ampipods(rows) -> RoomAmphipods:
-        room_list = defaultdict(list)
-        for amphipods in rows:
-            for room, amphipod in zip(AMPHIPODS, amphipods):
-                room_list[room].append(amphipod)
-        return tuple(tuple(occupants) for occupants in room_list.values())
+    amphipod_rows = (top_row, bottom_row)
+    print(f"Part 1: {organise_amphipods(amphipod_rows)}")
 
-    room_amphipods = get_room_ampipods((top_row, bottom_row))
-    print(f"Part 1: {organise_amphipods(room_amphipods)}")
-
-    # room_amphipods = get_room_ampipods((top_row, *EXTRA_ROWS, bottom_row))
-    # print(f"Part 2: {organise_amphipods(room_amphipods)}\n")
+    # amphipod_rows = (top_row, *EXTRA_ROWS, bottom_row)
+    # print(f"Part 2: {organise_amphipods(amphipod_rows)}\n")
 
 
 solve(sample_input)
