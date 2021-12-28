@@ -8,8 +8,6 @@ from heapq import heappush, heappop
 from itertools import product
 from typing import TypeAlias
 
-from utils import print_time_taken
-
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day23_input.txt")) as f:
     actual_input = f.read()
 
@@ -23,7 +21,7 @@ sample_input = """#############
 
 HALLWAY_POSITIONS = tuple(i for i in range(11) if i not in (2, 4, 6, 8))
 BETWEEN = {
-    (s, d): tuple(h for h in HALLWAY_POSITIONS if s < h < d or d < h < s)
+    (s, d): tuple(h for h in HALLWAY_POSITIONS if s < h <= d or d <= h < s)
     for s, d in product(range(11), range(11))
     if s != d
 }
@@ -34,17 +32,15 @@ State: TypeAlias = tuple[int, int, tuple[tuple[int, ...]], tuple[int | None, ...
 
 @lru_cache(maxsize=None)
 def possible_next_states(state: State) -> list[State]:
-    energy_so_far, cost_to_complete, room_amphipods, hallway = state
+    energy_so_far, cost_to_complete, rooms, hallway = state
     next_states = []
 
     # Try and move amphipods in rooms out to the hall
-    for i, occupants in enumerate(room_amphipods):
+    for i, occupants in enumerate(rooms):
         if not occupants:
             continue
         start = (i + 1) * 2
         for destination in HALLWAY_POSITIONS:
-            if hallway[destination] is not None:
-                continue  # There's somebody at the destination
             if any(hallway[step] is not None for step in BETWEEN[(start, destination)]):
                 continue  # There's somebody blocking the way en route to destination
             amphipod = occupants[0]
@@ -56,18 +52,16 @@ def possible_next_states(state: State) -> list[State]:
                 (
                     energy_so_far + steps_sd * energy_cost,
                     cost_to_complete + step_change * energy_cost,
-                    (*room_amphipods[:i], occupants[1:], *room_amphipods[i + 1 :]),
+                    (*rooms[:i], occupants[1:], *rooms[i + 1 :]),
                     (*hallway[:destination], amphipod, *hallway[destination + 1 :]),
                 )
             )
 
     # Try and move amphipods in hallway to their destination
-    for start in HALLWAY_POSITIONS:
+    for start in (h for h in HALLWAY_POSITIONS if hallway[h] is not None):
         amphipod = hallway[start]
-        if amphipod is None:
-            continue
         destination = (amphipod + 1) * 2
-        if room_amphipods[destination // 2 - 1]:
+        if rooms[destination // 2 - 1]:
             continue  # There's somebody in the room who still needs to move
         if any(hallway[step] is not None for step in BETWEEN[(start, destination)]):
             continue  # There's somebody blocking the way en route to target
@@ -76,7 +70,7 @@ def possible_next_states(state: State) -> list[State]:
             (
                 energy_so_far + energy_change,
                 cost_to_complete - energy_change,
-                room_amphipods,
+                rooms,
                 (*hallway[:start], None, *hallway[start + 1 :]),
             )
         )
@@ -105,28 +99,27 @@ def organise_amphipods(amphipod_rows: tuple[tuple[str, str, str, str], ...]) -> 
     for variant, count in amphipod_count.items():
         extra_energy += {1: 0, 2: 1, 3: 3, 4: 6}[count] * 10 ** variant
 
-    room_amphipods = tuple(tuple(occupants) for occupants in room_occupants.values())
+    rooms = tuple(tuple(occupants) for occupants in room_occupants.values())
 
     # Calculate initial estimate of 'cost to complete' (assume everybody moves directly)
     cost_to_complete = 0
-    for i, occupants in enumerate(room_amphipods):
+    for i, occupants in enumerate(rooms):
         cost_to_complete += sum(
             (abs((a + 1) * 2 - ((i + 1) * 2)) + 2) * 10 ** a for a in occupants
         )
 
     hallway = tuple(None for _ in range(11))
-    initial_state = (0, cost_to_complete, room_amphipods, hallway)
+    initial_state = (0, cost_to_complete, rooms, hallway)
     to_visit = [(cost_to_complete, id(initial_state), initial_state)]
 
     while to_visit:
-        _, _, state = heappop(to_visit)
-        energy_so_far, cost_to_complete, _, _ = state
-        if cost_to_complete == 0:
-            return energy_so_far + extra_energy
-        for next_state in possible_next_states(state):
-            heappush(
-                to_visit, (next_state[0] + next_state[1], id(next_state), next_state)
-            )
+        _, _, current_state = heappop(to_visit)
+        if current_state[1] == 0:
+            return current_state[0] + extra_energy
+        for state in possible_next_states(current_state):
+            # Heap ranks states by total cost - to date and estimated to complete
+            # (plus the unqique id of the state as a tie-breaker)
+            heappush(to_visit, (state[0] + state[1], id(state), state))
 
     return None
 
@@ -134,7 +127,6 @@ def organise_amphipods(amphipod_rows: tuple[tuple[str, str, str, str], ...]) -> 
 EXTRA_ROWS = (("D", "C", "B", "A"), ("D", "B", "A", "C"))
 
 
-@print_time_taken
 def solve(inputs):
 
     amphipod_data = inputs.splitlines()
