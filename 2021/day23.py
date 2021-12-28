@@ -21,38 +21,20 @@ sample_input = """#############
   #########"""
 
 
-AMBER, BRONZE, COPPER, DESERT = "A", "B", "C", "D"
-AMPHIPODS = (AMBER, BRONZE, COPPER, DESERT)
-ENERGY = {AMBER: 1, BRONZE: 10, COPPER: 100, DESERT: 1000}
-
-BURROW_LENGTH = 11
-AMPHIPOD_ROOMS = {AMBER: 2, BRONZE: 4, COPPER: 6, DESERT: 8}
-HALLWAY_POSITIONS = tuple(i for i in range(11) if i not in AMPHIPOD_ROOMS.values())
+HALLWAY_POSITIONS = tuple(i for i in range(11) if i not in (2, 4, 6, 8))
 BETWEEN = {
     (s, d): tuple(h for h in HALLWAY_POSITIONS if s < h < d or d < h < s)
-    for s, d in product(range(BURROW_LENGTH), range(BURROW_LENGTH))
+    for s, d in product(range(11), range(11))
     if s != d
 }
 
-Amphipod: TypeAlias = str  # 'A', 'B', 'C' or 'D'
-HallwayAmphipods: TypeAlias = tuple[tuple[Amphipod, int], ...]
-RoomAmphipods: TypeAlias = list[
-    tuple[Amphipod, ...],
-    tuple[Amphipod, ...],
-    tuple[Amphipod, ...],
-    tuple[Amphipod, ...],
-]
-
-# State is energy so far, estimated cost to complete, and amphipods in rooms and halls
-State: TypeAlias = tuple[int, int, RoomAmphipods, HallwayAmphipods]
+# State is energy so far, estimated cost to complete, and amphipods in rooms and hallway
+State: TypeAlias = tuple[int, int, tuple[tuple[int, ...]], tuple[int | None, ...]]
 
 
 @lru_cache(maxsize=None)
 def possible_next_states(state: State) -> list[State]:
-    (energy_so_far, cost_to_complete, room_amphipods, hallway_amphipods) = state
-    blocked = {h for _, h in hallway_amphipods}
-    available = {h for h in HALLWAY_POSITIONS if h not in blocked}
-
+    energy_so_far, cost_to_complete, room_amphipods, hallway = state
     next_states = []
 
     # Try and move amphipods in rooms out to the hall
@@ -60,47 +42,49 @@ def possible_next_states(state: State) -> list[State]:
         if not occupants:
             continue
         start = (i + 1) * 2
-        for destination in available:
-            if any(h in blocked for h in BETWEEN[(start, destination)]):
-                continue  # There's somebody blocking the way en route to h
+        for destination in HALLWAY_POSITIONS:
+            if hallway[destination] is not None:
+                continue  # There's somebody at the destination
+            if any(hallway[step] is not None for step in BETWEEN[(start, destination)]):
+                continue  # There's somebody blocking the way en route to destination
             amphipod = occupants[0]
-            target = AMPHIPOD_ROOMS[amphipod]
+            target = (amphipod + 1) * 2
             steps_sd = abs(start - destination) + 1  # Extra step to leave room
-            steps_dt = abs(target - destination) + 1  # Extra step to enter room
-            steps_st = abs(target - start) + 1 + 1  # Extra *steps* to leave/enter rooms
-            step_change = steps_dt - steps_st
+            step_change = abs(target - destination) - abs(target - start) - 1
+            energy_cost = 10 ** amphipod
             next_states.append(
                 (
-                    energy_so_far + steps_sd * ENERGY[amphipod],
-                    cost_to_complete + step_change * ENERGY[amphipod],
+                    energy_so_far + steps_sd * energy_cost,
+                    cost_to_complete + step_change * energy_cost,
                     (*room_amphipods[:i], occupants[1:], *room_amphipods[i + 1 :]),
-                    ((amphipod, destination), *hallway_amphipods),
+                    (*hallway[:destination], amphipod, *hallway[destination + 1 :]),
                 )
             )
 
     # Try and move amphipods in hallway to their destination
-    for amphipod, start in hallway_amphipods:
-        destination = AMPHIPOD_ROOMS[amphipod]
+    for start in HALLWAY_POSITIONS:
+        amphipod = hallway[start]
+        if amphipod is None:
+            continue
+        destination = (amphipod + 1) * 2
         if room_amphipods[destination // 2 - 1]:
             continue  # There's somebody in the room who still needs to move
-        if any(h in blocked for h in BETWEEN[(start, destination)]):
+        if any(hallway[step] is not None for step in BETWEEN[(start, destination)]):
             continue  # There's somebody blocking the way en route to target
-        energy_change = (abs(start - destination) + 1) * ENERGY[amphipod]
+        energy_change = (abs(start - destination) + 1) * 10 ** amphipod
         next_states.append(
             (
                 energy_so_far + energy_change,
                 cost_to_complete - energy_change,
                 room_amphipods,
-                tuple((a, h) for a, h in hallway_amphipods if h != start),
+                (*hallway[:start], None, *hallway[start + 1 :]),
             )
         )
 
     return next_states
 
 
-def organise_amphipods(
-    amphipod_rows: tuple[tuple[Amphipod, Amphipod, Amphipod, Amphipod], ...]
-) -> int:
+def organise_amphipods(amphipod_rows: tuple[tuple[str, str, str, str], ...]) -> int:
 
     extra_energy, amphipod_count = 0, defaultdict(int)
 
@@ -108,38 +92,41 @@ def organise_amphipods(
     # Also calculate extra energy required as amphipods leave their starting rooms...
     room_occupants = defaultdict(list)
     for amphipods in amphipod_rows:
-        for room_variant, amphipod in zip(AMPHIPODS, amphipods):
-            room_occupants[room_variant].append(amphipod)
-    for room_variant, occupants in room_occupants.items():
-        while occupants and occupants[-1] == room_variant:
+        for room_index, amphipod in enumerate(amphipods):
+            room_occupants[room_index].append(ord(amphipod) - 65)
+    for room_index, occupants in room_occupants.items():
+        while occupants and occupants[-1] == room_index:
             occupants.pop()
         for position_in_room, amphipod in enumerate(occupants):
             amphipod_count[amphipod] += 1
-            extra_energy += ENERGY[amphipod] * position_in_room
+            extra_energy += position_in_room * 10 ** amphipod
 
     # ...and add extra energy required for amphipods arriving at their destination
     for variant, count in amphipod_count.items():
-        extra_energy += ENERGY[variant] * {1: 0, 2: 1, 3: 3, 4: 6}[count]
+        extra_energy += {1: 0, 2: 1, 3: 3, 4: 6}[count] * 10 ** variant
 
     room_amphipods = tuple(tuple(occupants) for occupants in room_occupants.values())
 
-    # Calculate the initial estimated 'cost to complete' (assumed everyone moves direct)
+    # Calculate initial estimate of 'cost to complete' (assume everybody moves directly)
     cost_to_complete = 0
     for i, occupants in enumerate(room_amphipods):
         cost_to_complete += sum(
-            (abs(AMPHIPOD_ROOMS[a] - ((i + 1) * 2)) + 2) * ENERGY[a] for a in occupants
+            (abs((a + 1) * 2 - ((i + 1) * 2)) + 2) * 10 ** a for a in occupants
         )
 
-    initial_state = (0, cost_to_complete, tuple(room_amphipods), ())
-    to_visit = [(cost_to_complete, initial_state)]
+    hallway = tuple(None for _ in range(11))
+    initial_state = (0, cost_to_complete, room_amphipods, hallway)
+    to_visit = [(cost_to_complete, id(initial_state), initial_state)]
 
     while to_visit:
-        _, state = heappop(to_visit)
+        _, _, state = heappop(to_visit)
         energy_so_far, cost_to_complete, _, _ = state
         if cost_to_complete == 0:
             return energy_so_far + extra_energy
         for next_state in possible_next_states(state):
-            heappush(to_visit, (next_state[0] + next_state[1], next_state))
+            heappush(
+                to_visit, (next_state[0] + next_state[1], id(next_state), next_state)
+            )
 
     return None
 
