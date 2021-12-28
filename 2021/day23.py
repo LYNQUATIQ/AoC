@@ -155,7 +155,7 @@ def solve(inputs):
     last_row = tuple(re.findall(r"[ABCD]", amphipod_data[3]))
 
     print(f"Part 1: {organise_amphipods((first_row, last_row))}")
-    # print(f"Part 2: {organise_amphipods( (first_row, *EXTRA_ROWS, last_row))}\n")
+    print(f"Part 2: {organise_amphipods( (first_row, *EXTRA_ROWS, last_row))}\n")
 
 
 solve(sample_input)
