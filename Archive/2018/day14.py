@@ -16,8 +16,7 @@ def solve(target_length, target_number):
     done = False
     while not done:
         total = recipes[elf1] + recipes[elf2]
-        next_recipes = [total // 10, total % 10] if total > 9 else [total % 10]
-        for recipe in next_recipes:
+        for recipe in divmod(total, 10) if total > 9 else (total,):
             recipes[total_recipes] = recipe
             total_recipes += 1
             most_recent = (most_recent * 10 + recipe) % num_digits
