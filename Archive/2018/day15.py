@@ -2,6 +2,7 @@
 import os
 
 from collections import deque
+from dataclasses import dataclass
 from typing import NamedTuple
 
 from utils import print_time_taken
@@ -9,7 +10,8 @@ from utils import print_time_taken
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day15_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """#########
+
+sample_input = """#########   
 #G......#
 #.E.#...#
 #..##..G#
@@ -19,6 +21,8 @@ sample_input = """#########
 #.....G.#
 #########"""
 
+ELF, GOBLIN = "E", "G"
+
 
 class Pt(NamedTuple("Pt", [("x", int), ("y", int)])):
     def __add__(self, other):
@@ -27,210 +31,139 @@ class Pt(NamedTuple("Pt", [("x", int), ("y", int)])):
     def __lt__(self, other):
         return self.x < other.x if self.y == other.y else self.y < other.y
 
+    @property
     def neighbours(self):
         return tuple(self + d for d in (Pt(0, -1), Pt(-1, 0), Pt(1, 0), Pt(0, 1)))
+
+
+@dataclass
+class Unit:
+    species: str
+    hp: int = 200
+    power: int = 3
 
 
 class ElfDied(Exception):
     pass
 
 
-class Unit:
-    def __init__(self, species, xy, attack_power):
-        self.hp = 200
-        self.species = species
-        self.xy = xy
-        self.attack_power = attack_power
-
-    def __lt__(self, other):
-        return self.xy < other.xy if self.hp == other.hp else self.hp < other.hp
-
-    @property
-    def is_alive(self):
-        return self.hp > 0
-
-
-class CaveSystem:
+class Caves:
 
     WALL = "#"
-    OPEN = "."
-    GOBLIN = "G"
-    ELF = "E"
 
-    SPECIES = [GOBLIN, ELF]
-
-    def __init__(self, inputs, elf_power=3, stop_if_elf_is_dead=False):
-        self.map = {}
-        self.units = set()
-        self.round = 0
-        self.stop_if_elf_is_dead = stop_if_elf_is_dead
+    def __init__(self, inputs, elf_power=3):
+        self.map = set()
+        self.units = {}
         for y, line in enumerate(inputs.splitlines()):
             for x, c in enumerate(line):
                 xy = Pt(x, y)
-                if c in self.SPECIES:
-                    attack_power = 3
-                    if c == self.ELF:
-                        attack_power = elf_power
-                    self.units.add(Unit(c, xy, attack_power))
-                self.map[xy] = c
+                if c == self.WALL:
+                    self.map.add(xy)
+                if c in [GOBLIN, ELF]:
+                    self.units[xy] = Unit(c, power=elf_power if c == ELF else 3)
 
-    def connected_nodes(self, xy):
-        return (n for n in xy.neighbours() if self.map[n] == self.OPEN)
-
-    def survivors(self):
-        return {u for u in self.units if u.is_alive}
-
-    def targets(self, unit):
-        return {u for u in self.survivors() if u.species != unit.species}
-
-    def in_range_target(self, unit, targets):
-        in_range_targets = [t for t in targets if t.xy in unit.xy.neighbours()]
-        if not in_range_targets:
-            return None
-        return sorted(in_range_targets)[0]
-
-    def do_battle(self):
-        self.round = 0
+    def do_battle(self, raise_elf_death: bool = False):
+        rounds = 0
         while True:
-            if self.play_round() == True:
-                break
-            self.round += 1
-        return self.round * sum([u.hp for u in self.survivors()])
+            for unit_xy in sorted(self.units):
+                try:
+                    unit = self.units[unit_xy]
+                except:
+                    continue  # unit was killed earlier in round
+                targets = {
+                    xy for xy, t in self.units.items() if unit.species != t.species
+                }
+                if not targets:  # Combat's over... all opponents defeated
+                    return rounds * sum(u.hp for u in self.units.values())
+                self.make_move(unit_xy, unit, targets, raise_elf_death)
+            rounds += 1
 
-    def play_round(self):
-        for unit in sorted(self.units, key=lambda x: x.xy):
-            if unit.is_alive:
-                if self.make_move(unit):
-                    return True
+    def make_move(
+        self, unit_xy: Pt, unit: Unit, targets: set[Pt], raise_elf_death: bool
+    ):
+        opponents = {t for t in targets if t in unit_xy.neighbours}
+        if not opponents:
+            in_range = {
+                xy
+                for target_xy in targets
+                for xy in target_xy.neighbours
+                if xy not in self.map and xy not in self.units
+            }
+            new_xy = self.find_move(unit_xy, in_range)
+            if new_xy:
+                self.units[new_xy] = self.units.pop(unit_xy)
+                opponents = {t for t in targets if t in new_xy.neighbours}
 
-    def make_move(self, unit):
-        targets = self.targets(unit)
-        if not targets:
-            return True
-        target = self.in_range_target(unit, targets)
+        if opponents:
+            target_xy, target = sorted(
+                ((xy, self.units[xy]) for xy in opponents),
+                key=lambda x: (x[1].hp, x[0]),
+            )[0]
+            target.hp -= unit.power
+            if target.hp <= 0:
+                if target.species == ELF and raise_elf_death:
+                    raise ElfDied()
+                del self.units[target_xy]
 
-        # If no target then take a step
-        if not target:
-            self.take_step_towards_targets(unit, targets)
-            target = self.in_range_target(unit, targets)
-
-        # Attack neighbouring target
-        if target:
-            self.attack_target(unit, target)
-
-    def attack_target(self, unit, target):
-        target.hp -= unit.attack_power
-        if target.hp <= 0:
-            self.map[target.xy] = self.OPEN
-            if self.stop_if_elf_is_dead and target.species == self.ELF:
-                raise ElfDied()
-        return None
-
-    def take_step_towards_targets(self, unit, targets):
-        # Get all the locations that are in range of targets
-        potential_goals = set()
-        for potential_target in targets:
-            for xy in self.connected_nodes(potential_target.xy):
-                potential_goals.add(xy)
-        if not potential_goals:
-            return
-        best_path = self.shortest_path(unit.xy, potential_goals)
-        if not best_path:
-            return
-
-        # Move along best path
-        next_loc = best_path[0]
-        self.map[unit.xy] = self.OPEN
-        unit.xy = next_loc
-        self.map[unit.xy] = unit.species
-
-    def winning_species(self):
-        return self.survivors()[0].species
-
-    # Find the shortest path to the (closest of) goal(s)
-    def shortest_path(self, start, goals, check_closest_neighbour=True):
-        if isinstance(goals, Pt):
-            goals = [goals]
-
-        # List of points to visit (and their distance from the start)
+    def find_move(self, start, targets):
         to_visit = deque([(start, 0)])
-        visited = set()
+        occupied = {xy for xy in self.units if xy != start}
         paths = {start: (0, None)}
-        # Get all the shortest paths
+        visited = set()
         while to_visit:
-            this_node, distance_so_far = to_visit.popleft()
-            for next_step in self.connected_nodes(this_node):
-                if next_step not in paths or paths[next_step] > (
-                    distance_so_far + 1,
-                    this_node,
-                ):
-                    paths[next_step] = (distance_so_far + 1, this_node)
-                if next_step in visited:
+            xy, distance = to_visit.popleft()
+            for n in xy.neighbours:
+                if n in self.map or n in occupied:
                     continue
-                if next_step in [q for q, _ in to_visit]:
+                if n not in paths or paths[n] > (distance + 1, xy):
+                    paths[n] = (distance + 1, xy)
+                if n in visited:
                     continue
-                to_visit.append((next_step, distance_so_far + 1))
-            visited.add(this_node)
+                if not any(n == v[0] for v in to_visit):
+                    to_visit.append((n, distance + 1))
+            visited.add(xy)
 
-        paths_to_goals = {node: path for node, path in paths.items() if node in goals}
-        if not paths_to_goals:
+        try:
+            _, closest_target = min(
+                (d, xy) for xy, (d, _) in paths.items() if xy in targets
+            )
+        except ValueError:
             return None
 
-        closest_goal = None
-        shortest_distance = None
-        for goal, (distance, _) in paths_to_goals.items():
-            if closest_goal is None or distance < shortest_distance:
-                closest_goal = goal
-                shortest_distance = distance
-                continue
-            if distance > shortest_distance:
-                continue
-            if distance == shortest_distance and goal < closest_goal:
-                closest_goal = goal
-                shortest_distance = distance
+        distances, to_visit = {closest_target: 0}, deque([(closest_target, 0)])
+        while to_visit:
+            xy, distance = to_visit.popleft()
+            if xy == start:
+                break
+            for n in xy.neighbours:
+                if not (n in self.map or n in occupied or n in distances):
+                    distances[n] = distance + 1
+                    to_visit.append((n, distance + 1))
 
-        if check_closest_neighbour:
-            best_nb_path = None
-            for nb in self.connected_nodes(start):
-                nb_path = self.shortest_path(
-                    nb, closest_goal, check_closest_neighbour=False
-                )
-                if nb_path is None:
-                    continue
-                nb_path = [nb] + nb_path
-                if best_nb_path is None:
-                    best_nb_path = nb_path
-                    continue
-                if len(nb_path) < len(best_nb_path):
-                    best_nb_path = nb_path
-            path = best_nb_path
-        else:
-            path = [closest_goal]
-            distance, node = paths[closest_goal]
-            while distance > 1:
-                path = [node] + path
-                distance, node = paths[node]
-
-        return path
+        _, best_move = min(
+            (d, xy) for xy, d in distances.items() if xy in start.neighbours
+        )
+        return best_move
 
 
 @print_time_taken
 def solve(inputs):
 
-    print(f"Part 1: {CaveSystem(inputs).do_battle()}")
+    print(f"Part 1: {Caves(inputs).do_battle()}")
 
-    elf_attack_power = 14
+    definitely_lose, definitely_win = 3, 200
     while True:
-        elf_attack_power += 1
-        caves = CaveSystem(inputs, elf_attack_power, stop_if_elf_is_dead=True)
+        candidate = (definitely_win - definitely_lose) // 2 + definitely_lose
         try:
-            outcome = caves.do_battle()
-            break
+            outcome = Caves(inputs, candidate).do_battle(raise_elf_death=True)
         except ElfDied:
-            pass
-
+            definitely_lose = candidate
+            continue
+        definitely_win = candidate
+        if definitely_win == definitely_lose + 1:
+            break
     print(f"Part 2: {outcome}\n")
 
 
 solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
