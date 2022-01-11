@@ -2,10 +2,6 @@
 import os
 import re
 
-from collections import deque
-from dataclasses import dataclass
-from itertools import permutations
-
 from utils import print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day16_input.txt")) as f:
@@ -40,7 +36,6 @@ OPERATIONS = {
 }
 
 
-@dataclass
 class Sample:
     def __init__(self, before, instruction, after) -> None:
         self.before, self.instruction, self.after = before, instruction, after
