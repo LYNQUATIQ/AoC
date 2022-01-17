@@ -9,7 +9,9 @@ from grid_system import ConnectedGrid, XY
 script_dir = os.path.dirname(__file__)
 file_path = os.path.join(script_dir, "logs/2018_day_22.log")
 logging.basicConfig(
-    level=logging.DEBUG, filename=file_path, filemode="w",
+    level=logging.DEBUG,
+    filename=file_path,
+    filemode="w",
 )
 
 
@@ -183,7 +185,7 @@ class CaveSystem:
         return self.geological_indices[xy]
 
 
-caves = CaveSystem()
+caves = CaveSystem(depth=510, target=XY(10, 10))
 print(caves.total_risk_level())
 caves.print_cave_system()
 cost, path = caves.best_route()

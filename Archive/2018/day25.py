@@ -35,23 +35,22 @@ class Point(tuple):
 
 @print_time_taken
 def solve(inputs):
-    points = {Point(*map(int, (re.findall(r"-?\d+", l)))) for l in inputs.splitlines()}
-    neighbours = defaultdict(list)
-    for a, b in combinations(points, 2):
-        if sum(map(abs, a - b)) <= 3:
-            neighbours[a].append(b)
-
+    points = [Point(*map(int, (re.findall(r"-?\d+", l)))) for l in inputs.splitlines()]
     constellations = {p: p for p in points}
-    for point in points:
+
+    for i, point in enumerate(points[:-1]):
         my_constellation = constellations[point]
-        for n in neighbours[point]:
-            neighbours_constellation = constellations[n]
-            if neighbours_constellation == my_constellation:
-                continue
-            for x in (
-                p for p, c in constellations.items() if c == neighbours_constellation
-            ):
-                constellations[x] = my_constellation
+        for other in points[i + 1 :]:
+            if sum(map(abs, point - other)) <= 3:
+                neighbours_constellation = constellations[other]
+                if neighbours_constellation == my_constellation:
+                    continue
+                for x in (
+                    p
+                    for p, c in constellations.items()
+                    if c == neighbours_constellation
+                ):
+                    constellations[x] = my_constellation
 
     print(f"Part 1: {len(set(constellations.values()))}")
 
