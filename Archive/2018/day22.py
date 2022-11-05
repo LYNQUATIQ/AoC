@@ -89,10 +89,6 @@ class CaveSystem:
             for x, y in product(range(self.target_x + 1), range(self.target_y + 1))
         )
 
-    # @lru_cache
-    def foo_region_type(self, xy):
-        return self.erosion_level(*xy) % 3
-
     def best_route(self):
         current_node = (0, 0, self.TORCH)
         shortest_distance = {current_node: 0}
@@ -111,30 +107,30 @@ class CaveSystem:
                     if current_shortest_cost < cost_to_next_node:
                         continue
                 shortest_distance[next_node] = cost_to_next_node
-                (nx, ny), gear = next_node
+                nx, ny, gear = next_node
                 estimated_cost = (
                     cost_to_next_node
-                    + abs(nx - self.target_xy[0])
-                    + abs(ny - self.target_xy[1])
+                    + abs(nx - self.target_x)
+                    + abs(ny - self.target_y)
                     + 7 * (gear != self.TORCH)
                 )
                 heappush(to_visit, (estimated_cost, cost_to_next_node, next_node))
 
     @lru_cache
     def next_steps(self, node):
-        (x, y), current_gear = node
-        region_type = self.region_type((x, y))
+        x, y, current_gear = node
+        region_type = self.erosion_level(x, y) % 3
         neighbours = ((x + dx, y + dy) for dx, dy in ((0, 1), (1, 0), (0, -1), (-1, 0)))
         allowed_nodes = set(
-            (((nx, ny), current_gear), 1)
+            ((nx, ny, current_gear), 1)
             for nx, ny in neighbours
             if 0 <= nx
             and 0 <= ny
-            and self.region_type((nx, ny))
+            and self.erosion_level(nx, ny) % 3
             in self.NEIGHBOURS_ALLOWED[(region_type, current_gear)]
         )
         allowed_nodes.add(
-            (((x, y), self.SWITCHES_ALLOWED[(region_type, current_gear)]), 7)
+            ((x, y, self.SWITCHES_ALLOWED[(region_type, current_gear)]), 7)
         )
         return allowed_nodes
 
@@ -144,7 +140,7 @@ def solve(inputs):
     depth, t_x, t_y = map(int, re.findall("\d+", inputs))
     caves = CaveSystem(depth, t_x, t_y)
     print(f"Part 1: {caves.total_risk_level()}")
-    caves.print_cave_system()
+    # caves.print_cave_system()
     print(f"Part 2: {caves.best_route()}")
 
 
