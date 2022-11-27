@@ -1,12 +1,12 @@
 import functools
 import time
 from itertools import chain, combinations, zip_longest
-from typing import Iterable, Optional, TypeVar
+from typing import Callable, Iterable, Optional, TypeVar
 
 T = TypeVar("T")
 
 
-def print_time_taken(func):
+def print_time_taken(func) -> Callable:
     @functools.wraps(func)
     def _wrapped_func(*args, **kwargs):
         start_time = time.time()
@@ -26,7 +26,7 @@ def print_time_taken(func):
     return _wrapped_func
 
 
-def flatten(list_of_lists: list[list[T]]) -> list[T]:
+def flatten(list_of_lists: list[list[T]]):
     # flatten([ [1, 2, 3], [4, 5, 6] ]) --> 1, 2, 3, 4, 5, 6
     return chain.from_iterable(list_of_lists)
 
