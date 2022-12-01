@@ -22,7 +22,7 @@ SAMPLE_INPUT = """1000
 
 
 def solve(inputs: str) -> None:
-    calories = [sum(list(map(int, elf.splitlines()))) for elf in inputs.split("\n\n")]
+    calories = [sum(map(int, elf.splitlines())) for elf in inputs.split("\n\n")]
     calories.sort(reverse=True)
 
     print(f"\nPart 1: {calories[0]}")
