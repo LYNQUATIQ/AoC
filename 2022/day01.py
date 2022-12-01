@@ -5,15 +5,29 @@ with open(os.path.join(os.path.dirname(__file__), f"inputs/day01_input.txt")) as
     actual_input = f.read()
 
 
-SAMPLE_INPUT = """xxx"""
+SAMPLE_INPUT = """1000
+2000
+3000
+
+4000
+
+5000
+6000
+
+7000
+8000
+9000
+
+10000"""
 
 
 def solve(inputs: str) -> None:
-    values = tuple(map(int, inputs.splitlines()))
+    calories = [sum(list(map(int, elf.splitlines()))) for elf in inputs.split("\n\n")]
+    calories.sort(reverse=True)
 
-    print(f"Part 1: {False}")
-    print(f"Part 2: {False}")
+    print(f"\nPart 1: {calories[0]}")
+    print(f"Part 2: {sum(calories[0:3])}\n")
 
 
 solve(SAMPLE_INPUT)
-# solve(actual_input)
+solve(actual_input)
