@@ -1,18 +1,31 @@
+from __future__ import annotations
 import math
+import sys
 
 from collections import deque
 from functools import lru_cache
+from heapq import heappush, heappop
 from itertools import product
+from typing import Any, Callable, Iterable, Optional
+
+
+NORTH = (0, -1)
+SOUTH = (0, 1)
+EAST = (1, 0)
+WEST = (0, 1)
+
+LEFT_TURN = {NORTH: WEST, WEST: SOUTH, SOUTH: EAST, EAST: NORTH}
+RIGHT_TURN = {NORTH: EAST, EAST: SOUTH, SOUTH: WEST, WEST: NORTH}
 
 
 @lru_cache
-def _direction_vectors(dimensions):
-    return list(product((-1, 0, 1), repeat=dimensions))
+def _direction_vectors(dimensions: int) -> tuple[tuple[int, ...], ...]:
+    return tuple(product((-1, 0, 1), repeat=dimensions))
 
 
 class Point(tuple):
-    def __new__(cls, *_tuple):
-        return tuple.__new__(cls, _tuple)
+    def __new__(cls, *args):
+        return tuple.__new__(cls, args)
 
     def __add__(self, other):
         return type(self)(*(a + b for a, b in zip(self, other)))
@@ -22,12 +35,14 @@ class Point(tuple):
 
     @property
     def all_neighbours(self):
+        """Generator for neighbouring points (including diagonal neighbours)"""
         for direction in _direction_vectors(len(self)):
             if not all(d == 0 for d in direction):
                 yield self + type(self)(*direction)
 
     @property
     def neighbours(self):
+        """Generator for immediate neighbouring points (not including diagonals)"""
         for direction in _direction_vectors(len(self)):
             if sum(abs(d) for d in direction) == 1:
                 yield self + type(self)(*direction)
@@ -38,6 +53,23 @@ class Point(tuple):
 
 
 class XY(Point):
+    """An integer x, y coordinate/point"""
+
+    def __new__(cls, x: int, y: int):
+        return Point.__new__(cls, x, y)
+
+    @property
+    def x(self) -> int:
+        return self[0]
+
+    @property
+    def y(self) -> int:
+        return self[1]
+
+    @classmethod
+    def directions(cls):
+        return [cls(*xy) for xy in product((-1, 0, 1), (-1, 0, 1)) if xy != (0, 0)]
+
     @classmethod
     def direction(cls, direction):
         return {
@@ -47,68 +79,45 @@ class XY(Point):
             "W": cls(-1, 0),
         }[direction.upper()[0]]
 
-    @property
-    def x(self):
-        return self[0]
-
-    @property
-    def y(self):
-        return self[1]
-
-    @classmethod
-    def directions(cls):
-        return [cls(*xy) for xy in product((-1, 0, 1), (-1, 0, 1)) if xy != (0, 0)]
-
-    def in_bounds(self, *args):
-        bounds = []
-        for arg in args:
-            if isinstance(arg, tuple):
-                bounds += arg
-            else:
-                bounds += [arg]
+    def in_bounds(self, bounds: int | tuple[int, int] | tuple[int, int, int, int]):
         min_x, min_y, max_x, max_y = 0, 0, 0, 0
-        if len(bounds) == 1:
-            max_x, max_y = bounds[0], bounds[0]
-        if len(bounds) == 2:
-            max_x, max_y = bounds[0], bounds[1]
+        if isinstance(bounds, int):
+            max_x, max_y = bounds, bounds
+        elif len(bounds) == 2:
+            max_x, max_y = bounds  # type: ignore
         elif len(bounds) == 4:
-            min_x, min_y, max_x, max_y = bounds[0], bounds[1], bounds[2], bounds[3]
-        return (
-            self.x >= min_x and self.x <= max_x and self.y >= min_y and self.y <= max_y
-        )
+            min_x, min_y, max_x, max_y = bounds  # type: ignore
+        return min_x <= self.x <= max_x and min_y <= self.y <= max_y
 
 
-class ConnectedGrid:
+class XyGrid:
+    def __init__(self, inputs: str = "", convertor: Optional[Callable] = None) -> None:
+        self.grid: dict[XY, Any] = {
+            XY(x, y): convertor(c) if convertor is not None else c
+            for y, line in enumerate(inputs.splitlines())
+            for x, c in enumerate(line)
+        }
 
-    NORTH = XY(0, -1)
-    SOUTH = XY(0, 1)
-    EAST = XY(1, 0)
-    WEST = XY(0, 1)
-
-    def __init__(self):
-        self.grid = {}
-
-    def get_limits(self):
+    def get_limits(self) -> tuple[int, int, int, int]:
         min_x, min_y, max_x, max_y = math.inf, math.inf, -math.inf, -math.inf
-        for pt in self.grid.keys():
-            min_x = min(min_x, pt.x)
-            min_y = min(min_y, pt.y)
-            max_x = max(max_x, pt.x + 1)
-            max_y = max(max_y, pt.y + 1)
-        return min_x, min_y, max_x, max_y
+        for xy in self.grid.keys():
+            min_x = min(min_x, xy.x)
+            min_y = min(min_y, xy.y)
+            max_x = max(max_x, xy.x + 1)
+            max_y = max(max_y, xy.y + 1)
+        return int(min_x), int(min_y), int(max_x), int(max_y)
 
-    def get_symbol(self, xy):
+    def get_symbol(self, xy: XY) -> Any:
         return self.grid.get(xy, " ")
 
-    def print_grid(self, show_headers=True):
+    def print_grid(self, show_headers: bool = True) -> None:
         min_x, min_y, max_x, max_y = self.get_limits()
         header1 = "     " + "".join(
             [" " * 9 + str(x + 1) for x in range((max_x - 1) // 10)]
         )
         header2 = "    " + "".join([str(x % 10) for x in range(max_x)])
         if show_headers:
-            print(header1)
-            print(header2)
+            print(header1 + "\n" + header2)
         for y in range(min_y, max_y):
             if show_headers:
                 print(f"{y:3d} ", end="")
@@ -118,87 +127,28 @@ class ConnectedGrid:
                 print(f" {y:<3d} ", end="")
             print()
         if show_headers:
-            print(header2)
-            print(header1)
+            print(header2 + "\n" + header1)
 
-    def turn_left(self, facing):
-        return {
-            self.NORTH: self.WEST,
-            self.WEST: self.SOUTH,
-            self.SOUTH: self.EAST,
-            self.EAST: self.NORTH,
-        }[facing]
-
-    def turn_right(self, facing):
-        return {
-            self.NORTH: self.EAST,
-            self.EAST: self.SOUTH,
-            self.SOUTH: self.WEST,
-            self.WEST: self.NORTH,
-        }[facing]
-
-    def connected_nodes(self, node, blockages=None):
+    def connected_nodes(self, node: XY, blockages: Iterable[XY] = None):
         connected_nodes = node.neighbours
         if blockages:
             connected_nodes = [n for n in connected_nodes if n not in blockages]
         return connected_nodes
 
-    # Breadth first search returning all paths
-    def bfs_paths(self, start, max_steps=None):
-        bfs_paths = {start: (0, None)}
-        # List of points to visit (and their distance from the start)
-        to_visit = deque([(start, 0)])
-        visited = set()
+    def find_shortest_path(self, start: XY, target: XY, blockages: Iterable[XY] = None):
+        """Find the shortest path from start to target"""
+        prior_step: dict[XY, Optional[XY]] = {start: None}
+        distances: dict[XY, int] = {start: 0}
+        to_visit: list[XY] = []
+        heappush(to_visit, start)
         while to_visit:
-            this_node, distance_so_far = to_visit.popleft()
-            if max_steps is None or distance_so_far < max_steps:
-                for next_step in self.connected_nodes(this_node):
-                    if next_step not in bfs_paths or bfs_paths[next_step] > (
-                        distance_so_far + 1,
-                        this_node,
-                    ):
-                        bfs_paths[next_step] = (distance_so_far + 1, this_node)
-                    if next_step in visited:
-                        continue
-                    if next_step in [q for q, _ in to_visit]:
-                        continue
-                    to_visit.append((next_step, distance_so_far + 1))
-            visited.add(this_node)
+            this_node = heappop(to_visit)
+            if this_node == target:
+                break
+            distance_so_far = distances[this_node]
+            for next_node in self.connected_nodes(this_node, blockages):
+                if distances.get(next_node, sys.maxsize) > distance_so_far + 1:
+                    distances[next_node] = distance_so_far + 1
+                    heappush(to_visit, (this_node, next_node))
 
-        return bfs_paths
-
-    # Find the shortest paths to all the goals
-    def paths_to_goals(self, start, goals, blockages=None):
-        paths = self.bfs_paths(start)
-        paths_to_goals = {}
-        for destination, path in paths.items():
-            if destination not in goals:
-                continue
-            path = [destination]
-            distance, node = paths[destination]
-            while distance > 1:
-                path = [node] + path
-                distance, node = paths[node]
-            paths_to_goals[destination] = path
-
-        if not paths_to_goals:
-            return None
-
-        return paths_to_goals
-
-    # Find the shortest path to the closest goal
-    def find_shortest_path(self, start, goals, blockages=None):
-        if isinstance(goals, XY):
-            goals = [goals]
-
-        paths_to_goals = self.paths_to_goals(start, goals, blockages)
-
-        if not paths_to_goals:
-            return None
-
-        best_path = None
-        for path in paths_to_goals.values():
-            if not best_path or len(path) < len(best_path):
-                best_path = path
-
-        return best_path
+        return risk_level[target]
