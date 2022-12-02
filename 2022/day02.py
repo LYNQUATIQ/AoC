@@ -35,16 +35,16 @@ STRATEGIES = {
 
 def solve(inputs: str) -> None:
     total_score = 0
-    for round in inputs.splitlines():
-        token1, token2 = round.split()
+    for line in inputs.splitlines():
+        token1, token2 = line.split()
         opponent, you = SHAPES[token1], SHAPES[token2]
         result = OUTCOMES[you][opponent]
         total_score += result + you
     print(f"\nPart 1: {total_score}")
 
     total_score = 0
-    for round in inputs.splitlines():
-        token1, token2 = round.split()
+    for line in inputs.splitlines():
+        token1, token2 = line.split()
         opponent, result = SHAPES[token1], RESULTS[token2]
         you = STRATEGIES[result][opponent]
         total_score += result + you
