@@ -13,9 +13,6 @@ C Z
 ROCK, PAPER, SCISSORS = 1, 2, 3
 WIN, DRAW, LOSE = 6, 3, 0
 
-SHAPES = {"A": ROCK, "B": PAPER, "C": SCISSORS, "X": ROCK, "Y": PAPER, "Z": SCISSORS}
-RESULTS = {"X": LOSE, "Y": DRAW, "Z": WIN}
-
 # Outcomes - the result given an opponent's shape and your shape
 OUTCOMES = {
     ROCK: {ROCK: DRAW, PAPER: WIN, SCISSORS: LOSE},
@@ -29,17 +26,20 @@ STRATEGIES = {
     for opponent in (ROCK, PAPER, SCISSORS)
 }
 
+SHAPES = {"A": ROCK, "B": PAPER, "C": SCISSORS, "X": ROCK, "Y": PAPER, "Z": SCISSORS}
+RESULTS = {"X": LOSE, "Y": DRAW, "Z": WIN}
+
 
 def solve(inputs: str) -> None:
     total_score = 0
-    for token1, token2 in map(lambda l: l.split(), inputs.splitlines()):
+    for token1, token2 in map(str.split, inputs.splitlines()):
         opponent, you = SHAPES[token1], SHAPES[token2]
         result = OUTCOMES[opponent][you]
         total_score += result + you
     print(f"\nPart 1: {total_score}")
 
     total_score = 0
-    for token1, token2 in map(lambda l: l.split(), inputs.splitlines()):
+    for token1, token2 in map(str.split, inputs.splitlines()):
         opponent, result = SHAPES[token1], RESULTS[token2]
         you = STRATEGIES[opponent][result]
         total_score += result + you
