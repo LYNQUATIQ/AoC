@@ -20,8 +20,7 @@ def solve(inputs: str) -> None:
     dupes = []
     for rucksack in rucksacks:
         midpoint = len(rucksack) // 2
-        compartment_1, compartment_2 = rucksack[:midpoint], rucksack[midpoint:]
-        dupes += list(set(c for c in compartment_1 if c in compartment_2))
+        dupes += list(set(rucksack[:midpoint]) & set(rucksack[midpoint:]))
     print(f"\nPart 1: {sum(string.ascii_letters.index(c) + 1 for c in dupes)}")
 
     badges = []
