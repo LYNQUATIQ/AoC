@@ -13,40 +13,33 @@ wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
 ttgJtRGJQctTZtZT
 CrZsJsPPZsGzwwsLwLmpwMDw"""
 
+PRIORITIES = {c: i for i, c in enumerate(string.ascii_lowercase, 1)} | {
+    c: i for i, c in enumerate(string.ascii_uppercase, 27)
+}
+
+
+def grouper(iterable, n):
+    args = [iter(iterable)] * n
+    return zip(*args)
+
 
 def solve(inputs: str) -> None:
+    rucksacks = inputs.splitlines()
+
     dupes = []
-    lines = inputs.splitlines()
-    for line in lines:
-        l = len(line) // 2
-        pack1, pack2 = line[:l], line[l:]
-        pack_dupes = set()
-        for c in pack1:
-            if c in pack2:
-                pack_dupes.add(c)
-        dupes += list(pack_dupes)
-    total = 0
-    for c in dupes:
-        if c in string.ascii_lowercase:
-            total += ord(c) - ord("a") + 1
-        else:
-            total += ord(c) - ord("A") + 27
-    print(f"\nPart 1: {total}")
+    for rucksack in rucksacks:
+        midpoint = len(rucksack) // 2
+        compartment_1, compartment_2 = rucksack[:midpoint], rucksack[midpoint:]
+        dupes += list(set(c for c in compartment_1 if c in compartment_2))
+    print(f"\nPart 1: {sum(map(PRIORITIES.get, dupes))}")
 
     badges = []
-    for i in range(0, len(lines), 3):
-        pack1, pack2, pack3 = lines[i], lines[i + 1], lines[i + 2]
+    for pack1, pack2, pack3 in grouper(rucksacks, 3):
         for c in string.ascii_letters:
             if c in pack1 and c in pack2 and c in pack3:
                 badges.append(c)
                 break
-    total = 0
-    for c in badges:
-        if c in string.ascii_lowercase:
-            total += ord(c) - ord("a") + 1
-        else:
-            total += ord(c) - ord("A") + 27
-    print(f"Part 2: {total}\n")
+    print(f"Part 2: {sum(map(PRIORITIES.get, badges))}\n")
 
 
 solve(SAMPLE_INPUT)
