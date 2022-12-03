@@ -15,19 +15,17 @@ CrZsJsPPZsGzwwsLwLmpwMDw"""
 
 
 def solve(inputs: str) -> None:
-    rucksacks = inputs.splitlines()
+    packs = inputs.splitlines()
 
     dupes = []
-    for rucksack in rucksacks:
-        midpoint = len(rucksack) // 2
-        dupes += list(set(rucksack[:midpoint]) & set(rucksack[midpoint:]))
+    for pack in packs:
+        midpoint = len(pack) // 2
+        dupes += list(set(pack[:midpoint]) & set(pack[midpoint:]))
     print(f"\nPart 1: {sum(string.ascii_letters.index(c) + 1 for c in dupes)}")
 
     badges = []
-    for i in range(0, len(rucksacks), 3):
-        for c in string.ascii_letters:
-            if all(c in pack for pack in rucksacks[i : i + 3]):
-                badges.append(c)
+    for i in range(0, len(packs), 3):
+        badges += list(set(packs[i]) & set(packs[i + 1]) & set(packs[i + 2]))
     print(f"Part 2: {sum(string.ascii_letters.index(c) + 1 for c in badges)}\n")
 
 
