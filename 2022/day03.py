@@ -22,23 +22,19 @@ def grouper(iterable, n):
 def solve(inputs: str) -> None:
     rucksacks = inputs.splitlines()
 
-    priorities = {c: i for i, c in enumerate(string.ascii_lowercase, 1)} | {
-        c: i for i, c in enumerate(string.ascii_uppercase, 27)
-    }
-
     dupes = []
     for rucksack in rucksacks:
         midpoint = len(rucksack) // 2
         compartment_1, compartment_2 = rucksack[:midpoint], rucksack[midpoint:]
         dupes += list(set(c for c in compartment_1 if c in compartment_2))
-    print(f"\nPart 1: {sum(map(priorities.get, dupes))}")
+    print(f"\nPart 1: {sum(string.ascii_letters.index(c) + 1 for c in dupes)}")
 
     badges = []
     for packs in grouper(rucksacks, 3):
         for c in string.ascii_letters:
             if all(c in pack for pack in packs):
                 badges.append(c)
-    print(f"Part 2: {sum(map(priorities.get, badges))}\n")
+    print(f"Part 2: {sum(string.ascii_letters.index(c) + 1 for c in badges)}\n")
 
 
 solve(SAMPLE_INPUT)
