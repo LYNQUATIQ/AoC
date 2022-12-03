@@ -13,10 +13,6 @@ wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
 ttgJtRGJQctTZtZT
 CrZsJsPPZsGzwwsLwLmpwMDw"""
 
-PRIORITIES = {c: i for i, c in enumerate(string.ascii_lowercase, 1)} | {
-    c: i for i, c in enumerate(string.ascii_uppercase, 27)
-}
-
 
 def grouper(iterable, n):
     args = [iter(iterable)] * n
@@ -26,20 +22,23 @@ def grouper(iterable, n):
 def solve(inputs: str) -> None:
     rucksacks = inputs.splitlines()
 
+    priorities = {c: i for i, c in enumerate(string.ascii_lowercase, 1)} | {
+        c: i for i, c in enumerate(string.ascii_uppercase, 27)
+    }
+
     dupes = []
     for rucksack in rucksacks:
         midpoint = len(rucksack) // 2
         compartment_1, compartment_2 = rucksack[:midpoint], rucksack[midpoint:]
         dupes += list(set(c for c in compartment_1 if c in compartment_2))
-    print(f"\nPart 1: {sum(map(PRIORITIES.get, dupes))}")
+    print(f"\nPart 1: {sum(map(priorities.get, dupes))}")
 
     badges = []
-    for pack1, pack2, pack3 in grouper(rucksacks, 3):
+    for packs in grouper(rucksacks, 3):
         for c in string.ascii_letters:
-            if c in pack1 and c in pack2 and c in pack3:
+            if all(c in pack for pack in packs):
                 badges.append(c)
-                break
-    print(f"Part 2: {sum(map(PRIORITIES.get, badges))}\n")
+    print(f"Part 2: {sum(map(priorities.get, badges))}\n")
 
 
 solve(SAMPLE_INPUT)
