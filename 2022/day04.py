@@ -20,7 +20,7 @@ def solve(inputs: str) -> None:
         a1, a2, b1, b2 = map(int, re.findall(r"\d+", line))
         if (a1 <= b1 <= b2 <= a2) or (b1 <= a1 <= a2 <= b2):
             part_1 += 1
-        if (a2 <= b2 and a2 >= b1) or (b2 <= a2 and b2 >= a1):
+        if not ((a1 > b2) or (b1 > a2)):
             part_2 += 1
 
     print(f"\nPart 1: {part_1}")
