@@ -1,5 +1,6 @@
 """https://adventofcode.com/2022/day/4"""
 import os
+import re
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day04_input.txt")) as f:
     actual_input = f.read()
@@ -14,22 +15,16 @@ SAMPLE_INPUT = """2-4,6-8
 
 
 def solve(inputs: str) -> None:
-    # values = tuple(map(int, inputs.splitlines()))
-    lines = inputs.splitlines()
-    assignments = []
-    total1, total2 = 0, 0
-    for line in lines:
-        token1, token2 = line.split(",")
-        a, b = map(int, token1.split("-"))
-        c, d = map(int, token2.split("-"))
-        assignments.append((a, b, c, d))
-        if (a <= c and b >= d) or (c <= a and d >= b):
-            total1 += 1
-        if (b <= d and b >= c) or (d <= b and d >= a):
-            total2 += 1
+    part_1, part_2 = 0, 0
+    for line in inputs.splitlines():
+        a1, a2, b1, b2 = map(int, re.findall(r"\d+", line))
+        if (a1 <= b1 <= b2 <= a2) or (b1 <= a1 <= a2 <= b2):
+            part_1 += 1
+        if (a2 <= b2 and a2 >= b1) or (b2 <= a2 and b2 >= a1):
+            part_2 += 1
 
-    print(f"\nPart 1: {total1}")
-    print(f"Part 2: {total2}\n")
+    print(f"\nPart 1: {part_1}")
+    print(f"Part 2: {part_2}\n")
 
 
 solve(SAMPLE_INPUT)
