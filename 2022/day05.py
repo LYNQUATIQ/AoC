@@ -19,35 +19,31 @@ move 2 from 2 to 1
 move 1 from 1 to 2"""
 
 
-def solve(inputs: str) -> None:
-    arrangement, procedures = inputs.split("\n\n")
+def move_crates(arrangement: str, procedures: str, is_9001: bool = False) -> str:
     rows = arrangement.splitlines()
-    moves = procedures.splitlines()
-
     columns = int((rows[-1][-2]))
 
-    stacks_9000: dict[int, deque[str]] = defaultdict(deque)
-    stacks_9001: dict[int, deque[str]] = defaultdict(deque)
-
+    stacks: dict[int, deque[str]] = defaultdict(deque)
     for row in rows[:-1]:
-        for column in range(1, columns + 1):
-            crate = row[column * 4 - 3]
+        for column in range(columns):
+            crate = row[column * 4 + 1]
             if crate != " ":
-                stacks_9000[column].append(crate)
-                stacks_9001[column].append(crate)
+                stacks[column + 1].append(crate)
 
-    for move in moves:
+    for move in procedures.splitlines():
         n, column_1, column_2 = map(int, re.findall(r"\d+", move))
+        moving = [stacks[column_1].popleft() for _ in range(n)]
+        for crate in moving[::-1] if is_9001 else moving:
+            stacks[column_2].appendleft(crate)
 
-        for _ in range(n):
-            stacks_9000[column_2].appendleft(stacks_9000[column_1].popleft())
+    return "".join([stacks[c + 1][0] for c in range(columns)])
 
-        moving = [stacks_9001[column_1].popleft() for _ in range(n)]
-        for crate in moving[::-1]:
-            stacks_9001[column_2].appendleft(crate)
 
-    print(f"\nPart 1: {''.join([stacks_9000[c][0] for c in range(1, columns + 1)])}")
-    print(f"Part 2: {''.join([stacks_9001[c][0] for c in range(1, columns + 1)])}\n")
+def solve(inputs: str) -> None:
+    arrangement, procedures = inputs.split("\n\n")
+
+    print(f"\nPart 1: {move_crates(arrangement, procedures)}")
+    print(f"Part 2: {move_crates(arrangement, procedures, is_9001=True)}\n")
 
 
 solve(SAMPLE_INPUT)
