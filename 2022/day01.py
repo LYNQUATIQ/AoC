@@ -5,7 +5,7 @@ with open(os.path.join(os.path.dirname(__file__), f"inputs/day01_input.txt")) as
     actual_input = f.read()
 
 
-SAMPLE_INPUT = """1000
+sample_input = """1000
 2000
 3000
 
@@ -29,5 +29,5 @@ def solve(inputs: str) -> None:
     print(f"Part 2: {sum(calories[0:3])}\n")
 
 
-solve(SAMPLE_INPUT)
+solve(sample_input)
 solve(actual_input)

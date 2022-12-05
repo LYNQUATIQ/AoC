@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), f"inputs/day04_input.txt")) as
     actual_input = f.read()
 
 
-SAMPLE_INPUT = """2-4,6-8
+sample_input = """2-4,6-8
 2-3,4-5
 5-7,7-9
 2-8,3-7
@@ -27,5 +27,5 @@ def solve(inputs: str) -> None:
     print(f"Part 2: {part_2}\n")
 
 
-solve(SAMPLE_INPUT)
+solve(sample_input)
 solve(actual_input)

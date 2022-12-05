@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), f"inputs/day03_input.txt")) as
     actual_input = f.read()
 
 
-SAMPLE_INPUT = """vJrwpWtwJgWrhcsFMMfFFhFp
+sample_input = """vJrwpWtwJgWrhcsFMMfFFhFp
 jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
 PmmdzqPrVvPwwTWBwg
 wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
@@ -29,5 +29,5 @@ def solve(inputs: str) -> None:
     print(f"Part 2: {sum(string.ascii_letters.index(c) + 1 for c in badges)}\n")
 
 
-solve(SAMPLE_INPUT)
+solve(sample_input)
 solve(actual_input)
