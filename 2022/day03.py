@@ -21,7 +21,7 @@ def solve(inputs: str) -> None:
     for pack in packs:
         midpoint = len(pack) // 2
         dupes += list(set(pack[:midpoint]) & set(pack[midpoint:]))
-    print(f"\nPart 1: {sum(string.ascii_letters.index(c) + 1 for c in dupes)}")
+    print(f"Part 1: {sum(string.ascii_letters.index(c) + 1 for c in dupes)}")
 
     badges = []
     for i in range(0, len(packs), 3):

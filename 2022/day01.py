@@ -25,7 +25,7 @@ def solve(inputs: str) -> None:
     calories = [sum(map(int, elf.splitlines())) for elf in inputs.split("\n\n")]
     calories.sort(reverse=True)
 
-    print(f"\nPart 1: {calories[0]}")
+    print(f"Part 1: {calories[0]}")
     print(f"Part 2: {sum(calories[0:3])}\n")
 
 

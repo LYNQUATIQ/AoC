@@ -36,7 +36,7 @@ def solve(inputs: str) -> None:
         opponent, you = SHAPES[token1], SHAPES[token2]
         result = OUTCOMES[opponent][you]
         total_score += result + you
-    print(f"\nPart 1: {total_score}")
+    print(f"Part 1: {total_score}")
 
     total_score = 0
     for token1, token2 in map(str.split, inputs.splitlines()):

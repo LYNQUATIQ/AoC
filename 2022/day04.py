@@ -23,7 +23,7 @@ def solve(inputs: str) -> None:
         if not ((a1 > b2) or (b1 > a2)):
             part_2 += 1
 
-    print(f"\nPart 1: {part_1}")
+    print(f"Part 1: {part_1}")
     print(f"Part 2: {part_2}\n")
 
 
