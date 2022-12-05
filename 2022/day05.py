@@ -21,10 +21,10 @@ move 1 from 1 to 2"""
 
 def move_crates(arrangement: str, procedures: str, is_9001: bool = False) -> str:
     rows = arrangement.splitlines()
-    columns = int((rows[-1][-2]))
+    columns = int(rows.pop().split()[-1])
 
     stacks: dict[int, deque[str]] = defaultdict(deque)
-    for row in rows[:-1]:
+    for row in rows:
         for column in range(columns):
             crate = row[column * 4 + 1]
             if crate != " ":
