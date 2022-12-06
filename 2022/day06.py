@@ -5,15 +5,20 @@ with open(os.path.join(os.path.dirname(__file__), f"inputs/day06_input.txt")) as
     actual_input = f.read()
 
 
-sample_input = """xxx"""
+sample_input = """mjqjpqmgbljsphdztnvjfqwrcgsmlb"""
 
 
-def solve(inputs: str) -> None:
-    values = tuple(map(int, inputs.splitlines()))
+def find_marker(datastream: str, length: int) -> int:
+    i = length
+    while len(set(datastream[i - length : i])) < length:
+        i += 1
+    return i
 
-    print(f"Part 1: {False}")
-    print(f"Part 2: {False}\n")
+
+def solve(datastream: str) -> None:
+    print(f"Part 1: {find_marker(datastream, 4)}")
+    print(f"Part 2: {find_marker(datastream, 14)}\n")
 
 
 solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
