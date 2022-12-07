@@ -86,15 +86,13 @@ def solve(inputs: str) -> None:
                 current = cast(Directory, current.contents[target])
 
         if command.startswith("ls"):
-            for item in command.splitlines()[1:]:
-                header, name = item.split()
-                if name not in current.contents:
-                    if header == "dir":
-                        directory = Directory(current, name)
-                        current.contents[name] = directory
-                        all_directories.add(directory)
-                    else:
-                        current.contents[name] = File(current, name, int(header))
+            for header, name in map(str.split, command.splitlines()[1:]):
+                if header == "dir":
+                    directory = Directory(current, name)
+                    current.contents[name] = directory
+                    all_directories.add(directory)
+                else:
+                    current.contents[name] = File(current, name, int(header))
 
     print(f"Part 1: {sum(d.size for d in all_directories if d.size < 100_000)}")
 
