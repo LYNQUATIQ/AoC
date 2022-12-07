@@ -90,15 +90,32 @@ class XY(Point):
         return min_x <= self.x <= max_x and min_y <= self.y <= max_y
 
 
-class XyGrid:
-    def __init__(self, inputs: str = "", convertor: Optional[Callable] = None) -> None:
+class Grid:
+    """Grid class that represents a grid - stored as a dict mapping XY points to
+    symbols (can be any type)"""
+
+    def __init__(self, inputs: str = "") -> None:
+        """Initialises the grid with an optional inputs string - read character by
+        character from a series of \n delimited lines. Input characters are converted
+        using the convert_input method (which by default just returns the input).
+        N.B. XY point (0,0) is top left."""
         self.grid: dict[XY, Any] = {
-            XY(x, y): convertor(c) if convertor is not None else c
+            XY(x, y): self.convert_input(c)
             for y, line in enumerate(inputs.splitlines())
             for x, c in enumerate(line)
         }
 
+    @staticmethod
+    def convert_input(c: str) -> Any:
+        """Can be optionally overriden convert input characters"""
+        return c
+
+    def get_symbol(self, xy: XY) -> Any:
+        """Returns the symbol at point xy"""
+        return self.grid.get(xy, " ")
+
     def get_limits(self) -> tuple[int, int, int, int]:
+        """Returns the integer limits of the grid - left, top, right, bottom"""
         min_x, min_y, max_x, max_y = math.inf, math.inf, -math.inf, -math.inf
         for xy in self.grid.keys():
             min_x = min(min_x, xy.x)
@@ -107,10 +124,8 @@ class XyGrid:
             max_y = max(max_y, xy.y + 1)
         return int(min_x), int(min_y), int(max_x), int(max_y)
 
-    def get_symbol(self, xy: XY) -> Any:
-        return self.grid.get(xy, " ")
-
     def print_grid(self, show_headers: bool = True) -> None:
+        """Prints the grid to stdout (with optional headers/footers)"""
         min_x, min_y, max_x, max_y = self.get_limits()
         header1 = "     " + "".join(
             [" " * 9 + str(x + 1) for x in range((max_x - 1) // 10)]
