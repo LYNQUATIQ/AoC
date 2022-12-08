@@ -17,15 +17,15 @@ sample_input = """30373
 
 
 def solve(inputs: str) -> None:
-    yx = tuple(tuple(map(int, l)) for l in inputs.splitlines())
-    xy = tuple(tuple(l) for l in zip(*yx))
+    yx = tuple(tuple(map(int, row)) for row in inputs.splitlines())
+    xy = tuple(tuple(column) for column in zip(*yx))
     w, visible, scores = len(xy), 0, set()
     for x, y in product(range(w), range(w)):
         views = (yx[y][0:x][::-1], yx[y][x + 1 : w], xy[x][0:y][::-1], xy[x][y + 1 : w])
-        visible += int(any(all(tree < xy[x][y] for tree in view) for view in views))
+        visible += any(all(tree < xy[x][y] for tree in view) for view in views)
         scores.add(
             math.prod(
-                next((i for i, h in enumerate(view, 1) if h >= yx[y][x]), len(view))
+                next((i for i, h in enumerate(view, 1) if h >= xy[x][y]), len(view))
                 for view in views
             )
         )
