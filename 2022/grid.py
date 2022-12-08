@@ -1,12 +1,9 @@
 from __future__ import annotations
 import math
-import sys
 
-from collections import deque
 from functools import lru_cache
-from heapq import heappush, heappop
 from itertools import product
-from typing import Any, Callable, Iterable, Optional
+from typing import Any, Iterable
 
 
 NORTH = (0, -1)
@@ -149,21 +146,3 @@ class Grid:
         if blockages:
             connected_nodes = [n for n in connected_nodes if n not in blockages]
         return connected_nodes
-
-    def find_shortest_path(self, start: XY, target: XY, blockages: Iterable[XY] = None):
-        """Find the shortest path from start to target"""
-        prior_step: dict[XY, Optional[XY]] = {start: None}
-        distances: dict[XY, int] = {start: 0}
-        to_visit: list[XY] = []
-        heappush(to_visit, start)
-        while to_visit:
-            this_node = heappop(to_visit)
-            if this_node == target:
-                break
-            distance_so_far = distances[this_node]
-            for next_node in self.connected_nodes(this_node, blockages):
-                if distances.get(next_node, sys.maxsize) > distance_so_far + 1:
-                    distances[next_node] = distance_so_far + 1
-                    heappush(to_visit, (this_node, next_node))
-
-        return risk_level[target]
