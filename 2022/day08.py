@@ -1,6 +1,5 @@
 """https://adventofcode.com/2022/day/8"""
 import os
-from itertools import product
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day08_input.txt")) as f:
     actual_input = f.read()
@@ -19,37 +18,37 @@ def solve(inputs: str) -> None:
         for y, line in enumerate(inputs.splitlines())
         for x, height in enumerate(line)
     }
-    width, height = (max(xy[0] for xy in grid) + 1, max(xy[1] for xy in grid) + 1)
+    max_x, max_y = max(xy[0] for xy in grid) + 1, max(xy[1] for xy in grid) + 1
 
     visible = 0
     scenic_scores = set()
-    for x0, y0 in product(range(width), range(height)):
-        this_tree = grid[(x0, y0)]
+
+    for (this_x, this_y), height in grid.items():
 
         if (
-            all(grid[(x, y0)] < this_tree for x in range(x0))
-            or all(grid[(x, y0)] < this_tree for x in range(x0 + 1, width))
-            or all(grid[(x0, y)] < this_tree for y in range(y0))
-            or all(grid[(x0, y)] < this_tree for y in range(y0 + 1, height))
+            all(grid[(x, this_y)] < height for x in range(this_x))
+            or all(grid[(x, this_y)] < height for x in range(this_x + 1, max_x))
+            or all(grid[(this_x, y)] < height for y in range(this_y))
+            or all(grid[(this_x, y)] < height for y in range(this_y + 1, max_y))
         ):
             visible += 1
 
         view_left, view_right, view_up, view_down = 0, 0, 0, 0
-        for x in range(x0 - 1, -1, -1):
+        for x in range(this_x - 1, -1, -1):
             view_left += 1
-            if grid[(x, y0)] >= this_tree:
+            if grid[(x, this_y)] >= height:
                 break
-        for x in range(x0 + 1, width):
+        for x in range(this_x + 1, max_x):
             view_right += 1
-            if grid[(x, y0)] >= this_tree:
+            if grid[(x, this_y)] >= height:
                 break
-        for y in range(y0 - 1, -1, -1):
+        for y in range(this_y - 1, -1, -1):
             view_down += 1
-            if grid[(x0, y)] >= this_tree:
+            if grid[(this_x, y)] >= height:
                 break
-        for y in range(y0 + 1, height):
+        for y in range(this_y + 1, max_y):
             view_up += 1
-            if grid[(x0, y)] >= this_tree:
+            if grid[(this_x, y)] >= height:
                 break
         scenic_scores.add(view_left * view_right * view_up * view_down)
 
