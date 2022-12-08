@@ -3,7 +3,7 @@ import math
 
 from functools import lru_cache
 from itertools import product
-from typing import Any, Iterable
+from typing import Any, Callable, Generator, Iterable
 
 
 NORTH = (0, -1)
@@ -52,6 +52,10 @@ class Point(tuple):
 class XY(Point):
     """An integer x, y coordinate/point"""
 
+    @classmethod
+    def directions(cls) -> tuple[XY, XY, XY, XY]:
+        return (XY(-1, 0), XY(0, -1), XY(1, 0), XY(0, 1))
+
     def __new__(cls, x: int, y: int):
         return Point.__new__(cls, x, y)
 
@@ -62,10 +66,6 @@ class XY(Point):
     @property
     def y(self) -> int:
         return self[1]
-
-    @classmethod
-    def directions(cls):
-        return [cls(*xy) for xy in product((-1, 0, 1), (-1, 0, 1)) if xy != (0, 0)]
 
     @classmethod
     def direction(cls, direction):
@@ -91,16 +91,29 @@ class Grid:
     """Grid class that represents a grid - stored as a dict mapping XY points to
     symbols (can be any type)"""
 
-    def __init__(self, inputs: str = "") -> None:
+    def __init__(self, inputs: str = "", convertor: Callable | None = None) -> None:
         """Initialises the grid with an optional inputs string - read character by
         character from a series of \n delimited lines. Input characters are converted
         using the convert_input method (which by default just returns the input).
         N.B. XY point (0,0) is top left."""
-        self.grid: dict[XY, Any] = {
-            XY(x, y): self.convert_input(c)
+        convert_input = convertor or Grid.convert_input
+        self._grid: dict[XY, Any] = {
+            XY(x, y): convert_input(c)
             for y, line in enumerate(inputs.splitlines())
             for x, c in enumerate(line)
         }
+
+    def get(self, xy, default: Any = None):
+        return self._grid.get(xy, default)
+
+    def __getitem__(self, xy):
+        return self._grid[xy]
+
+    def __setitem__(self, xy, value):
+        self._grid[xy] = value
+
+    def items(self) -> Generator[tuple[XY, Any], None, None]:
+        return ((xy, value) for xy, value in self._grid.items())
 
     @staticmethod
     def convert_input(c: str) -> Any:
@@ -109,12 +122,25 @@ class Grid:
 
     def get_symbol(self, xy: XY) -> Any:
         """Returns the symbol at point xy"""
-        return self.grid.get(xy, " ")
+        return self._grid.get(xy, " ")
 
-    def get_limits(self) -> tuple[int, int, int, int]:
+    @property
+    def width(self) -> int:
+        """Returns the width of the grid"""
+        min_x, _, max_x, _ = self.limits
+        return max_x - min_x
+
+    @property
+    def height(self) -> int:
+        """Returns the width of the grid"""
+        _, min_y, _, max_y = self.limits
+        return max_y - min_y
+
+    @property
+    def limits(self) -> tuple[int, int, int, int]:
         """Returns the integer limits of the grid - left, top, right, bottom"""
         min_x, min_y, max_x, max_y = math.inf, math.inf, -math.inf, -math.inf
-        for xy in self.grid.keys():
+        for xy in self._grid.keys():
             min_x = min(min_x, xy.x)
             min_y = min(min_y, xy.y)
             max_x = max(max_x, xy.x + 1)
@@ -123,7 +149,7 @@ class Grid:
 
     def print_grid(self, show_headers: bool = True) -> None:
         """Prints the grid to stdout (with optional headers/footers)"""
-        min_x, min_y, max_x, max_y = self.get_limits()
+        min_x, min_y, max_x, max_y = self.limits
         header1 = "     " + "".join(
             [" " * 9 + str(x + 1) for x in range((max_x - 1) // 10)]
         )
