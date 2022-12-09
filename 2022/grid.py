@@ -74,6 +74,10 @@ class XY(Point):
             "S": cls(0, 1),
             "E": cls(1, 0),
             "W": cls(-1, 0),
+            "U": cls(0, -1),
+            "D": cls(0, 1),
+            "R": cls(1, 0),
+            "L": cls(-1, 0),
         }[direction.upper()[0]]
 
     def in_bounds(self, bounds: int | tuple[int, int] | tuple[int, int, int, int]):
