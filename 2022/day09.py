@@ -17,34 +17,34 @@ L 5
 R 2"""
 
 
-def move_knot(head: XY, tail: XY) -> XY:
+def tail_shift(head: XY, tail: XY) -> XY:
     x_delta, y_delta = head.x - tail.x, head.y - tail.y
     abs_x_delta, abs_y_delta = abs(x_delta), abs(y_delta)
-    total_delta = abs_x_delta + abs_y_delta
-    if total_delta > 2:
-        return XY(x_delta // abs_x_delta, y_delta // abs_y_delta)
-    if total_delta == 2:
-        return XY(int(x_delta / 2), int(y_delta / 2))
-    return XY(0, 0)
+    if abs_x_delta + abs_y_delta > 2:
+        return XY(x_delta // abs_x_delta, y_delta // abs_y_delta)  # Move diagonally
+    if abs_x_delta == 2:
+        return XY(x_delta // abs_x_delta, 0)  # Move horizontally
+    if abs_y_delta == 2:
+        return XY(0, y_delta // abs_y_delta)  # Move vertically
+    return XY(0, 0)  # Touching - don't move
 
 
-def move_rope(number_of_knots: int, motions) -> int:
+def move_rope(number_of_knots: int, moves: list[tuple[str, int]]) -> int:
     knots = [XY(0, 0) for _ in range(number_of_knots)]
     tail_positions = {knots[-1]}
-    for direction, steps in motions:
+    for direction, steps in moves:
         for _ in range(steps):
             knots[0] += XY.direction(direction)
             for i in range(1, number_of_knots):
-                shift = move_knot(knots[i - 1], knots[i])
-                knots[i] += shift
+                knots[i] += tail_shift(knots[i - 1], knots[i])
             tail_positions.add(knots[-1])
     return len(tail_positions)
 
 
 def solve(inputs: str) -> None:
-    motions = [(d, int(n)) for d, n in [l.split() for l in inputs.splitlines()]]
-    print(f"Part 1: {move_rope(2,motions)}")
-    print(f"Part 2: {move_rope(10,motions)}\n")
+    moves = [(d, int(n)) for d, n in [l.split() for l in inputs.splitlines()]]
+    print(f"Part 1: {move_rope(2,moves)}")
+    print(f"Part 2: {move_rope(10,moves)}\n")
 
 
 solve(sample_input)
