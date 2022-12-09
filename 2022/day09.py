@@ -28,11 +28,11 @@ TAIL_MOVE = {
 def solve(inputs: str) -> None:
     knots = [0 + 0j] * 10
     visited = [{knot} for knot in knots]
-    for direction, distance in [l.split() for l in inputs.splitlines()]:
+    for direction, distance in [move.split() for move in inputs.splitlines()]:
         for _ in range(int(distance)):
-            knots[0] += {"L": -1, "R": 1, "U": -1j, "D": 1j}[direction]
-            for i in range(1, 10):
-                knots[i] += TAIL_MOVE.get(knots[i - 1] - knots[i], 0)
+            knots[0] += {"L": -1, "R": 1, "U": -1j, "D": 1j}[direction]  # Move head
+            for i in range(1, len(knots)):
+                knots[i] += TAIL_MOVE.get(knots[i - 1] - knots[i], 0)  # Move tails
                 visited[i].add(knots[i])
 
     print(f"Part 1: {len(visited[1])}")
