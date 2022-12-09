@@ -19,17 +19,13 @@ R 2"""
 
 def move_knot(head: XY, tail: XY) -> XY:
     x_delta, y_delta = head.x - tail.x, head.y - tail.y
-    x_shift, y_shift = 0, 0
-    if abs(x_delta) == 2:
-        x_shift = x_delta // 2
-        y_shift = y_delta
-    elif abs(y_delta) == 2:
-        x_shift = x_delta
-        y_shift = y_delta // 2
-    if abs(x_delta) == 2 and abs(y_delta) == 2:
-        x_shift = x_delta // 2
-        y_shift = y_delta // 2
-    return XY(x_shift, y_shift)
+    abs_x_delta, abs_y_delta = abs(x_delta), abs(y_delta)
+    total_delta = abs_x_delta + abs_y_delta
+    if total_delta > 2:
+        return XY(x_delta // abs_x_delta, y_delta // abs_y_delta)
+    if total_delta == 2:
+        return XY(int(x_delta / 2), int(y_delta / 2))
+    return XY(0, 0)
 
 
 def move_rope(number_of_knots: int, motions) -> int:
@@ -46,11 +42,7 @@ def move_rope(number_of_knots: int, motions) -> int:
 
 
 def solve(inputs: str) -> None:
-    motions = []
-    for line in inputs.splitlines():
-        a, b = line.split()
-        motions.append((a, int(b)))
-
+    motions = [(d, int(n)) for d, n in [l.split() for l in inputs.splitlines()]]
     print(f"Part 1: {move_rope(2,motions)}")
     print(f"Part 2: {move_rope(10,motions)}\n")
 
