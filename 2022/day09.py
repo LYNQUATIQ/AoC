@@ -20,7 +20,7 @@ TAIL_MOVE = {
     2-2j: 1-1j, 1-2j: 1-1j, 2-1j: 1-1j,        # Above and to the right
     -2+2j: -1+1j, -2+1j :-1+1j, -1+2j: -1+1j,  # Below and to the left
     2+2j: 1+1j, 1+2j: 1+1j, 2+1j: 1+1j,        # Below and to the right
-    -2: -1, 2: 1, -2j: -1j, 2j: 1j,            # Above, below, left or right
+    -2j: -1j, 2j: 1j, -2: -1, 2: 1,            # Above, below, left or right
 }
 # fmt:on
 
