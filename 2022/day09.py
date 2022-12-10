@@ -26,7 +26,7 @@ TAIL_MOVE = {
 
 
 def solve(inputs: str) -> None:
-    knots = [0 + 0j] * +10
+    knots = [0 + 0j] * 10
     visited = [{knot} for knot in knots]
     for direction, distance in [move.split() for move in inputs.splitlines()]:
         for _ in range(int(distance)):
