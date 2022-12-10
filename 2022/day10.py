@@ -168,11 +168,11 @@ def solve(inputs: str) -> None:
         if (cycle + 20) % 40 == 0:
             signal_strength += cycle * x_register
 
-    for instruction in tuple(map(str.split, inputs.splitlines())):
+    for instruction, *values in tuple(map(str.split, inputs.splitlines())):
         next_cycle()
-        if instruction[0] == "addx":
+        if instruction == "addx":
             next_cycle()
-            x_register += int(instruction[1])
+            x_register += int(values[0])
 
     print(f"\nPart 1: {signal_strength}")
     print("Part 2:")
