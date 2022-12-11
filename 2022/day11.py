@@ -6,7 +6,7 @@ import re
 
 from dataclasses import dataclass
 from functools import partial
-from typing import Callable, Type
+from typing import Callable
 
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day11_input.txt")) as f:
@@ -61,9 +61,7 @@ class Monkey:
     if_false: int
     inspections: int = 0
 
-
 def do_monkey_business(inputs: str, rounds: int, reduce_worry: bool) -> int:
-
     monkeys: list[Monkey] = []
     for attributes in map(str.splitlines, inputs.split("\n\n")):
         items = list(map(int, re.findall(r"\d+", attributes[1])))
@@ -97,7 +95,6 @@ def do_monkey_business(inputs: str, rounds: int, reduce_worry: bool) -> int:
 
 
 def solve(inputs: str) -> None:
-
     print(f"Part 1: {do_monkey_business(inputs, 20, reduce_worry=True)}")
     print(f"Part 2: {do_monkey_business(inputs, 10_000, reduce_worry=False)}\n")
 
