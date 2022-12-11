@@ -42,79 +42,57 @@ Monkey 3:
     If false: throw to monkey 1
 """
 
-modulo_div = 1
+def multiply_item(value:int, multiplier:int) -> int:
+    return value * multiplier 
 
-class Item:
-    def __init__(self, value: int) -> None:
-        self.value = value
+def add_to_item(value:int, adjustment: int) -> int:
+    return value + adjustment
 
-    def divisible_by(self, prime: int) -> bool:
-        return self.value % prime == 0
-
-    def divide_by_3(self) -> None:
-        self.value = self.value // 3
-
-    @staticmethod
-    def multiply_item(item: Item, multiplier: int) -> None:
-        global modulo_div
-        item.value = (item.value * multiplier) % modulo_div
-
-    @staticmethod
-    def add_to_item(item: Item, adjustment: int) -> None:
-        global modulo_div
-        item.value = (item.value + adjustment) % modulo_div
-
-    @staticmethod
-    def square_item(item: Item) -> None:
-        global modulo_div
-        item.value = (item.value ** 2) % modulo_div
+def square_item(value:int) -> int:
+    return  value ** 2
 
 
 @dataclass
 class Monkey:
-    items: list[Item]
-    inspection: Callable[[Item], None]
+    items: list[int]
+    inspection: Callable[[int], int]
     divisibility_test: int
     if_true: int
     if_false: int
     inspections: int = 0
 
 
-def parse_monkeys(inputs: str, ) -> list[Monkey]:
-    global modulo_div
-    
+def do_monkey_business(inputs: str, rounds: int, reduce_worry: bool) -> int:
+
     monkeys: list[Monkey] = []
     for attributes in map(str.splitlines, inputs.split("\n\n")):
-        items = [Item(x) for x in map(int, re.findall(r"\d+", attributes[1]))]
+        items = list(map(int, re.findall(r"\d+", attributes[1])))
         match attributes[2].split()[-2:]:
             case ['*', 'old']:
-                inspection = Item.square_item
+                inspection = square_item
             case ['*', value]:
-                inspection = partial(Item.multiply_item, multiplier=int(value))
+                inspection = partial(multiply_item, multiplier=int(value))
             case ['+', value]:
-                inspection = partial(Item.add_to_item, adjustment=int(value))
+                inspection = partial(add_to_item, adjustment=int(value))
         divisibility_test = int(attributes[3].split()[-1])
         if_true = int(attributes[4].split()[-1])
         if_false = int(attributes[5].split()[-1])
         monkeys.append(Monkey(items, inspection, divisibility_test, if_true, if_false))
-        modulo_div *= divisibility_test
-    return monkeys
-
-
-def do_monkey_business(inputs: str, rounds: int, reduce_worry: bool) -> int:
-    monkeys = parse_monkeys(inputs)
+    
+    modulo = math.prod(m.divisibility_test for m in monkeys)
     for _ in range(rounds):
         for monkey in monkeys:
             for item in monkey.items:
                 monkey.inspections += 1
-                monkey.inspection(item)
+                item = monkey.inspection(item) % modulo
                 if reduce_worry:
-                    item.divide_by_3()
-                if item.divisible_by(monkey.divisibility_test):
+                    item //= 3
+                if item % monkey.divisibility_test == 0:
                     monkeys[monkey.if_true].items.append(item)
                 else:
                     monkeys[monkey.if_false].items.append(item)
             monkey.items = []
+            
     return math.prod(sorted(m.inspections for m in monkeys)[-2:])
 
 
