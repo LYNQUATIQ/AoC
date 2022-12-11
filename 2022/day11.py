@@ -46,12 +46,10 @@ PRIMES = (2, 3, 5, 7, 11, 13, 17, 19, 23)
 MODULAR_INVERSE_3 = {2: 1, 5: 2, 7: 5, 11: 4, 13: 9, 17: 6, 19: 13, 23: 8}
 
 
-class BruteForceItem:
+class Item:
     def __init__(self, value: int) -> None:
         self.value = value
-
-    def __repr__(self) -> str:
-        return str(self.value)
+        self.remainders = {p: value % p for p in PRIMES}
 
     def divisible_by(self, prime: int) -> bool:
         return self.value % prime == 0
@@ -60,19 +58,19 @@ class BruteForceItem:
         self.value = self.value // 3
 
     @staticmethod
-    def multiply_item(item: BruteForceItem, multiplier: int) -> None:
+    def multiply_item(item: Item, multiplier: int) -> None:
         item.value *= multiplier
 
     @staticmethod
-    def add_to_item(item: BruteForceItem, adjustment: int) -> None:
+    def add_to_item(item: Item, adjustment: int) -> None:
         item.value += adjustment
 
     @staticmethod
-    def square_item(item: BruteForceItem) -> None:
+    def square_item(item: Item) -> None:
         item.value **= 2
 
 
-class Item:
+class ModuloItem(Item):
     def __init__(self, value: int) -> None:
         self.remainders = {p: value % p for p in PRIMES}
 
@@ -98,15 +96,14 @@ class Item:
     @staticmethod
     def square_item(item: Item) -> None:
         for p, r in item.remainders.items():
-            item.remainders[p] = (r * r) % p
+            item.remainders[p] = (r ** 2) % p
 
 
 @dataclass
 class Monkey:
-    monkey_id: int
-    items: list[Item | BruteForceItem]
-    operation: Callable[[Item], None]
-    divisibility: int
+    items: list[Item | ModuloItem]
+    inspect: Callable[[Item], None]
+    divisibility_test: int
     if_true: int
     if_false: int
     inspections: int = 0
@@ -115,35 +112,32 @@ class Monkey:
 def parse_monkeys(inputs: str, item_cls: Type) -> list[Monkey]:
     monkeys: list[Monkey] = []
     for attributes in map(str.splitlines, inputs.split("\n\n")):
-        monkey_id = int(attributes[0][7:-1])
         items = [item_cls(x) for x in map(int, re.findall(r"\d+", attributes[1]))]
         operator, value = attributes[2].split()[-2:]
-        operation = item_cls.square_item
+        inspect = item_cls.square_item
         if value != "old":
             if operator == "*":
-                operation = partial(item_cls.multiply_item, multiplier=int(value))
+                inspect = partial(item_cls.multiply_item, multiplier=int(value))
             else:
-                operation = partial(item_cls.add_to_item, adjustment=int(value))
-        divisibility = int(attributes[3].split()[-1])
+                inspect = partial(item_cls.add_to_item, adjustment=int(value))
+        divisibility_test = int(attributes[3].split()[-1])
         if_true = int(attributes[4].split()[-1])
         if_false = int(attributes[5].split()[-1])
-        monkeys.append(
-            Monkey(monkey_id, items, operation, divisibility, if_true, if_false)
-        )
+        monkeys.append(Monkey(items, inspect, divisibility_test, if_true, if_false))
     return monkeys
 
 
 def do_monkey_business(inputs: str, rounds: int, reduce_worry: bool) -> int:
-    monkeys = parse_monkeys(inputs, BruteForceItem if reduce_worry else Item)
+    monkeys = parse_monkeys(inputs, Item if reduce_worry else ModuloItem)
 
     for _ in range(rounds):
         for monkey in monkeys:
             for item in monkey.items:
                 monkey.inspections += 1
-                monkey.operation(item)
+                monkey.inspect(item)
                 if reduce_worry:
                     item.divide_by_3()
-                if item.divisible_by(monkey.divisibility):
+                if item.divisible_by(monkey.divisibility_test):
                     monkeys[monkey.if_true].items.append(item)
                 else:
                     monkeys[monkey.if_false].items.append(item)
@@ -153,8 +147,8 @@ def do_monkey_business(inputs: str, rounds: int, reduce_worry: bool) -> int:
 
 def solve(inputs: str) -> None:
 
-    print(f"Part 1: {do_monkey_business(inputs, 20, True)}")
-    print(f"Part 2: {do_monkey_business(inputs, 10_000, False)}\n")
+    print(f"Part 1: {do_monkey_business(inputs, 20, reduce_worry=True)}")
+    print(f"Part 2: {do_monkey_business(inputs, 10_000, reduce_worry=False)}\n")
 
 
 solve(sample_input)
