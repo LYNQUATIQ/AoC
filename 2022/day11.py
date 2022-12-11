@@ -1,10 +1,13 @@
 """https://adventofcode.com/2022/day/11"""
+from __future__ import annotations
 import os
 import math
 import re
 
 from dataclasses import dataclass
-from typing import Callable
+from functools import partial
+from typing import Callable, Type
+
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day11_input.txt")) as f:
     actual_input = f.read()
@@ -39,67 +42,119 @@ Monkey 3:
     If false: throw to monkey 1
 """
 
+PRIMES = (2, 3, 5, 7, 11, 13, 17, 19, 23)
+MODULAR_INVERSE_3 = {2: 1, 5: 2, 7: 5, 11: 4, 13: 9, 17: 6, 19: 13, 23: 8}
+
+
+class BruteForceItem:
+    def __init__(self, value: int) -> None:
+        self.value = value
+
+    def __repr__(self) -> str:
+        return str(self.value)
+
+    def divisible_by(self, prime: int) -> bool:
+        return self.value % prime == 0
+
+    def divide_by_3(self) -> None:
+        self.value = self.value // 3
+
+    @staticmethod
+    def multiply_item(item: BruteForceItem, multiplier: int) -> None:
+        item.value *= multiplier
+
+    @staticmethod
+    def add_to_item(item: BruteForceItem, adjustment: int) -> None:
+        item.value += adjustment
+
+    @staticmethod
+    def square_item(item: BruteForceItem) -> None:
+        item.value **= 2
+
+
+class Item:
+    def __init__(self, value: int) -> None:
+        self.remainders = {p: value % p for p in PRIMES}
+
+    def divisible_by(self, prime: int) -> bool:
+        return self.remainders[prime] == 0
+
+    def divide_by_3(self) -> None:
+        raise NotImplementedError
+        # self.add_to_item(self, 3 - self.remainders[3])
+        # for p, r in self.remainders.items():
+        #     self.remainders[p] = 0 if p == 3 else (r * MODULAR_INVERSE_3[p]) % p
+
+    @staticmethod
+    def multiply_item(item: Item, multiplier: int) -> None:
+        for p, r in item.remainders.items():
+            item.remainders[p] = (r * multiplier) % p
+
+    @staticmethod
+    def add_to_item(item: Item, adjustment: int) -> None:
+        for p, r in item.remainders.items():
+            item.remainders[p] = (r + adjustment) % p
+
+    @staticmethod
+    def square_item(item: Item) -> None:
+        for p, r in item.remainders.items():
+            item.remainders[p] = (r * r) % p
+
 
 @dataclass
 class Monkey:
-    monkey: int
-    items: list[int]
-    operation: Callable
-    adjustment: int
+    monkey_id: int
+    items: list[Item | BruteForceItem]
+    operation: Callable[[Item], None]
     divisibility: int
     if_true: int
     if_false: int
     inspections: int = 0
 
 
-addition = lambda a, b: a + b
-multiplication = lambda a, b: a * b
+def parse_monkeys(inputs: str, item_cls: Type) -> list[Monkey]:
+    monkeys: list[Monkey] = []
+    for attributes in map(str.splitlines, inputs.split("\n\n")):
+        monkey_id = int(attributes[0][7:-1])
+        items = [item_cls(x) for x in map(int, re.findall(r"\d+", attributes[1]))]
+        operator, value = attributes[2].split()[-2:]
+        operation = item_cls.square_item
+        if value != "old":
+            if operator == "*":
+                operation = partial(item_cls.multiply_item, multiplier=int(value))
+            else:
+                operation = partial(item_cls.add_to_item, adjustment=int(value))
+        divisibility = int(attributes[3].split()[-1])
+        if_true = int(attributes[4].split()[-1])
+        if_false = int(attributes[5].split()[-1])
+        monkeys.append(
+            Monkey(monkey_id, items, operation, divisibility, if_true, if_false)
+        )
+    return monkeys
+
+
+def do_monkey_business(inputs: str, rounds: int, reduce_worry: bool) -> int:
+    monkeys = parse_monkeys(inputs, BruteForceItem if reduce_worry else Item)
+
+    for _ in range(rounds):
+        for monkey in monkeys:
+            for item in monkey.items:
+                monkey.inspections += 1
+                monkey.operation(item)
+                if reduce_worry:
+                    item.divide_by_3()
+                if item.divisible_by(monkey.divisibility):
+                    monkeys[monkey.if_true].items.append(item)
+                else:
+                    monkeys[monkey.if_false].items.append(item)
+            monkey.items = []
+    return math.prod(sorted(m.inspections for m in monkeys)[-2:])
 
 
 def solve(inputs: str) -> None:
-    monkeys: list[Monkey] = []
-    for data in inputs.split("\n\n"):
-        lines = data.splitlines()
-        monkey = int(lines[0][7:-1])
-        items = list(map(int, re.findall(r"\d+", lines[1])))
-        tokens = lines[2].split()
-        operation = multiplication if tokens[-2] == "*" else addition
-        adjustment = -999 if tokens[-1] == "old" else int(tokens[-1])
-        divisibility = int(lines[3].split()[-1])
-        if_true = int(lines[4].split()[-1])
-        if_false = int(lines[5].split()[-1])
-        monkeys.append(
-            Monkey(
-                monkey, items, operation, adjustment, divisibility, if_true, if_false
-            )
-        )
 
-    round = 1
-    while True:
-        for m in monkeys:
-            for worry_level in m.items:
-                adjustment = worry_level if m.adjustment < 0 else m.adjustment
-                worry_level = m.operation(worry_level, adjustment)
-                worry_level = worry_level // 3
-                if worry_level % m.divisibility == 0:
-                    monkeys[m.if_true].items.append(worry_level)
-                else:
-                    monkeys[m.if_false].items.append(worry_level)
-            m.inspections += len(m.items)
-            m.items = []
-
-        # print("After round ", round)
-        # for m in monkeys:
-        #     print(f'Monkey {m.monkey}: {", ".join(map(str,m.items))}')
-        # print()
-
-        if round == 20:
-            monkey_business = math.prod(sorted(m.inspections for m in monkeys)[-2:])
-            break
-        round += 1
-
-    print(f"Part 1: {monkey_business}")
-    print(f"Part 2: {False}\n")
+    print(f"Part 1: {do_monkey_business(inputs, 20, True)}")
+    print(f"Part 2: {do_monkey_business(inputs, 10_000, False)}\n")
 
 
 solve(sample_input)
