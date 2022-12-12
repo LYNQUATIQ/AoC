@@ -43,11 +43,12 @@ def solve(inputs: str) -> None:
                 steps.append(step)
         possible_steps[xy] = tuple(steps)
 
-    def shortest_path(start: XY) -> int:
+    def shortest_path(starts: list[XY]) -> int:
         visited: set[XY] = set()
-        distance_to = {start: 0}
+        distance_to = {start: 0 for start in starts}
         to_visit: list[tuple[float, XY]] = []
-        heappush(to_visit, (0, start))
+        for start in starts:
+            heappush(to_visit, (manhattan_distance(target, start), start))
         while to_visit:
             _, this_node = heappop(to_visit)
             if this_node == target:
@@ -67,16 +68,16 @@ def solve(inputs: str) -> None:
                     heappush(to_visit, (f_score, next_node))
         raise ValueError("No path found")
 
-    path_length = shortest_path(start)
-    print(f"Part 1: {path_length}")
+    print(f"Part 1: {shortest_path([start])}")
 
-    first_steps = {
-        s
-        for s, e in grid.items()
-        if e == 1 and any(grid[n] == 0 for n in possible_steps[s])
-    }
-    path_lengths = (shortest_path(first_step) + 1 for first_step in first_steps)
-    print(f"Part 2: {min(path_lengths)}\n")
+    first_steps = list(
+        {
+            s
+            for s, e in grid.items()
+            if e == 1 and any(grid[n] == 0 for n in possible_steps[s])
+        }
+    )
+    print(f"Part 2: {shortest_path(first_steps)+1}\n")
 
 
 solve(sample_input)
