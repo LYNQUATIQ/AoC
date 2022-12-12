@@ -1,4 +1,3 @@
-from collections import defaultdict
 from heapq import heappop, heappush
 from typing import Any, Callable
 
@@ -55,13 +54,13 @@ def a_star(
 
         visited.add(this_node)
         for neighbour in grid.connected_nodes(this_node):
-            tentative_g_score = g_scores[this_node] + heuristic(this_node, neighbour)
-            neighbour_g_score = g_scores.get(neighbour, 0)
+            tentative_g_score = g_scores[this_node] + 1
+            actual_g_score = g_scores.get(neighbour, 0)
 
-            if neighbour in visited and tentative_g_score >= neighbour_g_score:
+            if neighbour in visited and tentative_g_score >= actual_g_score:
                 continue
 
-            if tentative_g_score < neighbour_g_score or neighbour not in [
+            if tentative_g_score < actual_g_score or neighbour not in [
                 i[1] for i in to_visit
             ]:
                 prior_step[neighbour] = this_node

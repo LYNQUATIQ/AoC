@@ -147,23 +147,23 @@ class Grid:
         for xy in self._grid.keys():
             min_x = min(min_x, xy.x)
             min_y = min(min_y, xy.y)
-            max_x = max(max_x, xy.x + 1)
-            max_y = max(max_y, xy.y + 1)
+            max_x = max(max_x, xy.x)
+            max_y = max(max_y, xy.y)
         return int(min_x), int(min_y), int(max_x), int(max_y)
 
     def print_grid(self, show_headers: bool = True) -> None:
         """Prints the grid to stdout (with optional headers/footers)"""
         min_x, min_y, max_x, max_y = self.limits
         header1 = "     " + "".join(
-            [" " * 9 + str(x + 1) for x in range((max_x - 1) // 10)]
+            [" " * 9 + str(x + 1) for x in range((max_x) // 10)]
         )
-        header2 = "    " + "".join([str(x % 10) for x in range(max_x)])
+        header2 = "    " + "".join([str(x % 10) for x in range(max_x + 1)])
         if show_headers:
             print(header1 + "\n" + header2)
-        for y in range(min_y, max_y):
+        for y in range(min_y, max_y + 1):
             if show_headers:
                 print(f"{y:3d} ", end="")
-            for x in range(min_x, max_x):
+            for x in range(min_x, max_x + 1):
                 print(self.get_symbol(XY(x, y)), end="")
             if show_headers:
                 print(f" {y:<3d} ", end="")
@@ -171,7 +171,9 @@ class Grid:
         if show_headers:
             print(header2 + "\n" + header1)
 
-    def connected_nodes(self, node: XY, blockages: Iterable[XY] = None):
+    def connected_nodes(
+        self, node: XY, blockages: Iterable[XY] | None = None
+    ) -> list[XY]:
         connected_nodes = node.neighbours
         if blockages:
             connected_nodes = [n for n in connected_nodes if n not in blockages]
