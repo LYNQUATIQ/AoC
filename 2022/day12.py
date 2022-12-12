@@ -30,9 +30,6 @@ class XY(NamedTuple):
             XY(self.x, self.y - 1),
         )
 
-    def distance(self, other: XY) -> int:
-        return abs(self.x - other.x) + abs(self.x - other.x)
-
 
 def solve(inputs: str) -> None:
     start, target = XY(0, 0), XY(0, 0)
@@ -46,7 +43,14 @@ def solve(inputs: str) -> None:
                 target, elevation = xy, 25
             grid[xy] = elevation
 
-    possible_steps = {}
+    possible_steps = {
+        xy: tuple([n for n in xy.neighbours if grid.get(n, 999) - grid[xy] <= 1])
+        for xy in grid
+    }
+    distance_to_target = {
+        xy: abs(target.x - xy.x) + abs(target.x - xy.x) for xy in grid
+    }
+
     for xy in grid:
         steps = [n for n in xy.neighbours if grid.get(n, 999) - grid[xy] <= 1]
         possible_steps[xy] = tuple(steps)
@@ -56,7 +60,7 @@ def solve(inputs: str) -> None:
         distance_to = {start: 0 for start in starts}
         to_visit: list[tuple[float, XY]] = []
         for start in starts:
-            heappush(to_visit, (start.distance(target), start))
+            heappush(to_visit, (distance_to_target[start], start))
         while to_visit:
             _, this_node = heappop(to_visit)
             if this_node == target:
@@ -71,7 +75,7 @@ def solve(inputs: str) -> None:
                     i[1] for i in to_visit
                 ]:
                     distance_to[next_step] = distance_to_here
-                    f_score = distance_to_here + next_step.distance(target)
+                    f_score = distance_to_here + distance_to_target[next_step]
                     heappush(to_visit, (f_score, next_step))
         raise ValueError("No path found")
 
