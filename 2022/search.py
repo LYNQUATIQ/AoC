@@ -36,10 +36,9 @@ def a_star(
     prior_step: dict[XY, XY] = {}
 
     g_scores = {start: 0}
-    f_score = {start: heuristic(start, target)}
 
     to_visit: list[tuple[int, XY]] = []
-    heappush(to_visit, (f_score[start], start))
+    heappush(to_visit, (0, start))
 
     while to_visit:
 
@@ -65,7 +64,7 @@ def a_star(
             ]:
                 prior_step[neighbour] = this_node
                 g_scores[neighbour] = tentative_g_score
-                f_score[neighbour] = tentative_g_score + heuristic(neighbour, target)
-                heappush(to_visit, (f_score[neighbour], neighbour))
+                f_score = tentative_g_score + heuristic(neighbour, target)
+                heappush(to_visit, (f_score, neighbour))
 
     return None
