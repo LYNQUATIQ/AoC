@@ -5,6 +5,8 @@ import os
 from heapq import heappop, heappush
 from typing import NamedTuple
 
+from utils import print_time_taken
+
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day12_input.txt")) as f:
     actual_input = f.read()
@@ -31,6 +33,7 @@ class XY(NamedTuple):
         )
 
 
+@print_time_taken
 def solve(inputs: str) -> None:
     start, target = XY(0, 0), XY(0, 0)
     grid: dict[XY, int] = {}
@@ -50,10 +53,6 @@ def solve(inputs: str) -> None:
     distance_to_target = {
         xy: abs(target.x - xy.x) + abs(target.x - xy.x) for xy in grid
     }
-
-    for xy in grid:
-        steps = [n for n in xy.neighbours if grid.get(n, 999) - grid[xy] <= 1]
-        possible_steps[xy] = tuple(steps)
 
     def shortest_path(starts: list[XY]) -> int:
         visited: set[XY] = set()

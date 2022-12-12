@@ -45,32 +45,32 @@ def solve(inputs: str) -> None:
                 target, elevation = xy, 26
             grid[xy] = elevation
 
-    possible_steps_up = {
+    possible_steps = {
         xy: [n for n in xy.neighbours if grid.get(n, 999) - grid[xy] <= 1]
         for xy in grid
     }
 
-    possible_steps_down = {
-        xy: [n for n in xy.neighbours if grid.get(n, -999) - grid[xy] >= -1]
-        for xy in grid
-    }
-
-    def shortest_path(start: XY, target_elevation: int, possible_steps) -> int:
-        to_visit: deque[tuple[XY, list]] = deque([(start, [])])
-        visited: set[XY] = set()
-        while to_visit:
-            this_node, path = to_visit.popleft()
-            visited.add(this_node)
-            if grid[this_node] == target_elevation:
-                return len(path)
-            for next_node in possible_steps[this_node]:
-                if not next_node in visited:
-                    to_visit.append((next_node, path + [next_node]))
-
+    def shortest_path(start: XY, target_elevation: int) -> int:
+        queue = deque([start])
+        visited = {start: 0}
+        while queue:
+            node = queue.popleft()
+            if grid[node] == target_elevation:
+                return visited[node]
+            for next_node in possible_steps[node]:
+                if next_node not in visited:
+                    queue.append(next_node)
+                    visited[next_node] = visited[node] + 1
         raise ValueError("No path found")
 
-    print(f"Part 1: {shortest_path(start, 26,possible_steps_up)}")
-    print(f"Part 2: {shortest_path(target, 0, possible_steps_down)}\n")
+    print(f"Part 1: {shortest_path(start, 26)}")
+
+    grid = {k: 25 - v for k, v in grid.items()}
+    possible_steps = {
+        xy: [n for n in xy.neighbours if grid.get(n, 999) - grid[xy] <= 1]
+        for xy in grid
+    }
+    print(f"Part 2: {shortest_path(target, 25)}\n")
 
 
 solve(sample_input)
