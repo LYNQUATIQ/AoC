@@ -57,19 +57,19 @@ class PacketData(str):
         return l_item < r_item
 
 
+DIVIDERS = [PacketData("[2]"), PacketData("[6]")]
+
+
 def solve(inputs: str) -> None:
     pairs = inputs.split("\n\n")
-    packets = ("\n".join(pairs)).splitlines()
-
-    correct_indices: list[int] = []
-    for i, (left, right) in enumerate(map(str.splitlines, pairs), start=1):
+    correct_order = []
+    for i, (left, right) in enumerate(map(str.splitlines, pairs)):
         if PacketData(left) < PacketData(right):
-            correct_indices.append(i)
-    print(f"Part 1: {sum(correct_indices)}")
+            correct_order.append(i + 1)
+    print(f"Part 1: {sum(correct_order)}")
 
-    DIVIDERS = [PacketData("[2]"), PacketData("[6]")]
-    sorted_packets = sorted(list(map(PacketData, packets)) + DIVIDERS)
-    divider_indices = (sorted_packets.index(d) + 1 for d in DIVIDERS)
+    packets = list(map(PacketData, ("\n".join(pairs)).splitlines())) + DIVIDERS
+    divider_indices = (sorted(packets).index(d) + 1 for d in DIVIDERS)
     print(f"Part 2: {math.prod(divider_indices)}\n")
 
 
