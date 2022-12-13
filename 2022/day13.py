@@ -57,7 +57,7 @@ class PacketData(str):
         return l_item < r_item
 
 
-DIVIDERS = [PacketData("[2]"), PacketData("[6]")]
+DIVIDERS = [PacketData("[[2]]"), PacketData("[[6]]")]
 
 
 def solve(inputs: str) -> None:
