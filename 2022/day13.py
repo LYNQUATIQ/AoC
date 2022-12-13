@@ -125,17 +125,16 @@ DIVIDERS = ("[2]", "[6]")
 def solve(inputs: str) -> None:
     pairs = inputs.split("\n\n")
 
-    correct_indices: list[int] = []
-    for i, (l, r) in enumerate(map(str.splitlines, pairs), start=1):
-        left, right = PacketData(l), PacketData(r)
-        if left < right:
-            correct_indices.append(i)
+    correct_indices: list[int] = [
+        i
+        for i, (left, right) in enumerate(map(str.splitlines, pairs), start=1)
+        if PacketData(left) < PacketData(right)
+    ]
     print(f"Part 1: {sum(correct_indices)}")
 
     packet_data = "\n".join(pairs) + "\n" + "\n".join(DIVIDERS)
     packets = list(map(PacketData, packet_data.splitlines()))
-    packets.sort()
-    packet_strings = [str(p) for p in packets]
+    packet_strings = [str(p) for p in sorted(packets)]
     divider_indices = (packet_strings.index(d) + 1 for d in DIVIDERS)
 
     print(f"Part 2: {math.prod(divider_indices)}\n")
