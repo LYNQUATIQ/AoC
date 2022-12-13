@@ -38,23 +38,19 @@ class PacketData(str):
     def __lt__(self, other: object) -> bool:
         assert isinstance(other, PacketData)
 
-        def _split_packet(packet: PacketData) -> tuple[PacketData, PacketData]:
-            items = json.loads(packet)
-            return (PacketData(items[0]), PacketData(items[1:]))
-
         if self == "[]" or other == "[]":
             return self == "[]"
-        l_item, l_remaining = _split_packet(self)
-        r_item, r_remaining = _split_packet(other)
-        if l_item == r_item:
-            return l_remaining < r_remaining
-        if l_item.isdigit() and r_item.isdigit():
-            return int(l_item) < int(r_item)
-        if l_item.isdigit():
-            return PacketData(f"[[{l_item}],{l_remaining}]") < other
-        if r_item.isdigit():
-            return self < PacketData(f"[[{r_item}],{r_remaining}]")
-        return l_item < r_item
+        l_items, r_items = json.loads(self), json.loads(other)
+        left, right = PacketData(l_items[0]), PacketData(r_items[0])
+        if left == right:
+            return PacketData(l_items[1:]) < PacketData(r_items[1:])
+        if left.isdigit() and right.isdigit():
+            return int(left) < int(right)
+        if left.isdigit():
+            return PacketData(f"[[{left}],{l_items[1:]}]") < other
+        if right.isdigit():
+            return self < PacketData(f"[[{right}],{r_items[1:]}]")
+        return left < right
 
 
 DIVIDERS = [PacketData("[[2]]"), PacketData("[[6]]")]
