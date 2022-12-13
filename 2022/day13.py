@@ -36,14 +36,12 @@ sample_input = """[1,1,3,1,1]
 
 class PacketData(str):
     def __lt__(self, other: object) -> bool:
+        assert isinstance(other, PacketData)
+
         def _split_packet(packet: PacketData) -> tuple[PacketData, PacketData]:
             items = json.loads(packet)
-            return (
-                PacketData(str(items[0])),
-                PacketData(str(list(i for i in items[1:]))),
-            )
+            return (PacketData(items[0]), PacketData(items[1:]))
 
-        assert isinstance(other, PacketData)
         if self == "[]" or other == "[]":
             return self == "[]"
         l_item, l_remaining = _split_packet(self)
