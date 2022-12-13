@@ -1,13 +1,16 @@
 """https://adventofcode.com/2022/day/13"""
 from __future__ import annotations
+
+import json
 import math
 import os
 
-from ast import literal_eval
 from functools import total_ordering
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day13_input.txt")) as f:
     actual_input = f.read()
+
+from utils import print_time_taken
 
 
 sample_input = """[1,1,3,1,1]
@@ -76,7 +79,7 @@ class PacketData:
 
     @staticmethod
     def _split_packet(packet: PacketData) -> tuple[PacketData, PacketData]:
-        items = literal_eval(packet._data)
+        items = json.loads(packet._data)
         return (
             PacketData(str(items[0])),
             PacketData(str(list(i for i in items[1:]))),
@@ -85,8 +88,7 @@ class PacketData:
     @staticmethod
     def _combine_packet(item: PacketData, other: PacketData) -> PacketData:
         item_str = str(f"[{item}]") if item.is_integer else str(item)
-        items = [item_str] + literal_eval(other._data)
-        return PacketData(str(list(i for i in items)))
+        return PacketData(f"[{item_str},{other._data}]")
 
     @staticmethod
     def _compare(left_packet: PacketData, right_packet: PacketData) -> bool:
@@ -122,6 +124,7 @@ class PacketData:
 DIVIDERS = ("[2]", "[6]")
 
 
+@print_time_taken
 def solve(inputs: str) -> None:
     pairs = inputs.split("\n\n")
 
