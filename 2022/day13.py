@@ -40,6 +40,24 @@ class PacketData:
     def __init__(self, data: str) -> None:
         self._data = data
 
+    def __repr__(self) -> str:
+        return str(self._data)
+
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, PacketData)
+        if self.is_integer and other.is_integer:
+            return self._data == other._data
+        elif self.is_list and other.is_list:
+            return self.empty and other.empty
+        return False
+
+    def __lt__(self, other: object) -> bool:
+        assert isinstance(other, PacketData)
+        try:
+            return PacketData._compare(self, other)
+        except PacketsEqual:
+            return False
+
     @property
     def is_integer(self) -> bool:
         return self._data.isdigit()
@@ -53,14 +71,8 @@ class PacketData:
         assert not self.is_integer
         return self._data == "[]"
 
-    @property
-    def value(self) -> int:
-        assert self.is_integer
-        return int(self._data)
-
     @staticmethod
     def _split_packet(packet: PacketData) -> tuple[PacketData, PacketData]:
-        assert packet.is_list
         items = literal_eval(packet._data)
         return (
             PacketData(str(items[0])),
@@ -70,39 +82,13 @@ class PacketData:
     @staticmethod
     def _combine_packet(item: PacketData, other: PacketData) -> PacketData:
         item_str = str(f"[{item}]") if item.is_integer else str(item)
-        assert other.is_list
         items = [item_str] + literal_eval(other._data)
         return PacketData(str(list(i for i in items)))
 
-    def __eq__(self, other: object) -> bool:
-        # print(f"Testing EQUALITY:\n    {self}\n    {other}")
-        assert isinstance(other, PacketData)
-        if self.is_integer and other.is_integer:
-            retval = self.value == other.value
-        elif self.is_list and other.is_list:
-            retval = self.empty and other.empty
-        else:
-            retval = False
-        # print(" =>   L=R" if retval else " =>   L!=R")
-        return retval
-
-    def __lt__(self, other: object) -> bool:
-        # print(f"Testing LESS THAN:\n    {self}\n    {other}")
-        assert isinstance(other, PacketData)
-        try:
-            retval = PacketData._compare(self, other)
-        except PacketsEqual:
-            retval = False
-        # print(" =>   L<R" if retval else " =>   L>=R")
-        return retval
-
     @staticmethod
     def _compare(left_packet: PacketData, right_packet: PacketData) -> bool:
-
         if left_packet == right_packet:
             raise PacketsEqual
-
-        assert left_packet.is_list and right_packet.is_list
 
         if left_packet.empty or right_packet.empty:
             return left_packet.empty
@@ -114,25 +100,21 @@ class PacketData:
             return PacketData._compare(l_remaining, r_remaining)
 
         if l_item.is_integer and r_item.is_integer:
-            return l_item.value < r_item.value
-        elif l_item.is_integer or r_item.is_integer:
+            return int(l_item._data) < int(r_item._data)
+        if l_item.is_integer or r_item.is_integer:
             return PacketData._compare(
                 PacketData._combine_packet(l_item, l_remaining),
                 PacketData._combine_packet(r_item, r_remaining),
             )
-        else:
-            # Both items are lists
-            if l_item.empty and not r_item.empty:
-                return True
-            if r_item.empty and not l_item.empty:
-                return False
-            try:
-                return PacketData._compare(l_item, r_item)
-            except PacketsEqual:
-                return PacketData._compare(l_remaining, r_remaining)
-
-    def __repr__(self) -> str:
-        return str(self._data)
+        # Both items are lists
+        if l_item.empty and not r_item.empty:
+            return True
+        if r_item.empty and not l_item.empty:
+            return False
+        try:
+            return PacketData._compare(l_item, r_item)
+        except PacketsEqual:
+            return PacketData._compare(l_remaining, r_remaining)
 
 
 class PacketsEqual(Exception):
