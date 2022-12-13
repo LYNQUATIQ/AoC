@@ -37,6 +37,9 @@ sample_input = """[1,1,3,1,1]
 
 @total_ordering
 class PacketData:
+    class PacketsEqual(Exception):
+        """Raised when packets are equal (same value or empty lists)"""
+
     def __init__(self, data: str) -> None:
         self._data = data
 
@@ -55,7 +58,7 @@ class PacketData:
         assert isinstance(other, PacketData)
         try:
             return PacketData._compare(self, other)
-        except PacketsEqual:
+        except PacketData.PacketsEqual:
             return False
 
     @property
@@ -88,7 +91,7 @@ class PacketData:
     @staticmethod
     def _compare(left_packet: PacketData, right_packet: PacketData) -> bool:
         if left_packet == right_packet:
-            raise PacketsEqual
+            raise PacketData.PacketsEqual
 
         if left_packet.empty or right_packet.empty:
             return left_packet.empty
@@ -98,7 +101,6 @@ class PacketData:
 
         if l_item == r_item:
             return PacketData._compare(l_remaining, r_remaining)
-
         if l_item.is_integer and r_item.is_integer:
             return int(l_item._data) < int(r_item._data)
         if l_item.is_integer or r_item.is_integer:
@@ -113,12 +115,8 @@ class PacketData:
             return False
         try:
             return PacketData._compare(l_item, r_item)
-        except PacketsEqual:
+        except PacketData.PacketsEqual:
             return PacketData._compare(l_remaining, r_remaining)
-
-
-class PacketsEqual(Exception):
-    """Raised when packets are equal (same value or empty lists)"""
 
 
 DIVIDERS = ("[2]", "[6]")
