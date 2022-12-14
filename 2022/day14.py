@@ -13,33 +13,24 @@ def solve(inputs: str) -> None:
 
     blockages = set()
     for line in inputs.splitlines():
-        points: list[tuple[int, int]] = []
-        for p in line.split(" -> "):
-            x, y = map(int, p.split(","))
-            points.append((x, y))
-        for p_0, p_1 in zip(points[:-1], points[1:]):
-            if p_1[0] == p_0[0]:
-                s = 1 if p_1[1] > p_0[1] else -1
-                for y in range(p_0[1], p_1[1] + s, s):
-                    blockages.add((p_1[0], y))
+        points = [tuple(map(int, p.split(","))) for p in line.split(" -> ")]
+        for (start_x, start_y), (end_x, end_y) in zip(points[:-1], points[1:]):
+            if start_x == end_x:
+                s = 1 if end_y > start_y else -1
+                blockages |= {(end_x, y) for y in range(start_y, end_y + s, s)}
             else:
-                s = 1 if p_1[0] > p_0[0] else -1
-                for x in range(p_0[0], p_1[0] + s, s):
-                    blockages.add((x, p_1[1]))
-            p_0 = p_1
+                s = 1 if end_x > start_x else -1
+                blockages |= {(x, end_y) for x in range(start_x, end_x + s, s)}
 
-    sand_units = 0
-    sand_source = (500, 0)
-    max_y = max(xy[1] for xy in blockages)
-    part1_abyss = max_y + 1
-    floor = max_y + 2
+    floor = max(xy[1] for xy in blockages) + 2
+    sand_units, part_1_sand_units = 0, 0
 
-    x, y = sand_source
-    part_1_sand_units = 1
+    SAND_SOURCE = (500, 0)
+    x, y = SAND_SOURCE
     while True:
+        if y > floor - 1 and not part_1_sand_units:
+            part_1_sand_units = sand_units
 
-        if y > max_y + 1:
-            part_1_sand_units = y
         if y < floor:
             y += 1
             if (x, y) not in blockages:
@@ -50,11 +41,12 @@ def solve(inputs: str) -> None:
             if (x + 1, y) not in blockages:
                 x += 1
                 continue
+
         blockages.add((x, y - 1))
         sand_units += 1
-        if (x, y - 1) == sand_source:
+        if (x, y - 1) == SAND_SOURCE:
             break
-        x, y = sand_source
+        x, y = SAND_SOURCE
 
     print(f"Part 1: {part_1_sand_units}")
     print(f"Part 2: {sand_units}\n")
