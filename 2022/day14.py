@@ -16,12 +16,9 @@ def solve(inputs: str) -> None:
     for line in inputs.splitlines():
         points = [tuple(map(int, p.split(","))) for p in line.split(" -> ")]
         for (start_x, start_y), (end_x, end_y) in zip(points[:-1], points[1:]):
-            if start_x == end_x:
-                s = 1 if end_y > start_y else -1
-                blocked |= {(end_x, y) for y in range(start_y, end_y + s, s)}
-            else:
-                s = 1 if end_x > start_x else -1
-                blocked |= {(x, end_y) for x in range(start_x, end_x + s, s)}
+            for y in range(min(start_y, end_y), max(start_y, end_y) + 1):
+                for x in range(min(start_x, end_x), max(start_x, end_x) + 1):
+                    blocked.add((x, y))
 
     cavern_floor, number_of_rocks = max(xy[1] for xy in blocked) + 2, len(blocked)
     part_1 = None

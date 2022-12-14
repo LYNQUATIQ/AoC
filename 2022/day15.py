@@ -9,7 +9,7 @@ sample_input = """xxx"""
 
 
 def solve(inputs: str) -> None:
-    values = tuple(map(int, inputs.splitlines()))
+    # values = tuple(map(int, inputs.splitlines()))
 
     print(f"Part 1: {False}")
     print(f"Part 2: {False}\n")
