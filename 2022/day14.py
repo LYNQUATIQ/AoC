@@ -20,24 +20,23 @@ def solve(inputs: str) -> None:
                 for x in range(min(start_x, end_x), max(start_x, end_x) + 1):
                     blocked.add((x, y))
 
-    cavern_floor, number_of_rocks = max(xy[1] for xy in blocked) + 2, len(blocked)
+    max_y, number_of_rocks = max(xy[1] for xy in blocked), len(blocked)
+    cavern_floor = max_y + 2
     part_1 = None
     sand_sources = [SAND_SOURCE]
     while True:
-        current_source = sand_sources.pop()
-        x, y = last_source = current_source
+        x, y = sand_sources.pop()
 
         # Fall until blocked
-        while space_below := [
-            (next_x, next_y)
-            for next_x, next_y in ((x, y + 1), (x - 1, y + 1), (x + 1, y + 1))
-            if (next_x, next_y) not in blocked and next_y != cavern_floor
+        while next_xy := [
+            xy
+            for xy in ((x, y + 1), (x - 1, y + 1), (x + 1, y + 1))
+            if xy not in blocked and xy[1] != cavern_floor
         ]:
-            sand_sources.append(last_source)
-            last_source = x, y
-            x, y = space_below[0]
+            sand_sources.append((x, y))
+            x, y = next_xy[0]
 
-        if not part_1 and y > cavern_floor - 2:
+        if not part_1 and y > max_y:
             part_1 = len(blocked) - number_of_rocks
 
         blocked.add((x, y))
