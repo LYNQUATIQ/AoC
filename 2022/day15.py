@@ -51,9 +51,9 @@ def solve_part2(inputs: str) -> int:
         sx, sy, bx, by = map(int, re.findall(r"-?\d+", line))
         distance = abs(sx - bx) + abs(sy - by)
         north, south = (sx, sy - distance), (sx, sy + distance)
-        (cx1, cy1), (cx2, cy2) = rotate(*north), rotate(*south)
-        x, y = min(cx1, cx2), min(cy1, cy2)
-        regions.append(((x, y), abs(cx2 - cx1) + 1))
+        (x1, y1), (x2, y2) = rotate(*north), rotate(*south)
+        x, y = min(x1, x2), min(y1, y2)
+        regions.append(((x, y), abs(x2 - x1) + 1))
 
     x_candidates, y_candidates = set(), set()
     for ((x1, y1), d1), ((x2, y2), d2) in combinations(regions, 2):
@@ -74,10 +74,6 @@ def solve_part2(inputs: str) -> int:
     raise ValueError
 
 
-from utils import print_time_taken
-
-
-@print_time_taken
 def solve(inputs: str, y_row: int) -> None:
     print(f"Part 1: {solve_part1(inputs,y_row)}")
     print(f"Part 2: {solve_part2(inputs)}\n")
