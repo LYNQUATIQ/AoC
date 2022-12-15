@@ -4,6 +4,8 @@ from __future__ import annotations
 import os
 import re
 
+from itertools import combinations, product
+
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day15_input.txt")) as f:
     actual_input = f.read()
 
@@ -23,81 +25,66 @@ Sensor at x=16, y=7: closest beacon is at x=15, y=3
 Sensor at x=14, y=3: closest beacon is at x=15, y=3
 Sensor at x=20, y=1: closest beacon is at x=15, y=3"""
 
-from typing import NamedTuple
 
-
-class XY(NamedTuple):
-    x: int
-    y: int
-
-    def x_distance(self, other: XY) -> int:
-        return abs(self.x - other.x)
-
-    def y_distance(self, other: XY) -> int:
-        return abs(self.y - other.y)
-
-    def distance(self, other: XY) -> int:
-        return abs(self.x - other.x) + abs(self.y - other.y)
-
-
-from itertools import product
-
-sensors: dict[XY, XY] = {}
-
-
-def check_row(y: int) -> int:
+def solve_part1(inputs: str, y_row: int, extent: int) -> int:
     no_beacons = set()
-    beacons = set()
-    for s, b in sensors.items():
-        if s.distance(b) < s.distance(XY(s.x, y)):
+    beacons_on_y = 0
+    for line in inputs.splitlines():
+        sx, sy, bx, by = map(int, re.findall(r"-?\d+", line))
+        if by == y_row:
+            beacons_on_y += 1
+        distance = abs(sx - bx) + abs(sy - by)
+        x_range = distance - abs(sy - y_row)
+        if x_range < 0:
             continue
-        if b.y == y:
-            beacons.add(b)
-        x_range = s.distance(b) - abs(s.y - y)
         for x in range(-x_range, x_range + 1):
-            no_beacons.add(s.x + x)
+            no_beacons.add(sx + x)
 
-    return len(no_beacons) - len(beacons)
+    return len(no_beacons) - beacons_on_y
+
+
+def solve_part2(inputs: str) -> int:
+
+    rotate = lambda x, y: (x + y, y - x)
+    unrotate = lambda x, y: ((x - y) // 2, (x + y) // 2)
+
+    regions: list[tuple[tuple[int, int], int]] = []
+    for line in inputs.splitlines():
+        sx, sy, bx, by = map(int, re.findall(r"-?\d+", line))
+        distance = abs(sx - bx) + abs(sy - by)
+        north, south = (sx, sy - distance), (sx, sy + distance)
+        (cx1, cy1), (cx2, cy2) = rotate(*north), rotate(*south)
+        x, y = min(cx1, cx2), min(cy1, cy2)
+        regions.append(((x, y), abs(cx2 - cx1) + 1))
+
+    x_candidates, y_candidates = set(), set()
+    for a, b in combinations(regions, 2):
+        (x1, y1), d1 = a
+        (x2, y2), d2 = b
+        if x2 - (x1 + d1) == 1:
+            x_candidates.add(x2 - 1)
+        elif x1 - (x2 + d2) == 1:
+            x_candidates.add(x1 - 1)
+        if y2 - (y1 + d1) == 1:
+            y_candidates.add(y2 - 1)
+        elif y1 - (y2 + d2) == 1:
+            y_candidates.add(y1 - 1)
+
+    for x0, y0 in product(x_candidates, y_candidates):
+        if not any(x <= x0 < x + d and y <= y0 < y + d for (x, y), d in regions):
+            x, y = unrotate(x0, y0)
+            return x * 4_000_000 + y
+
+    raise ValueError
 
 
 from utils import print_time_taken
-from collections import deque
-
-import numpy as np
 
 
 @print_time_taken
 def solve(inputs: str, y_row: int, extent: int) -> None:
-
-    space = np.ones((extent + 1, extent + 1), dtype=bool)
-    for line in inputs.splitlines():
-        sx, sy, bx, by = map(int, re.findall(r"-?\d+", line))
-
-        sensor, beacon = XY(sx, sy), XY(bx, by)
-        d = sensor.distance(beacon)
-        # try:
-        #     space[by, bx] = 0
-        # except IndexError:
-        #     pass
-        # try:
-        #     space[sy, sx] = 1
-        # except IndexError:
-        #     pass
-
-        for y in range(max(0, sensor.y - d), min(sensor.y + d + 1, extent + 1)):
-            x_length = sensor.distance(beacon) - abs(sensor.y - y)
-            assert 0 <= x_length <= sensor.distance(beacon)
-            for x in range(sensor.x - x_length, sensor.x + x_length + 1):
-                if 0 <= x <= extent:
-                    space[y, x] = 0
-
-    # for i, row in enumerate(space):
-    #     print("".join(c for c in space[i]))
-
-    # print(f"Part 1: {check_row(y_row)}")
-    y, x = np.where(space == 1)
-    print(x, y)
-    print(f"Part 2: {x* 4_000_000 + y}\n")
+    print(f"Part 1: {solve_part1(inputs,y_row, extent)}")
+    print(f"Part 2: {solve_part2(inputs)}\n")
 
 
 solve(sample_input, 10, 20)
