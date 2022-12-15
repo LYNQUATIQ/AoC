@@ -26,21 +26,19 @@ Sensor at x=14, y=3: closest beacon is at x=15, y=3
 Sensor at x=20, y=1: closest beacon is at x=15, y=3"""
 
 
-def solve_part1(inputs: str, y_row: int, extent: int) -> int:
-    no_beacons = set()
-    beacons_on_y = 0
+def solve_part1(inputs: str, y_row: int) -> int:
+    no_beacons, beacons_on_y = set(), set()
     for line in inputs.splitlines():
         sx, sy, bx, by = map(int, re.findall(r"-?\d+", line))
         if by == y_row:
-            beacons_on_y += 1
+            beacons_on_y.add(by)
         distance = abs(sx - bx) + abs(sy - by)
         x_range = distance - abs(sy - y_row)
         if x_range < 0:
             continue
         for x in range(-x_range, x_range + 1):
             no_beacons.add(sx + x)
-
-    return len(no_beacons) - beacons_on_y
+    return len(no_beacons) - len(beacons_on_y)
 
 
 def solve_part2(inputs: str) -> int:
@@ -58,9 +56,7 @@ def solve_part2(inputs: str) -> int:
         regions.append(((x, y), abs(cx2 - cx1) + 1))
 
     x_candidates, y_candidates = set(), set()
-    for a, b in combinations(regions, 2):
-        (x1, y1), d1 = a
-        (x2, y2), d2 = b
+    for ((x1, y1), d1), ((x2, y2), d2) in combinations(regions, 2):
         if x2 - (x1 + d1) == 1:
             x_candidates.add(x2 - 1)
         elif x1 - (x2 + d2) == 1:
@@ -82,10 +78,10 @@ from utils import print_time_taken
 
 
 @print_time_taken
-def solve(inputs: str, y_row: int, extent: int) -> None:
-    print(f"Part 1: {solve_part1(inputs,y_row, extent)}")
+def solve(inputs: str, y_row: int) -> None:
+    print(f"Part 1: {solve_part1(inputs,y_row)}")
     print(f"Part 2: {solve_part2(inputs)}\n")
 
 
-solve(sample_input, 10, 20)
-solve(actual_input, 2_000_000, 4_000_000)
+solve(sample_input, 10)
+solve(actual_input, 2_000_000)
