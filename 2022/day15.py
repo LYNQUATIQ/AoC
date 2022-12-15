@@ -26,34 +26,32 @@ Sensor at x=14, y=3: closest beacon is at x=15, y=3
 Sensor at x=20, y=1: closest beacon is at x=15, y=3"""
 
 
-def solve_part1(inputs: str, y_row: int) -> int:
-    no_beacons, beacons_on_y = set(), set()
-    for line in inputs.splitlines():
-        sx, sy, bx, by = map(int, re.findall(r"-?\d+", line))
-        if by == y_row:
-            beacons_on_y.add(by)
-        distance = abs(sx - bx) + abs(sy - by)
-        x_range = distance - abs(sy - y_row)
-        if x_range < 0:
-            continue
-        for x in range(-x_range, x_range + 1):
-            no_beacons.add(sx + x)
-    return len(no_beacons) - len(beacons_on_y)
-
-
-def solve_part2(inputs: str) -> int:
+def solve(inputs: str, y_row: int) -> None:
 
     rotate = lambda x, y: (x + y, y - x)
     unrotate = lambda x, y: ((x - y) // 2, (x + y) // 2)
 
+    y_row_left, y_row_right, beacons_on_y = set(), set(), set()
     regions: list[tuple[tuple[int, int], int]] = []
     for line in inputs.splitlines():
         sx, sy, bx, by = map(int, re.findall(r"-?\d+", line))
         distance = abs(sx - bx) + abs(sy - by)
+
+        # For part 1... store the left/right extents as at row y
+        if by == y_row:
+            beacons_on_y.add(by)
+        x_range_at_y = distance - abs(sy - y_row)
+        if x_range_at_y >= 0:
+            y_row_left.add(sx - x_range_at_y)
+            y_row_right.add(sx + x_range_at_y)
+
+        # For part 2... rotate the sensor regions by 45° and then look for gaps of 1
         north, south = (sx, sy - distance), (sx, sy + distance)
         (x1, y1), (x2, y2) = rotate(*north), rotate(*south)
         x, y = min(x1, x2), min(y1, y2)
         regions.append(((x, y), abs(x2 - x1) + 1))
+
+    print(f"Part 1: { max(y_row_right) - min(y_row_left) + 1 - len(beacons_on_y)}")
 
     x_candidates, y_candidates = set(), set()
     for ((x1, y1), d1), ((x2, y2), d2) in combinations(regions, 2):
@@ -65,18 +63,12 @@ def solve_part2(inputs: str) -> int:
             y_candidates.add(y2 - 1)
         elif y1 - (y2 + d2) == 1:
             y_candidates.add(y1 - 1)
-
     for x0, y0 in product(x_candidates, y_candidates):
         if not any(x <= x0 < x + d and y <= y0 < y + d for (x, y), d in regions):
             x, y = unrotate(x0, y0)
-            return x * 4_000_000 + y
+            break
 
-    raise ValueError
-
-
-def solve(inputs: str, y_row: int) -> None:
-    print(f"Part 1: {solve_part1(inputs,y_row)}")
-    print(f"Part 2: {solve_part2(inputs)}\n")
+    print(f"Part 2: {x * 4_000_000 + y}\n")
 
 
 solve(sample_input, 10)
