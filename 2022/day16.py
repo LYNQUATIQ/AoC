@@ -22,23 +22,15 @@ REGEX = r"^Valve (?P<valve>\w+) has flow rate=(?P<rate>\d+); tunnels? leads? to 
 
 from heapq import heappop, heappush
 
-from dataclasses import dataclass
 
 from itertools import product
 
+from collections import namedtuple
 
-@dataclass(frozen=True, order=True)
-class State:
-    time_left: int
-    flow: int
-    to_open: frozenset[str]
-    my_valve: str
-    ele_valve: str
-    my_last: str
-    ele_last: str
 
-    def __repr__(self) -> str:
-        return f't{30-self.time_left}: 🚶{self.my_valve} 🐘{self.ele_valve} ({self.flow}) {",".join(self.to_open)}'
+State = namedtuple(
+    "State", "time_left flow to_open my_valve ele_valve my_last ele_last"
+)
 
 
 @print_time_taken
@@ -59,7 +51,6 @@ def max_release(inputs: str, use_elephant=False) -> int:
     initial_state = State(
         26 if use_elephant else 30, 0, frozenset(valves_to_open), "AA", "AA", "AA", "AA"
     )
-    paths: dict[State, list[State]] = {initial_state: []}
     g_scores: dict[State, int] = {initial_state: 0}
     to_visit: list[tuple[int, State]] = []
     heappush(to_visit, (0, initial_state))
@@ -75,11 +66,12 @@ def max_release(inputs: str, use_elephant=False) -> int:
         my_moves = list(v for v in tunnels[s.my_valve] if v != s.my_last)
         if s.my_valve in s.to_open:
             my_moves.append(s.my_valve)
-        ele_moves = [s.ele_valve]
         if use_elephant:
             ele_moves = list(v for v in tunnels[s.ele_valve] if v != s.ele_last)
             if s.ele_valve in s.to_open and not s.my_valve == s.ele_valve:
                 ele_moves.append(s.ele_valve)
+        else:
+            ele_moves = [s.ele_valve]
 
         for my_move, ele_move in product(my_moves, ele_moves):
             if (
@@ -107,25 +99,20 @@ def max_release(inputs: str, use_elephant=False) -> int:
                     s.ele_valve,
                 )
             )
-
+        tentative_g = g_scores[s] + s.flow
         for next_state in next_states:
-            tentative_g = g_scores[s] + s.flow
             actual_g = g_scores.get(next_state, 0)
-
             if next_state in visited and tentative_g <= actual_g:
                 continue
-
-            if tentative_g < actual_g or next_state not in to_visit:
-                paths[next_state] = paths[s] + [s]
-                g_scores[next_state] = tentative_g
-                potential_rate = s.flow
-                if next_state.my_valve in s.to_open:
-                    potential_rate += flow_rates[next_state.my_valve]
-                if next_state.ele_valve in s.to_open:
-                    potential_rate += flow_rates[next_state.ele_valve]
-                h_score = potential_rate * time_left
-                f_score = tentative_g + h_score
-                heappush(to_visit, (-f_score, next_state))
+            g_scores[next_state] = tentative_g
+            potential_rate = s.flow
+            if next_state.my_valve in s.to_open:
+                potential_rate += flow_rates[next_state.my_valve]
+            if next_state.ele_valve in s.to_open:
+                potential_rate += flow_rates[next_state.ele_valve]
+            h_score = potential_rate * time_left
+            f_score = tentative_g + h_score
+            heappush(to_visit, (-f_score, next_state))
 
     max_release = 0
     for s, g_score in g_scores.items():
