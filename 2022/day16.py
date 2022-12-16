@@ -1,6 +1,7 @@
 """https://adventofcode.com/2022/day/16"""
 import os
 import re
+from utils import print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day16_input.txt")) as f:
     actual_input = f.read()
@@ -17,67 +18,121 @@ Valve HH has flow rate=22; tunnel leads to valve GG
 Valve II has flow rate=0; tunnels lead to valves AA, JJ
 Valve JJ has flow rate=21; tunnel leads to valve II"""
 
-REGEX = r"^Valve (?P<valve>\w+) has flow rate=(?P<rate>\d+); tunnels? leads? to valves? (?P<neighbours>.+)$"
+REGEX = r"^Valve (?P<valve>\w+) has flow rate=(?P<rate>\d+); tunnels? leads? to valves? (?P<tunnels>.+)$"
 
 from heapq import heappop, heappush
 
-from collections import deque
-from itertools import permutations
+from dataclasses import dataclass
+
+from itertools import product
 
 
-def solve(inputs: str) -> None:
-    rates: dict[str, int] = {}
-    neighbours: dict[str, list[str]] = {}
-    target_valves = set()
+@dataclass(frozen=True, order=True)
+class State:
+    time_left: int
+    flow: int
+    to_open: frozenset[str]
+    my_valve: str
+    ele_valve: str
+    my_last: str
+    ele_last: str
+
+    def __repr__(self) -> str:
+        return f't{30-self.time_left}: 🚶{self.my_valve} 🐘{self.ele_valve} ({self.flow}) {",".join(self.to_open)}'
+
+
+@print_time_taken
+def max_release(inputs: str, use_elephant=False) -> int:
+    flow_rates: dict[str, int] = {}
+    tunnels: dict[str, tuple[str, ...]] = {}
+    valves_to_open: set[str] = set()
     for line in inputs.splitlines():
         match = re.match(REGEX, line)
         assert match is not None
         valve = match["valve"]
-        rates[valve] = int(match["rate"])
-        neighbours[valve] = list(match["neighbours"].split(", "))
-        if rates[valve] > 0:
-            target_valves.add(valve)
+        flow_rates[valve] = int(match["rate"])
+        tunnels[valve] = tuple(match["tunnels"].split(", "))
+        if flow_rates[valve] > 0:
+            valves_to_open.add(valve)
 
-    def find_shortest_paths(start: str, targets: set[str]) -> dict[str, int]:
-        print("Getting routes from ", start)
-        queue = deque([start])
-        distance_to = {start: 0}
-        paths: dict[str, int] = {start: 0} if start in targets else {}
-        while queue:
-            valve = queue.popleft()
-            if valve in targets and valve != start:
-                paths[valve] = distance_to[valve]
-                if all(t in paths for t in targets):
-                    return paths
-            for next_valve in neighbours[valve]:
-                if next_valve not in distance_to:
-                    queue.append(next_valve)
-                    distance_to[next_valve] = distance_to[valve] + 1
-        raise ValueError("No path found")
+    visited: set[State] = set()
+    initial_state = State(
+        26 if use_elephant else 30, 0, frozenset(valves_to_open), "AA", "AA", "AA", "AA"
+    )
+    paths: dict[State, list[State]] = {initial_state: []}
+    g_scores: dict[State, int] = {initial_state: 0}
+    to_visit: list[tuple[int, State]] = []
+    heappush(to_visit, (0, initial_state))
+    while to_visit:
+        _, s = heappop(to_visit)
+        visited.add(s)
 
-    distances = {"AA": find_shortest_paths("AA", target_valves)}
-    distances |= {v: find_shortest_paths(v, target_valves) for v in target_valves}
+        time_left = s.time_left - 1
+        if not time_left or not s.to_open:
+            continue
 
-    print(distances)
+        next_states = []
+        my_moves = list(v for v in tunnels[s.my_valve] if v != s.my_last)
+        if s.my_valve in s.to_open:
+            my_moves.append(s.my_valve)
+        ele_moves = [s.ele_valve]
+        if use_elephant:
+            ele_moves = list(v for v in tunnels[s.ele_valve] if v != s.ele_last)
+            if s.ele_valve in s.to_open and not s.my_valve == s.ele_valve:
+                ele_moves.append(s.ele_valve)
+
+        for my_move, ele_move in product(my_moves, ele_moves):
+            flow = s.flow
+            to_open = set(s.to_open)
+            if my_move == s.my_valve:
+                flow += flow_rates[s.my_valve]
+                to_open -= {s.my_valve}
+            if use_elephant and ele_move == s.ele_valve:
+                flow += flow_rates[s.ele_valve]
+                to_open -= {s.ele_valve}
+            next_states.append(
+                State(
+                    time_left,
+                    flow,
+                    frozenset(to_open),
+                    my_move,
+                    ele_move,
+                    s.my_valve,
+                    s.ele_valve,
+                )
+            )
+
+        for next_state in next_states:
+            tentative_g = g_scores[s] + s.flow
+            actual_g = g_scores.get(next_state, 0)
+
+            if next_state in visited and tentative_g <= actual_g:
+                continue
+
+            if tentative_g < actual_g or next_state not in to_visit:
+                paths[next_state] = paths[s] + [s]
+                g_scores[next_state] = tentative_g
+                potential_rate = s.flow
+                if next_state.my_valve in s.to_open:
+                    potential_rate += flow_rates[next_state.my_valve]
+                if next_state.ele_valve in s.to_open:
+                    potential_rate += flow_rates[next_state.ele_valve]
+                h_score = potential_rate * time_left
+                f_score = tentative_g + h_score
+                heappush(to_visit, (-f_score, next_state))
+
     max_release = 0
-    for route in permutations(target_valves):
-        route = ["AA"] + list(route)
-        time, release = 0, 0
-        current = 0
-        for this_valve, next_valve in zip(route[:-1], route[1:]):
-            time += distances[this_valve][next_valve]
-            time += 1
-            current += rates[next_valve]
-            # print(
-            #     f"At time {time} open valve {next_valve} - current flow now {current}"
-            # )
-            if time >= 30:
-                break
-            release += (30 - time) * rates[next_valve]
-        max_release = max(max_release, release)
+    for s, g_score in g_scores.items():
+        release = g_score + (s.time_left * s.flow)
+        if release > max_release:
+            max_release = release
 
-    print(f"Part 1: {max_release}")
-    print(f"Part 2: {False}\n")
+    return max_release
+
+
+def solve(inputs: str) -> None:
+    print(f"Part 1: {max_release(inputs)}")
+    print(f"Part 2: {max_release(inputs, use_elephant=True)}\n")
 
 
 solve(sample_input)
