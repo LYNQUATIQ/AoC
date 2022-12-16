@@ -73,52 +73,37 @@ def max_release(inputs: str) -> int:
     initial_state = State("AA", 30, 0, frozenset(valves_to_open))
     visited: set[State] = set()
     g_scores: dict[State, int] = {initial_state: 0}
-    paths: dict[State, list[str]] = {}
     to_visit: list[tuple[int, State]] = []
     heappush(to_visit, (0, initial_state))
     while to_visit:
         _, this = heappop(to_visit)
-
-        ppp = "".join(p.valve[0] for p in paths.get(this, []))
-        if this == State(
-            valve="DD", time_left=19, flow=36, to_open=frozenset({"DD", "HH", "EE"})
-        ):
-            breakpoint()
-
         visited.add(this)
-        # if not this.to_open:
-        #     continue
+        to_open = frozenset(set(this.to_open) - {this.valve})
 
         next_moves = [
             (d, v) for v, d in distances[this.valve].items() if v in this.to_open
         ]
-
-        to_open = frozenset(set(this.to_open) - {this.valve})
         for d, next_valve in next_moves:
             time_left = this.time_left - d
             if time_left < 0:
                 continue
             flow = this.flow + flow_rates[next_valve]
-            next_state = State(next_valve, time_left, flow, to_open)
-
             g_score = g_scores[this] + (d * this.flow)
+            next_state = State(next_valve, time_left, flow, to_open)
             if next_state in visited and g_score <= g_scores.get(next_state, 0):
                 continue
-            g_scores[next_state] = g_score
-            h_score = 0
-            f_score = g_score + h_score
-            heappush(to_visit, (-f_score, next_state))
-            paths[next_state] = paths.get(this, []) + [this]
+            else:
+                g_scores[next_state] = g_score
+                h_score = 0
+                f_score = g_score + h_score
+                heappush(to_visit, (-f_score, next_state))
 
     max_release = 0
-    best_state = None
     for state, g_score in g_scores.items():
         release = g_score + (state.time_left * state.flow)
         if release > max_release:
             max_release = release
-            best_state = state
-    for s in paths[best_state]:
-        print(30 - s.time_left, s.valve, s.flow, s.to_open, s)
+
     return max_release
 
 
