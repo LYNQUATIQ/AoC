@@ -82,6 +82,12 @@ def max_release(inputs: str, use_elephant=False) -> int:
                 ele_moves.append(s.ele_valve)
 
         for my_move, ele_move in product(my_moves, ele_moves):
+            if (
+                my_move == ele_move
+                and (my_move != s.my_valve)
+                and (ele_move != s.ele_valve)
+            ):
+                continue
             flow = s.flow
             to_open = set(s.to_open)
             if my_move == s.my_valve:
