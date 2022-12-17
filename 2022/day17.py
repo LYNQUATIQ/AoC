@@ -34,62 +34,27 @@ SHAPES = (
 )
 
 
-class Chamber:
-    def __init__(self) -> None:
-        self._rocks: set[complex] = set()
-        self._last_rock: set[complex] = set()
-
-    def add_rock(self, xy: complex) -> None:
-        assert xy not in self._rocks
-        self._rocks.add(xy)
-
-    def add_rocks(self, position: complex, shape: tuple[complex, ...]) -> None:
-        self._last_rock = set(position + xy for xy in shape)
-        for xy in self._last_rock:
-            self.add_rock(xy)
-
-    def blocked(self, xy: complex) -> bool:
-        if xy.real < 0 or xy.real >= 7 or xy.imag <= 0:
-            return True
-        return xy in self._rocks
-
-    def __repr__(self) -> str:
-        output = ""
-        height = max(int(xy.imag) for xy in self._rocks)
-        for y in range(height + 3, max(height - 20, 0), -1):
-            output += "|"
-            for x in range(7):
-                c = "#" if complex(x, y) in self._rocks else "."
-                c = "@" if complex(x, y) in self._last_rock else c
-                output += c
-            output += f"| {y}\n"
-        if y == 1:
-            output += "+-------+ 0\n"
-
-        return output
-
-
 State = tuple
-
-CHAMBER_LENGTH = 36
 
 
 def play_tetris(puffs: str, number_of_rocks: int) -> int:
     puff_cycle, puff_index = len(puffs), 0
     shape_cycle = cycle(range(5))
 
-    # Chamber always has seven blank rows for shape to start in and a minimum of 36 rows
-    chamber = bytearray([0] * 7 + [0b11111111] * CHAMBER_LENGTH)
+    # Chamber always has seven blank rows for shape to start in
+    chamber = bytearray([0] * 7 + [0b11111111])
     prior_states: dict[State, int] = {}
     prior_heights: dict[int, int] = {0: 0}
-    current_height = 0
-    max_drop = 0
-    for iteration in range(number_of_rocks):
+
+    rocks, current_height = 0, 0
+    while True:
+
         shape_id = next(shape_cycle)
         shape = list(SHAPES[shape_id])
+        rocks += 1
         i = 4 - len(shape)
-        while True:
 
+        while True:
             # Try to move left/right
             puff = puffs[puff_index]
             puff_index = (puff_index + 1) % puff_cycle
@@ -114,22 +79,16 @@ def play_tetris(puffs: str, number_of_rocks: int) -> int:
         for c, s in enumerate(shape, start=i):
             chamber[c] |= s
 
-        max_drop = max(max_drop, i)
         current_height += 7 - min(i, 7)
         new_chamber = bytearray([0] * 7) + chamber[min(i, 7) :]
         chamber = new_chamber
 
-        rocks_so_far = iteration + 1
-        # print(f"Rocks:  {rocks_so_far}\nHeight: {current_height}")
-        # print_chamber(chamber, current_height)
-        # # input()
-
-        state = (tuple(chamber[:CHAMBER_LENGTH]), shape_id, puff_index)
+        state = (tuple(chamber[:20]), shape_id, puff_index)
         if state in prior_states:
             prior_rocks = prior_states[state]
             prior_height = prior_heights[prior_rocks]
             height_change = current_height - prior_height
-            cycle_length = rocks_so_far - prior_rocks
+            cycle_length = rocks - prior_rocks
             remaining_rocks = number_of_rocks - prior_rocks
             number_of_cycles = remaining_rocks // cycle_length
             remaining_rocks = remaining_rocks % cycle_length
@@ -138,8 +97,8 @@ def play_tetris(puffs: str, number_of_rocks: int) -> int:
             total_height += prior_heights[remaining_rocks + prior_rocks] - prior_height
             return total_height
         else:
-            prior_states[state] = rocks_so_far
-        prior_heights[rocks_so_far] = current_height
+            prior_states[state] = rocks
+        prior_heights[rocks] = current_height
 
     raise ValueError
 
