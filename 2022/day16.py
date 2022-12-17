@@ -1,9 +1,8 @@
 """https://adventofcode.com/2022/day/16"""
 import os
 import re
-from collections import deque, namedtuple
+from collections import deque
 from heapq import heappop, heappush
-from itertools import combinations
 
 from tqdm import tqdm
 
