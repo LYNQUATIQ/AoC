@@ -25,6 +25,8 @@ import plotly.graph_objects as go
 import networkx as nx
 import matplotlib.pyplot as plt
 
+from collections import deque
+
 
 def solve(inputs: str) -> None:
     flow_rates: dict[str, int] = {}
@@ -39,12 +41,35 @@ def solve(inputs: str) -> None:
         if flow_rates[valve] > 0:
             valves_to_open.add(valve)
 
-    edges = []
-    for v, ns in tunnels.items():
-        for n in ns:
-            edges.append((v, n))
+    def find_shortest_paths(start: str, targets: set[str]) -> dict[str, int]:
+        queue = deque([start])
+        distance_to = {start: 0}
+        paths: dict[str, int] = {start: 0} if start in targets else {}
+        while queue:
+            valve = queue.popleft()
+            if valve in targets and valve != start:
+                paths[valve] = distance_to[valve] + 1  # +1 for opening valve
+                if all(t in paths for t in targets):
+                    if start in targets:
+                        del paths[start]
+                    return paths
+            for next_valve in tunnels[valve]:
+                if next_valve not in distance_to:
+                    queue.append(next_valve)
+                    distance_to[next_valve] = distance_to[valve] + 1
+        raise ValueError("No path found")
+
+    # Calculate steps between target valves (plus the steps from the start)
+    distances: dict[str, dict[str, int]] = {
+        v: find_shortest_paths(v, valves_to_open) for v in valves_to_open
+    }
+    distances |= {"AA": find_shortest_paths("AA", valves_to_open)}
+
     G = nx.Graph()
-    G.add_edges_from(edges)
+    G.add_nodes_from(list(distances.keys()))
+    for v, ds in distances.items():
+        for n, d in ds.items():
+            G.add_edge(v, n, length=d)
 
     pos = nx.spring_layout(G)
     nx.draw_networkx_nodes(G, pos, cmap=plt.get_cmap("jet"), node_size=500)

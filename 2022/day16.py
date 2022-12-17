@@ -1,6 +1,11 @@
 """https://adventofcode.com/2022/day/16"""
 import os
 import re
+
+from collections import deque, namedtuple
+from heapq import heappop, heappush
+from itertools import combinations, product
+
 from utils import print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day16_input.txt")) as f:
@@ -20,17 +25,11 @@ Valve JJ has flow rate=21; tunnel leads to valve II"""
 
 REGEX = r"^Valve (?P<valve>\w+) has flow rate=(?P<rate>\d+); tunnels? leads? to valves? (?P<tunnels>.+)$"
 
-from heapq import heappop, heappush
 
-
-from itertools import product
-
-from collections import namedtuple
-
-
-State = namedtuple(
-    "State", "time_left flow to_open my_valve ele_valve my_last ele_last"
-)
+# State records the current time, the valve that a and b are moving towards or opening,
+# the time that a and b will be ready to move, the flow rate as of now, and the set of
+# valves still needing opening as of now
+State = namedtuple("State", "time a_valve b_valve a_ready b_ready flow to_open")
 
 
 @print_time_taken
@@ -47,79 +46,158 @@ def max_release(inputs: str, use_elephant=False) -> int:
         if flow_rates[valve] > 0:
             valves_to_open.add(valve)
 
-    visited: set[State] = set()
+    def find_shortest_paths(start: str, targets: set[str]) -> dict[str, int]:
+        queue = deque([start])
+        distance_to = {start: 0}
+        paths: dict[str, int] = {start: 0} if start in targets else {}
+        while queue:
+            valve = queue.popleft()
+            if valve in targets and valve != start:
+                paths[valve] = distance_to[valve] + 1  # +1 for opening valve
+                if all(t in paths for t in targets):
+                    if start in targets:
+                        del paths[start]
+                    return paths
+            for next_valve in tunnels[valve]:
+                if next_valve not in distance_to:
+                    queue.append(next_valve)
+                    distance_to[next_valve] = distance_to[valve] + 1
+        raise ValueError("No path found")
+
+    def get_next_states(this: State) -> list[tuple[State, int]]:
+        options = this.to_open - {this.a_valve}
+        a_moves = [(distances[this.a_valve][v], v) for v in options]
+        next_states = []
+        for (a_steps, a_next) in a_moves:
+            if this.time + a_steps > 30:
+                continue
+            flow, to_open = this.flow, set(this.to_open)
+            flow += flow_rates[a_next]
+            to_open -= {a_next}
+
+            next_states.append(
+                (
+                    State(
+                        this.time + a_steps,
+                        a_next,
+                        this.b_valve,
+                        this.time + a_steps,
+                        this.time + a_steps,
+                        flow,
+                        frozenset(to_open),
+                    ),
+                    a_steps,
+                )
+            )
+        return next_states
+
+    def get_elephant_states(this: State) -> list[tuple[State, int]]:
+        a_moving, b_moving = this.a_ready == this.time, this.b_ready == this.time
+        options: set[str] = this.to_open - {this.a_valve} - {this.b_valve}
+        if a_moving and b_moving:
+            if not options:
+                return []
+            if len(options) == 1:
+                a_moves = [(distances[this.a_valve][v] + this.time, v) for v in options]
+                moves = [(a_move, (99, "--")) for a_move in a_moves]
+            else:
+                moves = [
+                    ((distances[this.a_valve][a], a), (distances[this.b_valve][b], b))
+                    for a, b in combinations(options, 2)
+                ]
+        elif a_moving:
+            a_moves = [
+                (distances[this.a_valve][v] + this.time, v) for v in options
+            ] or [(99, "--")]
+            moves = [(a_move, (this.b_ready, this.b_valve)) for a_move in a_moves]
+        elif b_moving:
+            b_moves = [
+                (distances[this.b_valve][v] + this.time, v) for v in options
+            ] or [(99, "--")]
+            moves = [((this.a_ready, this.a_valve), b_move) for b_move in b_moves]
+
+        next_states = []
+        for (a_steps, a_next), (b_steps, b_next) in moves:
+            steps = min(a_steps, b_steps)
+            if this.time + steps > max_time:
+                continue
+
+            flow, to_open = this.flow, set(this.to_open)
+            if steps == a_steps:
+                flow += flow_rates[a_next]
+                to_open -= {a_next}
+            if steps == b_steps:
+                flow += flow_rates[b_next]
+                to_open -= {b_next}
+
+            next_states.append(
+                (
+                    State(
+                        this.time + steps,
+                        a_next,
+                        b_next,
+                        this.time + a_steps,
+                        this.time + b_steps,
+                        flow,
+                        frozenset(to_open),
+                    ),
+                    steps,
+                )
+            )
+        return next_states
+
+    # Calculate steps between target valves (plus the steps from the start)
+    distances: dict[str, dict[str, int]] = {
+        v: find_shortest_paths(v, valves_to_open) for v in valves_to_open
+    }
+    distances |= {"AA": find_shortest_paths("AA", valves_to_open)}
+
+    # Do an a* search
+    max_time = 26 if use_elephant else 30
     initial_state = State(
-        26 if use_elephant else 30, 0, frozenset(valves_to_open), "AA", "AA", "AA", "AA"
+        0, "AA", "AA", 0, 0 if use_elephant else 99, 0, frozenset(valves_to_open)
     )
+    visited: set[State] = set()
     g_scores: dict[State, int] = {initial_state: 0}
     to_visit: list[tuple[int, State]] = []
     heappush(to_visit, (0, initial_state))
+
+    paths: dict[State, list[State]] = {initial_state: []}
+
     while to_visit:
-        _, s = heappop(to_visit)
-        visited.add(s)
+        _, this = heappop(to_visit)
+        visited.add(this)
 
-        time_left = s.time_left - 1
-        if not time_left or not s.to_open:
-            continue
-
-        next_states = []
-        my_moves = list(v for v in tunnels[s.my_valve] if v != s.my_last)
-        if s.my_valve in s.to_open:
-            my_moves.append(s.my_valve)
-        if use_elephant:
-            ele_moves = list(v for v in tunnels[s.ele_valve] if v != s.ele_last)
-            if s.ele_valve in s.to_open and not s.my_valve == s.ele_valve:
-                ele_moves.append(s.ele_valve)
-        else:
-            ele_moves = [s.ele_valve]
-
-        for my_move, ele_move in product(my_moves, ele_moves):
-            if (
-                my_move == ele_move
-                and (my_move != s.my_valve)
-                and (ele_move != s.ele_valve)
-            ):
+        next_states = (
+            get_elephant_states(this) if use_elephant else get_next_states(this)
+        )
+        for next_state, steps in next_states:
+            g_score = g_scores[this] + (steps * this.flow)
+            if next_state in visited and g_score <= g_scores.get(next_state, 0):
                 continue
-            flow = s.flow
-            to_open = set(s.to_open)
-            if my_move == s.my_valve:
-                flow += flow_rates[s.my_valve]
-                to_open -= {s.my_valve}
-            if use_elephant and ele_move == s.ele_valve:
-                flow += flow_rates[s.ele_valve]
-                to_open -= {s.ele_valve}
-            next_states.append(
-                State(
-                    time_left,
-                    flow,
-                    frozenset(to_open),
-                    my_move,
-                    ele_move,
-                    s.my_valve,
-                    s.ele_valve,
-                )
-            )
-        tentative_g = g_scores[s] + s.flow
-        for next_state in next_states:
-            actual_g = g_scores.get(next_state, 0)
-            if next_state in visited and tentative_g <= actual_g:
-                continue
-            g_scores[next_state] = tentative_g
-            potential_rate = s.flow
-            if next_state.my_valve in s.to_open:
-                potential_rate += flow_rates[next_state.my_valve]
-            if next_state.ele_valve in s.to_open:
-                potential_rate += flow_rates[next_state.ele_valve]
-            h_score = potential_rate * time_left
-            f_score = tentative_g + h_score
-            heappush(to_visit, (-f_score, next_state))
+            else:
+                g_scores[next_state] = g_score
+                h_score = 0
+                f_score = g_score + h_score
+                heappush(to_visit, (-f_score, next_state))
+                paths[next_state] = paths[this] + [this]
 
     max_release = 0
-    for s, g_score in g_scores.items():
-        release = g_score + (s.time_left * s.flow)
+    # best_state = None
+    for state, g_score in g_scores.items():
+        release = g_score + ((max_time - state.time) * state.flow)
         if release > max_release:
             max_release = release
+            best_state = state
 
+    for p in paths[best_state] + [best_state]:
+        print(
+            f"{p.time:2d}: ",
+            p.a_valve,
+            p.b_valve,
+            f" {p.flow:2d} ",
+            ",".join(p.to_open),
+        )
     return max_release
 
 
@@ -129,4 +207,4 @@ def solve(inputs: str) -> None:
 
 
 solve(sample_input)
-solve(actual_input)
+# solve(actual_input)

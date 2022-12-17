@@ -1,6 +1,12 @@
 """https://adventofcode.com/2022/day/16"""
 import os
 import re
+
+from collections import deque, namedtuple
+from heapq import heappop, heappush
+from itertools import product
+from typing import Generator
+
 from utils import print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day16_input.txt")) as f:
@@ -20,12 +26,6 @@ Valve JJ has flow rate=21; tunnel leads to valve II"""
 
 REGEX = r"^Valve (?P<valve>\w+) has flow rate=(?P<rate>\d+); tunnels? leads? to valves? (?P<tunnels>.+)$"
 
-from heapq import heappop, heappush
-
-
-from itertools import product
-
-from collections import deque, namedtuple
 
 # State records the current time, the valve that a and b are moving towards or opening,
 # the time that a and b will be ready to move, the flow rate as of now, and the set of
@@ -78,28 +78,15 @@ def max_release(inputs: str, use_elephant=False) -> int:
     g_scores: dict[State, int] = {initial_state: 0}
     to_visit: list[tuple[int, State]] = []
     heappush(to_visit, (0, initial_state))
-    # paths: dict[State, list[State]] = {initial_state: []}
+
     while to_visit:
         _, this = heappop(to_visit)
         visited.add(this)
-        # if this == State(
-        #     time=9,
-        #     a_valve="CC",
-        #     b_valve="EE",
-        #     a_ready=9,
-        #     b_ready=11,
-        #     flow=78,
-        #     to_open=frozenset({"EE"}),
-        # ):
-        #     breakpoint()
-
         a_moving, b_moving = (this.a_ready == this.time, this.b_ready == this.time)
         options = this.to_open - {this.a_valve} - {this.b_valve}
         if a_moving:
             if options:
-                a_moves = [
-                    (d, v) for v, d in distances[this.a_valve].items() if v in options
-                ]
+                a_moves = [(distances[this.a_valve][v], v) for v in options]
             else:
                 a_moves = [(99, this.a_valve)]
         else:
@@ -148,10 +135,9 @@ def max_release(inputs: str, use_elephant=False) -> int:
                 continue
             else:
                 g_scores[next_state] = g_score
-                h_score = 0
+                h_score = (max_time - next_state.time) * next_state.flow
                 f_score = g_score + h_score
                 heappush(to_visit, (-f_score, next_state))
-                # paths[next_state] = paths[this] + [this]
 
     max_release = 0
     # best_state = None
@@ -159,24 +145,13 @@ def max_release(inputs: str, use_elephant=False) -> int:
         release = g_score + ((max_time - state.time) * state.flow)
         if release > max_release:
             max_release = release
-    #         best_state = state
-    # assert best_state is not None
-    # for p in list(paths[best_state]) + [best_state]:
-
-    #     print(
-    #         f"{p.time:2d}: ",
-    #         p.a_valve if not p.a_valve in p.to_open else "  ",
-    #         p.b_valve if not p.b_valve in p.to_open else "  ",
-    #         f" {p.flow:2d} ",
-    #         ",".join(v for v in valves_to_open if v in p.to_open),
-    #     )
 
     return max_release
 
 
 def solve(inputs: str) -> None:
     print(f"Part 1: {max_release(inputs)}")
-    print(f"Part 2: {max_release(inputs, use_elephant=True)}\n")
+    # print(f"Part 2: {max_release(inputs, use_elephant=True)}\n")
 
 
 solve(sample_input)
