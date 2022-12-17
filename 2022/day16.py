@@ -24,13 +24,13 @@ Valve JJ has flow rate=21; tunnel leads to valve II"""
 
 REGEX = r"^Valve (?P<valve>\w+) has flow rate=(?P<rate>\d+); tunnels? leads? to valves? (?P<tunnels>.+)$"
 
-
-State = namedtuple("State", "time valve flow to_open")
+#  State is a tuple time, valve, flow, targets
+State = tuple[int, int, int, int]
 
 
 def parse_inputs(
     inputs: str,
-) -> tuple[dict[str, dict[str, int]], dict[str, int], set[str]]:
+) -> tuple[dict[int, dict[int, int]], dict[int, int], int]:
     flow_rates: dict[str, int] = {}
     tunnels: dict[str, tuple[str, ...]] = {}
     valves_to_open: set[str] = set()
@@ -62,84 +62,69 @@ def parse_inputs(
         raise ValueError("No path found")
 
     # Calculate steps between target valves (plus the steps from the start)
-    distances: dict[str, dict[str, int]] = {
+    valve_distances: dict[str, dict[str, int]] = {
         v: find_shortest_paths(v, valves_to_open) for v in valves_to_open
     }
-    distances |= {"AA": find_shortest_paths("AA", valves_to_open)}
+    valve_distances |= {"AA": find_shortest_paths("AA", valves_to_open)}
 
-    return distances, flow_rates, valves_to_open
+    flag_map: dict[str, int] = {v: 2 ** i for i, v in enumerate(valves_to_open)}
+    flag_map["AA"] = 0
+    target_valves = (2 ** len(valves_to_open)) - 1
+    flows = {flag_map[v]: f for v, f in flow_rates.items() if f > 0}
+    distances: dict[int, dict[int, int]] = {}
+    for v, td in valve_distances.items():
+        distances[flag_map[v]] = {flag_map[t]: d for t, d in td.items()}
+
+    return distances, flows, target_valves
 
 
 def max_release(
-    distances: dict[str, dict[str, int]],
-    flow_rates: dict[str, int],
-    targets: set[str],
+    distances: dict[int, dict[int, int]],
+    flow_rates: dict[int, int],
+    targets: int,
     max_time: int = 30,
 ) -> int:
 
     # Do an a* search
-    initial_state = State(0, "AA", 0, frozenset(targets))
+    initial_state = (0, 0, 0, targets)
     visited: set[State] = set()
     g_scores: dict[State, int] = {initial_state: 0}
     to_visit: list[tuple[int, State]] = []
     heappush(to_visit, (0, initial_state))
     while to_visit:
-        _, this = heappop(to_visit)
-        visited.add(this)
+        _, state = heappop(to_visit)
+        current_time, valve, current_flow, to_open = state
+        visited.add(state)
 
-        options = this.to_open - {this.valve}
-        if not options:
-            continue
-        possible_moves = [
-            (d, v) for v, d in distances[this.valve].items() if v in options
-        ]
-
+        possible_moves = [(d, v) for v, d in distances[valve].items() if v & to_open]
         for (steps, next_valve) in possible_moves:
-            if this.time + steps > max_time:
+            if current_time + steps > max_time:
                 continue
 
-            flow, to_open = this.flow, set(this.to_open)
-            flow += flow_rates[next_valve]
-            to_open -= {next_valve}
-
-            next_state = State(
-                this.time + steps,
+            next_time = current_time + steps
+            next_flow = current_flow + flow_rates[next_valve]
+            next_state = (
+                next_time,
                 next_valve,
-                flow,
-                frozenset(to_open),
+                next_flow,
+                to_open & ~next_valve,
             )
-            g_score = g_scores[this] + (steps * this.flow)
+            g_score = g_scores[state] + (steps * current_flow)
             if next_state in visited and g_score <= g_scores.get(next_state, 0):
                 continue
             else:
                 g_scores[next_state] = g_score
-                h_score = (max_time - next_state.time) * next_state.flow
+                h_score = (max_time - next_time) * next_flow
                 f_score = g_score + h_score
                 heappush(to_visit, (-f_score, next_state))
 
     max_release = 0
-    for state, g_score in g_scores.items():
-        release = g_score + ((max_time - state.time) * state.flow)
+    for (time, _, flow, _), g_score in g_scores.items():
+        release = g_score + ((max_time - time) * flow)
         if release > max_release:
             max_release = release
 
     return max_release
-
-
-def partition_set(items: set[str]):
-    results = set()
-    for l in range(0, int(len(items) / 2) + 1):
-        combis = set(combinations(items, l))
-        for c in combis:
-            if len(c) > len(items) // 3:
-                results.add((frozenset(list(c)), frozenset(list(items - set(c)))))
-    drop_list = set()
-    for a, b in results:
-        if (b, a) in results and (a, b) not in drop_list:
-            drop_list.add((b, a))
-    for d in drop_list:
-        results.discard(d)
-    return results
 
 
 def solve(inputs: str) -> None:
@@ -149,8 +134,12 @@ def solve(inputs: str) -> None:
     print(f"Part 1: {max_release(distances, flow_rates, targets, 30)}")
 
     maximum_release = 0
-    for my_target, ele_targets in tqdm(partition_set(targets)):
-        my_flow = max_release(distances, flow_rates, my_target, 26)
+    for my_targets in tqdm(range(1, (targets + 1) // 2)):
+        n_bits = bin(my_targets).count("1")
+        if targets > 1000 and (n_bits <= 6 or n_bits >= 9):
+            continue
+        ele_targets = targets - my_targets
+        my_flow = max_release(distances, flow_rates, my_targets, 26)
         ele_flow = max_release(distances, flow_rates, ele_targets, 26)
         maximum_release = max(maximum_release, my_flow + ele_flow)
     print(f"Part 2: {maximum_release}\n")
