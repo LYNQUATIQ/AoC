@@ -11,30 +11,11 @@ sample_input = """>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>"""
 
 SHAPES = (
     (0b00111100,),  # ━
-    (
-        0b00010000,  # ╋
-        0b00111000,
-        0b00010000,
-    ),
-    (
-        0b00001000,  # ┛
-        0b00001000,
-        0b00111000,
-    ),
-    (
-        0b00100000,  # ┃
-        0b00100000,
-        0b00100000,
-        0b00100000,
-    ),
-    (
-        0b00110000,  # ■
-        0b00110000,
-    ),
+    (0b00010000, 0b00111000, 0b00010000),  # ╋
+    (0b00001000, 0b00001000, 0b00111000),  # ┛
+    (0b00100000, 0b00100000, 0b00100000, 0b00100000),  # ┃
+    (0b00110000, 0b00110000),  # ■
 )
-
-
-State = tuple
 
 
 def play_tetris(puffs: str, number_of_rocks: int) -> int:
@@ -43,19 +24,20 @@ def play_tetris(puffs: str, number_of_rocks: int) -> int:
 
     # Chamber always has seven blank rows for shape to start in
     chamber = bytearray([0] * 7 + [0b11111111])
-    prior_states: dict[State, int] = {}
+
+    prior_states: dict[tuple[tuple[int, ...], int, int], int] = {}
     prior_heights: dict[int, int] = {0: 0}
 
     rocks, current_height = 0, 0
     while True:
 
-        shape_id = next(shape_cycle)
-        shape = list(SHAPES[shape_id])
+        shape_index = next(shape_cycle)
+        shape = list(SHAPES[shape_index])
         rocks += 1
 
         i = 4 - len(shape)
         while True:
-            # Try to move left/right
+            # Try moving left/right making sure we don't move into an edge
             puff = puffs[puff_index]
             puff_index = (puff_index + 1) % puff_cycle
             if puff == ">":
@@ -65,19 +47,20 @@ def play_tetris(puffs: str, number_of_rocks: int) -> int:
             if not any((s & edge) or (s & c) for s, c in zip(new_shape, chamber[i:])):
                 shape = new_shape
 
-            # Try to move down
+            # Try moving down - break out if we hit any rocks in the cavern
             if any((s & c) for s, c in zip(shape, chamber[i + 1 :])):
                 break
             i += 1
 
-        for c, s in enumerate(shape, start=i):
-            chamber[c] |= s
+        # Fix shape in chamber
+        for chamber_index, shape_row in enumerate(shape, start=i):
+            chamber[chamber_index] |= shape_row
 
         current_height += 7 - min(i, 7)
         new_chamber = bytearray([0] * 7) + chamber[min(i, 7) :]
         chamber = new_chamber
 
-        state = (tuple(chamber[:20]), shape_id, puff_index)
+        state = (tuple(chamber[:20]), shape_index, puff_index)
         if state in prior_states:
             prior_rocks = prior_states[state]
             prior_height = prior_heights[prior_rocks]
@@ -94,21 +77,11 @@ def play_tetris(puffs: str, number_of_rocks: int) -> int:
             prior_states[state] = rocks
         prior_heights[rocks] = current_height
 
-    raise ValueError
-
-
-def print_chamber(chamber: bytearray, height: int) -> None:
-    for y, c in enumerate(chamber[:24]):
-        row = "".join("#" if c & (2 ** n) else "." for n in range(7, 0, -1))
-        print("|" + row + "|", f"height = {height}" if y == 7 else "")
-
 
 def solve(inputs: str) -> None:
     print(f"Part 1: {play_tetris(inputs, 2022)}")
     print(f"Part 2: {play_tetris(inputs, 1_000_000_000_000)}\n")
 
-
-# 1528323699449 <- too high
 
 solve(sample_input)
 solve(actual_input)
