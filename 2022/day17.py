@@ -52,30 +52,24 @@ def play_tetris(puffs: str, number_of_rocks: int) -> int:
         shape_id = next(shape_cycle)
         shape = list(SHAPES[shape_id])
         rocks += 1
-        i = 4 - len(shape)
 
+        i = 4 - len(shape)
         while True:
             # Try to move left/right
             puff = puffs[puff_index]
             puff_index = (puff_index + 1) % puff_cycle
-
             if puff == ">":
-                new_shape = [x // 2 for x in shape]
-                if not any((s & 1) or (s & c) for s, c in zip(new_shape, chamber[i:])):
-                    if new_shape == [1, 1, 1, 1]:
-                        breakpoint()
-                    shape = new_shape
+                new_shape, edge = [x // 2 for x in shape], 1
             else:
-                new_shape = [x * 2 for x in shape]
-                if not any(
-                    (s & 256) or (s & c) for s, c in zip(new_shape, chamber[i:])
-                ):
-                    shape = new_shape
+                new_shape, edge = [x * 2 for x in shape], 256
+            if not any((s & edge) or (s & c) for s, c in zip(new_shape, chamber[i:])):
+                shape = new_shape
 
             # Try to move down
             if any((s & c) for s, c in zip(shape, chamber[i + 1 :])):
                 break
             i += 1
+
         for c, s in enumerate(shape, start=i):
             chamber[c] |= s
 
