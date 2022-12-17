@@ -9,59 +9,44 @@ with open(os.path.join(os.path.dirname(__file__), f"inputs/day17_input.txt")) as
 
 sample_input = """>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>"""
 
-# Coords give shape pixels relative to bottom left of shape
-# ━ ╋ ┛ ┃ ■
 SHAPES = (
-    (0 + 0j, 1 + 0j, 2 + 0j, 3 + 0j),
-    (1 + 0j, 0 + 1j, 1 + 1j, 2 + 1j, 1 + 2j),
-    (0 + 0j, 1 + 0j, 2 + 0j, 2 + 1j, 2 + 2j),
-    (0 + 0j, 0 + 1j, 0 + 2j, 0 + 3j),
-    (0 + 0j, 1 + 0j, 0 + 1j, 1 + 1j),
+    (0b00111100,),  # ━
+    (
+        0b00010000,  # ╋
+        0b00111000,
+        0b00010000,
+    ),
+    (
+        0b00001000,  # ┛
+        0b00001000,
+        0b00111000,
+    ),
+    (
+        0b00100000,  # ┃
+        0b00100000,
+        0b00100000,
+        0b00100000,
+    ),
+    (
+        0b00110000,  # ■
+        0b00110000,
+    ),
 )
-
-SHAPE_HEIGHTS = (1, 3, 3, 4, 2)
-SHAPE_WIDTHS = (4, 3, 3, 1, 2)
-
-# Coords give spaces required (relative to bottom left of shape) to move DOWN
-# ━ ╋ ┛ ┃ ■
-SPACE_DOWN = (
-    (0 - 1j, 1 - 1j, 2 - 1j, 3 - 1j),
-    (0 + 0j, 1 - 1j, 2 + 0j),
-    (0 - 1j, 1 - 1j, 2 - 1j),
-    (0 - 1j,),
-    (0 - 1j, 1 - 1j),
-)
-
-# Coords give spaces required (relative to bottom left of shape) to move LEFT
-# ━ ╋ ┛ ┃ ■
-SPACE_LEFT = (
-    (-1 + 0j,),
-    (0 + 0j, -1 + 1j, 0 + 2j),
-    (-1 + 0j, 1 + 1j, 1 + 2j),
-    (-1 + 0j, -1 + 1j, -1 + 2j, -1 + 3j),
-    (-1 + 0j, -1 + 1j),
-)
-
-# Coords give spaces required (relative to bottom left of shape) to move RIGHT
-# ━ ╋ ┛ ┃ ■
-SPACE_RIGHT = (
-    (4 + 0j,),
-    (2 + 0j, 3 + 1j, 2 + 2j),
-    (3 + 0j, 3 + 1j, 3 + 2j),
-    (1 + 0j, 1 + 1j, 1 + 2j, 1 + 3j),
-    (2 + 0j, 2 + 1j),
-)
-
-SPACES_TO_CHECK = {"<": (SPACE_LEFT, -1 + 0j), ">": (SPACE_RIGHT, 1 + 0j)}
 
 
 class Chamber:
     def __init__(self) -> None:
         self._rocks: set[complex] = set()
+        self._last_rock: set[complex] = set()
 
     def add_rock(self, xy: complex) -> None:
         assert xy not in self._rocks
         self._rocks.add(xy)
+
+    def add_rocks(self, position: complex, shape: tuple[complex, ...]) -> None:
+        self._last_rock = set(position + xy for xy in shape)
+        for xy in self._last_rock:
+            self.add_rock(xy)
 
     def blocked(self, xy: complex) -> bool:
         if xy.real < 0 or xy.real >= 7 or xy.imag <= 0:
@@ -71,50 +56,106 @@ class Chamber:
     def __repr__(self) -> str:
         output = ""
         height = max(int(xy.imag) for xy in self._rocks)
-        for y in range(height, 0, -1):
+        for y in range(height + 3, max(height - 20, 0), -1):
             output += "|"
             for x in range(7):
-                output += "#" if complex(x, y) in self._rocks else "."
+                c = "#" if complex(x, y) in self._rocks else "."
+                c = "@" if complex(x, y) in self._last_rock else c
+                output += c
             output += f"| {y}\n"
-        output += "+-------+ 0\n"
+        if y == 1:
+            output += "+-------+ 0\n"
 
         return output
 
 
-def play_tetris(puffs: str, iterations: int) -> int:
-    puff_cycle = cycle(puffs)
+State = tuple
+
+CHAMBER_LENGTH = 36
+
+
+def play_tetris(puffs: str, number_of_rocks: int) -> int:
+    puff_cycle, puff_index = len(puffs), 0
     shape_cycle = cycle(range(5))
-    chamber = Chamber()
-    max_height = 0
-    for i in range(iterations):
-        shape = next(shape_cycle)
-        position = complex(2, max_height + 4)
-        stopped = False
-        while not stopped:
+
+    # Chamber always has seven blank rows for shape to start in and a minimum of 36 rows
+    chamber = bytearray([0] * 7 + [0b11111111] * CHAMBER_LENGTH)
+    prior_states: dict[State, int] = {}
+    prior_heights: dict[int, int] = {0: 0}
+    current_height = 0
+    max_drop = 0
+    for iteration in range(number_of_rocks):
+        shape_id = next(shape_cycle)
+        shape = list(SHAPES[shape_id])
+        i = 4 - len(shape)
+        while True:
+
             # Try to move left/right
-            puff = next(puff_cycle)
-            space_requirements, offset = SPACES_TO_CHECK[puff]
-            spaces_to_check = space_requirements[shape]
-            if not any(chamber.blocked(position + d) for d in spaces_to_check):
-                position += offset
+            puff = puffs[puff_index]
+            puff_index = (puff_index + 1) % puff_cycle
+
+            if puff == ">":
+                new_shape = [x // 2 for x in shape]
+                if not any((s & 1) or (s & c) for s, c in zip(new_shape, chamber[i:])):
+                    if new_shape == [1, 1, 1, 1]:
+                        breakpoint()
+                    shape = new_shape
+            else:
+                new_shape = [x * 2 for x in shape]
+                if not any(
+                    (s & 256) or (s & c) for s, c in zip(new_shape, chamber[i:])
+                ):
+                    shape = new_shape
 
             # Try to move down
-            spaces_to_check = SPACE_DOWN[shape]
-            stopped = any(chamber.blocked(position + d) for d in spaces_to_check)
-            if not stopped:
-                position += 0 - 1j
+            if any((s & c) for s, c in zip(shape, chamber[i + 1 :])):
+                break
+            i += 1
+        for c, s in enumerate(shape, start=i):
+            chamber[c] |= s
 
-        for rock in SHAPES[shape]:
-            chamber.add_rock(position + rock)
-        max_height = max(max_height, int(position.imag) + SHAPE_HEIGHTS[shape] - 1)
+        max_drop = max(max_drop, i)
+        current_height += 7 - min(i, 7)
+        new_chamber = bytearray([0] * 7) + chamber[min(i, 7) :]
+        chamber = new_chamber
 
-    return max_height
+        rocks_so_far = iteration + 1
+        # print(f"Rocks:  {rocks_so_far}\nHeight: {current_height}")
+        # print_chamber(chamber, current_height)
+        # # input()
+
+        state = (tuple(chamber[:CHAMBER_LENGTH]), shape_id, puff_index)
+        if state in prior_states:
+            prior_rocks = prior_states[state]
+            prior_height = prior_heights[prior_rocks]
+            height_change = current_height - prior_height
+            cycle_length = rocks_so_far - prior_rocks
+            remaining_rocks = number_of_rocks - prior_rocks
+            number_of_cycles = remaining_rocks // cycle_length
+            remaining_rocks = remaining_rocks % cycle_length
+            total_height = prior_height
+            total_height += number_of_cycles * height_change
+            total_height += prior_heights[remaining_rocks + prior_rocks] - prior_height
+            return total_height
+        else:
+            prior_states[state] = rocks_so_far
+        prior_heights[rocks_so_far] = current_height
+
+    raise ValueError
+
+
+def print_chamber(chamber: bytearray, height: int) -> None:
+    for y, c in enumerate(chamber[:24]):
+        row = "".join("#" if c & (2 ** n) else "." for n in range(7, 0, -1))
+        print("|" + row + "|", f"height = {height}" if y == 7 else "")
 
 
 def solve(inputs: str) -> None:
     print(f"Part 1: {play_tetris(inputs, 2022)}")
-    # print(f"Part 2: {play_tetris(inputs, 1_000_000_000_000)}\n")
+    print(f"Part 2: {play_tetris(inputs, 1_000_000_000_000)}\n")
 
+
+# 1528323699449 <- too high
 
 solve(sample_input)
 solve(actual_input)
