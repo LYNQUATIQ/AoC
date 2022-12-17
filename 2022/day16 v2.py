@@ -1,7 +1,11 @@
 """https://adventofcode.com/2022/day/16"""
 import os
 import re
-from utils import print_time_taken
+from collections import deque, namedtuple
+from heapq import heappop, heappush
+from itertools import combinations
+
+from tqdm import tqdm
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day16_input.txt")) as f:
     actual_input = f.read()
@@ -20,21 +24,13 @@ Valve JJ has flow rate=21; tunnel leads to valve II"""
 
 REGEX = r"^Valve (?P<valve>\w+) has flow rate=(?P<rate>\d+); tunnels? leads? to valves? (?P<tunnels>.+)$"
 
-from heapq import heappop, heappush
+
+State = namedtuple("State", "time valve flow to_open")
 
 
-from itertools import product
-
-from collections import deque, namedtuple
-
-# State records the current time, the valve that a and b are moving towards or opening,
-# the time that a and b will be ready to move, the flow rate as of now, and the set of
-# valves still needing opening as of now
-State = namedtuple("State", "time a_valve b_valve a_ready b_ready flow to_open")
-
-
-@print_time_taken
-def max_release(inputs: str, use_elephant=False) -> int:
+def parse_inputs(
+    inputs: str,
+) -> tuple[dict[str, dict[str, int]], dict[str, int], set[str]]:
     flow_rates: dict[str, int] = {}
     tunnels: dict[str, tuple[str, ...]] = {}
     valves_to_open: set[str] = set()
@@ -71,75 +67,44 @@ def max_release(inputs: str, use_elephant=False) -> int:
     }
     distances |= {"AA": find_shortest_paths("AA", valves_to_open)}
 
+    return distances, flow_rates, valves_to_open
+
+
+def max_release(
+    distances: dict[str, dict[str, int]],
+    flow_rates: dict[str, int],
+    targets: set[str],
+    max_time: int = 30,
+) -> int:
+
     # Do an a* search
-    max_time = 26 if use_elephant else 30
-    initial_state = State(0, "AA", "AA", 0, 0, 0, frozenset(valves_to_open))
+    initial_state = State(0, "AA", 0, frozenset(targets))
     visited: set[State] = set()
     g_scores: dict[State, int] = {initial_state: 0}
     to_visit: list[tuple[int, State]] = []
     heappush(to_visit, (0, initial_state))
-    # paths: dict[State, list[State]] = {initial_state: []}
     while to_visit:
         _, this = heappop(to_visit)
         visited.add(this)
-        # if this == State(
-        #     time=9,
-        #     a_valve="CC",
-        #     b_valve="EE",
-        #     a_ready=9,
-        #     b_ready=11,
-        #     flow=78,
-        #     to_open=frozenset({"EE"}),
-        # ):
-        #     breakpoint()
 
-        a_moving, b_moving = (this.a_ready == this.time, this.b_ready == this.time)
-        options = this.to_open - {this.a_valve} - {this.b_valve}
-        if a_moving:
-            if options:
-                a_moves = [
-                    (d, v) for v, d in distances[this.a_valve].items() if v in options
-                ]
-            else:
-                a_moves = [(99, this.a_valve)]
-        else:
-            a_moves = [(this.a_ready - this.time, this.a_valve)]
-        if use_elephant:
-            if b_moving:
-                if options:
-                    b_moves = [
-                        (d, v)
-                        for v, d in distances[this.b_valve].items()
-                        if v in options
-                    ]
-                else:
-                    b_moves = [(99, this.b_valve)]
-            else:
-                b_moves = [(this.b_ready - this.time, this.b_valve)]
-        else:
-            b_moves = [(99, "AA")]
+        options = this.to_open - {this.valve}
+        if not options:
+            continue
+        possible_moves = [
+            (d, v) for v, d in distances[this.valve].items() if v in options
+        ]
 
-        for (a_steps, a_next), (b_steps, b_next) in product(a_moves, b_moves):
-            if a_next == b_next:  # Don't go to the same place
-                continue
-            steps = min(a_steps, b_steps)
+        for (steps, next_valve) in possible_moves:
             if this.time + steps > max_time:
                 continue
 
             flow, to_open = this.flow, set(this.to_open)
-            if steps == a_steps:
-                flow += flow_rates[a_next]
-                to_open -= {a_next}
-            if steps == b_steps:
-                flow += flow_rates[b_next]
-                to_open -= {b_next}
+            flow += flow_rates[next_valve]
+            to_open -= {next_valve}
 
             next_state = State(
                 this.time + steps,
-                a_next,
-                b_next,
-                this.time + a_steps,
-                this.time + b_steps,
+                next_valve,
                 flow,
                 frozenset(to_open),
             )
@@ -148,35 +113,47 @@ def max_release(inputs: str, use_elephant=False) -> int:
                 continue
             else:
                 g_scores[next_state] = g_score
-                h_score = 0
+                h_score = (max_time - next_state.time) * next_state.flow
                 f_score = g_score + h_score
                 heappush(to_visit, (-f_score, next_state))
-                # paths[next_state] = paths[this] + [this]
 
     max_release = 0
-    # best_state = None
     for state, g_score in g_scores.items():
         release = g_score + ((max_time - state.time) * state.flow)
         if release > max_release:
             max_release = release
-    #         best_state = state
-    # assert best_state is not None
-    # for p in list(paths[best_state]) + [best_state]:
-
-    #     print(
-    #         f"{p.time:2d}: ",
-    #         p.a_valve if not p.a_valve in p.to_open else "  ",
-    #         p.b_valve if not p.b_valve in p.to_open else "  ",
-    #         f" {p.flow:2d} ",
-    #         ",".join(v for v in valves_to_open if v in p.to_open),
-    #     )
 
     return max_release
 
 
+def partition_set(items: set[str]):
+    results = set()
+    for l in range(0, int(len(items) / 2) + 1):
+        combis = set(combinations(items, l))
+        for c in combis:
+            if len(c) > len(items) // 3:
+                results.add((frozenset(list(c)), frozenset(list(items - set(c)))))
+    drop_list = set()
+    for a, b in results:
+        if (b, a) in results and (a, b) not in drop_list:
+            drop_list.add((b, a))
+    for d in drop_list:
+        results.discard(d)
+    return results
+
+
 def solve(inputs: str) -> None:
-    print(f"Part 1: {max_release(inputs)}")
-    print(f"Part 2: {max_release(inputs, use_elephant=True)}\n")
+
+    distances, flow_rates, targets = parse_inputs(inputs)
+
+    print(f"Part 1: {max_release(distances, flow_rates, targets, 30)}")
+
+    maximum_release = 0
+    for my_target, ele_targets in tqdm(partition_set(targets)):
+        my_flow = max_release(distances, flow_rates, my_target, 26)
+        ele_flow = max_release(distances, flow_rates, ele_targets, 26)
+        maximum_release = max(maximum_release, my_flow + ele_flow)
+    print(f"Part 2: {maximum_release}\n")
 
 
 solve(sample_input)
