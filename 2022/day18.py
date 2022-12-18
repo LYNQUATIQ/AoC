@@ -53,20 +53,33 @@ def solve(inputs: str) -> None:
     cubes = set(tuple(map(int, re.findall(r"\d+", l))) for l in inputs.splitlines())
 
     sides = 0
-    clusters: dict[Cube, Cluster] = {}
-
     for x, y, z in cubes:
+        nl, nr = (x - 1, y, z), (x + 1, y, z)
+        nu, nd = (x, y - 1, z), (x, y + 1, z)
+        nf, nb = (x, y, z - 1), (x, y, z + 1)
+        for neighbour in (nl, nr, nu, nd, nf, nb):
+            sides += neighbour not in cubes
+
+    print(f"Part 1: {sides}")
+
+    extent = max(*(max(cube) for cube in cubes)) + 1
+    gaps = set()
+    gap_clusters: dict[Cube, Cluster] = {}
+    for x, y, z in product(range(extent), range(extent), range(extent)):
+        if (x, y, z) in cubes:
+            continue
+        gaps.add((x, y, z))
+
+    for x, y, z in gaps:
         nl, nr = (x - 1, y, z), (x + 1, y, z)
         nu, nd = (x, y - 1, z), (x, y + 1, z)
         nf, nb = (x, y, z - 1), (x, y, z + 1)
         linked_clusters = []
         for neighbour in (nl, nr, nu, nd, nf, nb):
-            if neighbour not in cubes:
-                sides += 1
-            else:
-                if neighbour in clusters:
-                    if clusters[neighbour] not in linked_clusters:
-                        linked_clusters.append(clusters[neighbour])
+            if neighbour in gaps:
+                if neighbour in gap_clusters:
+                    if gap_clusters[neighbour] not in linked_clusters:
+                        linked_clusters.append(gap_clusters[neighbour])
 
         if len(linked_clusters) == 0:
             this_cluster = Cluster()
@@ -76,40 +89,14 @@ def solve(inputs: str) -> None:
             this_cluster = Cluster.combine_clusters(linked_clusters)
             for cluster in linked_clusters:
                 for xyz in cluster.cubes:
-                    clusters[xyz] = this_cluster
-        clusters[(x, y, z)] = this_cluster
+                    gap_clusters[xyz] = this_cluster
+        gap_clusters[(x, y, z)] = this_cluster
         this_cluster.add((x, y, z))
-    print(f"Part 1: {sides}")
 
-    gaps = set()
-    extent = max(*(max(cube) for cube in cubes)) + 1
-
-    for x0, y0, z0 in product(range(extent), range(extent), range(extent)):
-        if (x0, y0, z0) in cubes:
-            continue
-        l = next(
-            ((x, y0, z0) for x in range(x0 - 1, -1, -1) if (x, y0, z0) in cubes), None
-        )
-        r = next(
-            ((x, y0, z0) for x in range(x0 + 1, extent) if (x, y0, z0) in cubes), None
-        )
-        u = next(
-            ((x0, y, z0) for y in range(y0 - 1, -1, -1) if (x0, y, z0) in cubes), None
-        )
-        d = next(
-            ((x0, y, z0) for y in range(y0 + 1, extent) if (x0, y, z0) in cubes), None
-        )
-        f = next(
-            ((x0, y0, z) for z in range(z0 - 1, -1, -1) if (x0, y0, z) in cubes), None
-        )
-        b = next(
-            ((x0, y0, z) for z in range(z0 + 1, extent) if (x0, y0, z) in cubes), None
-        )
-        if all((l, r, u, d, f, b)):
-            if len(set(id(clusters[xyz]) for xyz in (l, r, u, d, f, b))) == 1:
-                gaps.add((x0, y0, z0))
-            if all(distance((x0, y0, z0), xyz) == 1 for xyz in (l, r, u, d, f, b)):
-                gaps.add((x0, y0, z0))
+    print(len(set(gap_clusters.values())))
+    open_air = gap_clusters[(0, 0, 0)]
+    for space in open_air.cubes:
+        gaps.discard(space)
 
     for x, y, z in gaps:
         sides -= (x - 1, y, z) in cubes
@@ -120,7 +107,6 @@ def solve(inputs: str) -> None:
         sides -= (x, y, z + 1) in cubes
 
     print(f"Part 2: {sides}\n")
-    print(len(set(clusters.values())))
 
 
 # Incorrect 2602, 2634
