@@ -59,28 +59,25 @@ def solve(inputs: str) -> None:
         nf, nb = (x, y, z - 1), (x, y, z + 1)
         for neighbour in (nl, nr, nu, nd, nf, nb):
             sides += neighbour not in cubes
-
     print(f"Part 1: {sides}")
 
     extent = max(*(max(cube) for cube in cubes)) + 1
     gaps = set()
-    gap_clusters: dict[Cube, Cluster] = {}
     for x, y, z in product(range(extent), range(extent), range(extent)):
         if (x, y, z) in cubes:
             continue
         gaps.add((x, y, z))
 
+    gap_clusters: dict[Cube, Cluster] = {}
     for x, y, z in gaps:
         nl, nr = (x - 1, y, z), (x + 1, y, z)
         nu, nd = (x, y - 1, z), (x, y + 1, z)
         nf, nb = (x, y, z - 1), (x, y, z + 1)
         linked_clusters = []
         for neighbour in (nl, nr, nu, nd, nf, nb):
-            if neighbour in gaps:
-                if neighbour in gap_clusters:
-                    if gap_clusters[neighbour] not in linked_clusters:
-                        linked_clusters.append(gap_clusters[neighbour])
-
+            if neighbour in gap_clusters:
+                if gap_clusters[neighbour] not in linked_clusters:
+                    linked_clusters.append(gap_clusters[neighbour])
         if len(linked_clusters) == 0:
             this_cluster = Cluster()
         elif len(linked_clusters) == 1:
@@ -93,7 +90,6 @@ def solve(inputs: str) -> None:
         gap_clusters[(x, y, z)] = this_cluster
         this_cluster.add((x, y, z))
 
-    print(len(set(gap_clusters.values())))
     open_air = gap_clusters[(0, 0, 0)]
     for space in open_air.cubes:
         gaps.discard(space)
@@ -108,9 +104,6 @@ def solve(inputs: str) -> None:
 
     print(f"Part 2: {sides}\n")
 
-
-# Incorrect 2602, 2634
-# 2958 too high
 
 solve(sample_input)
 solve(actual_input)
