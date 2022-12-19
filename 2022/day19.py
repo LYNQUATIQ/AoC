@@ -74,7 +74,7 @@ def max_geodes(blueprint: BluePrint) -> int:
         bot_options: set[int] = {NONE}
         if ore >= ore_costs[ORE]:
             bot_options.add(ORE)
-        if ore >= ore_costs[CLAY] and not clay > clay_cost * 10:
+        if ore >= ore_costs[CLAY] and not clay > clay_cost * 3:
             bot_options.add(CLAY)
         if (
             ore >= ore_costs[OBSIDIAN]
@@ -146,6 +146,10 @@ def max_geodes(blueprint: BluePrint) -> int:
     return max_geodes
 
 
+from utils import print_time_taken
+
+
+@print_time_taken
 def solve(inputs: str) -> None:
     blueprints: dict[int, BluePrint] = {}
     for bp in inputs.splitlines():
