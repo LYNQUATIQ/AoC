@@ -113,7 +113,7 @@ from utils import print_time_taken
 @print_time_taken
 def solve(inputs: str) -> None:
     print(f"Part 1: {mix_coordinates(inputs)}")
-    # print(f"Part 2: {mix_coordinates(inputs,DECRYPTION_KEY, 1)}\n")
+    print(f"Part 2: {mix_coordinates(inputs,DECRYPTION_KEY, 10)}\n")
 
 
 solve(sample_input)
