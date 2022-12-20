@@ -2,6 +2,9 @@
 import os
 import re
 
+from utils import print_time_taken
+from tqdm import tqdm
+
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day19_input.txt")) as f:
     actual_input = f.read()
 
@@ -19,7 +22,6 @@ NONE = -1
 # ELEMENTS = (GEODE, OBSIDIAN, CLAY, ORE)  # ...in this order to improve heuristic
 ELEMENTS = (ORE, CLAY, OBSIDIAN, GEODE)
 
-MAX_TIME = 24
 
 # Blueprint is a tuple of ore costs, and the clay and obsidian requirments
 BluePrint = tuple[tuple[int, int, int, int], int, int]
@@ -31,25 +33,22 @@ from collections import deque
 from heapq import heappop, heappush
 
 
-def max_geodes(blueprint: BluePrint) -> int:
+@print_time_taken
+def max_geodes(blueprint: BluePrint, max_minutes: int, debug: bool = False) -> int:
     ore_costs, clay_cost, obsidian_cost = blueprint
     initial_bots = (1, 0, 0, 0)
     initial_state = (1, (0, 0, 0, 0), initial_bots, NONE)
 
     prior_states: dict[State, State] = {}
-    best_geo_bots_at_t: dict[int, int] = {}
     g_scores: dict[State, int] = {initial_state: 0}
-    visited: set[State] = set()
-    to_visit: list[tuple[float, State]] = []
 
-    heappush(to_visit, (0, initial_state))
-
-    while to_visit:
-        _, state = heappop(to_visit)
-        visited.add(state)
+    # heappush(to_visit, (0, initial_state))
+    queue = deque([initial_state])
+    while queue:
+        state = queue.popleft()
         time, resources, bots, bot_to_build = state
 
-        if time == MAX_TIME:
+        if time == max_minutes:
             continue
 
         # Collect resources that existing bots generate
@@ -65,88 +64,76 @@ def max_geodes(blueprint: BluePrint) -> int:
             if bot_to_build == GEODE:
                 next_resources[OBSIDIAN] -= obsidian_cost
 
-        # Make sure we're spending enough
-        if next_resources[ORE] > max(ore_costs):
-            continue
-
-        # Determine what bots we can build next
+        # Determine what bots we should build next - 1375 logic
         ore, clay, obsidian, _ = next_resources
-        bot_options: set[int] = {NONE}
-        if ore >= ore_costs[ORE]:
-            bot_options.add(ORE)
-        if ore >= ore_costs[CLAY] and not clay > clay_cost * 3:
-            bot_options.add(CLAY)
-        if (
-            ore >= ore_costs[OBSIDIAN]
-            and clay >= clay_cost
-            and not obsidian > obsidian_cost * 3
-        ):
-            bot_options.add(OBSIDIAN)
+        bot_options = {NONE}
         if ore >= ore_costs[GEODE] and obsidian >= obsidian_cost:
-            bot_options = {GEODE}  # If we can build a geode bot then *just* do that!
-            # bot_options.add(GEODE)
+            bot_options = {GEODE}
+        else:
+            if bots[OBSIDIAN] < obsidian_cost:
+                if ore >= ore_costs[OBSIDIAN] and clay >= clay_cost:
+                    bot_options.add(OBSIDIAN)
+            if bots[CLAY] < clay_cost:
+                if ore >= ore_costs[CLAY]:
+                    bot_options.add(CLAY)
+            if bots[ORE] < max(ore_costs) and ore >= ore_costs[ORE]:
+                bot_options.add(ORE)
 
-        for bot_to_build in sorted(bot_options, reverse=True):
+        for bot_to_build in bot_options:
             next_state = (
                 time + 1,
                 tuple(next_resources),
                 tuple(next_bots),
                 bot_to_build,
             )
-            if best_geo_bots_at_t.get(time, 0) > next_resources[GEODE]:
-                continue
 
-            g_score = next_resources[GEODE] + next_bots[GEODE]
-            if next_state in visited and g_score <= g_scores.get(next_state, 0):
+            if next_state in g_scores:
                 continue
-            g_scores[next_state] = g_score
-            h_score = next_bots[GEODE] * (MAX_TIME - time)
-            f_score = g_score + 0  # h_score
-            heappush(to_visit, (-f_score, next_state))
+            g_scores[next_state] = next_resources[GEODE] + next_bots[GEODE]
+            queue.append(next_state)  # type: ignore
             prior_states[next_state] = state
-            best_geo_bots_at_t[time + 1] = next_resources[GEODE]
 
     max_geodes = max(g_scores.values())
-    # states = [state]
-    # s = state
-    # while True:
-    #     try:
-    #         s = prior_states[s]
-    #     except KeyError:
-    #         break
-    #     states.append(s)
-    # elem = {ORE: "ore", CLAY: "clay", OBSIDIAN: "obsidian", GEODE: "geode"}
-    # for time, resources, bots, bot_to_build in sorted(states):
-    #     print(f"\n== Minute {time} ==")
-    #     res = list(resources)
-    #     if bot_to_build != NONE:
-    #         res[ORE] -= ore_costs[bot_to_build]
-    #         extra = ""
-    #         if bot_to_build == GEODE:
-    #             extra = f" and {obsidian_cost} obsidian"
-    #             res[OBSIDIAN] -= obsidian_cost
-    #         if bot_to_build == OBSIDIAN:
-    #             extra = f" and {clay_cost} clay"
-    #             res[CLAY] -= clay_cost
-    #         print(
-    #             f"Spend {ore_costs[bot_to_build]} ore{extra} to start building a {elem[bot_to_build]} robot."
-    #         )
-    #     for i in ELEMENTS:
+    if not debug:
+        return max_geodes
+    max_states = [s for s, g in g_scores.items() if s[0] == 24 and g == max_geodes]
+    path = [max_states[0]]
+    s = path[0]
+    while True:
+        try:
+            s = prior_states[s]
+        except KeyError:
+            break
+        path.append(s)
+    elem = {ORE: "ore", CLAY: "clay", OBSIDIAN: "obsidian", GEODE: "geode"}
+    for time, resources, bots, bot_to_build in sorted(path):  # type: ignore
+        print(f"\n== Minute {time} ==")
+        res = list(resources)
+        if bot_to_build != NONE:
+            res[ORE] -= ore_costs[bot_to_build]
+            extra = ""
+            if bot_to_build == GEODE:
+                extra = f" and {obsidian_cost} obsidian"
+                res[OBSIDIAN] -= obsidian_cost
+            if bot_to_build == OBSIDIAN:
+                extra = f" and {clay_cost} clay"
+                res[CLAY] -= clay_cost
+            print(
+                f"Spend {ore_costs[bot_to_build]} ore{extra} to start building a {elem[bot_to_build]} robot."
+            )
+        for i in ELEMENTS:
 
-    #         if bots[i] > 0:
-    #             e = elem[i]
-    #             print(
-    #                 f"{bots[i]} {e} robot collect {bots[i]} {e}; you now have {res[i] + bots[i]} {e}."
-    #             )
-    #     if bot_to_build != NONE:
-    #         print(
-    #             f"The new {elem[bot_to_build]} robot is ready; you now have {bots[bot_to_build] +1} of them."
-    #         )
+            if bots[i] > 0:
+                e = elem[i]
+                print(
+                    f"{bots[i]} {e} robot collect {bots[i]} {e}; you now have {res[i] + bots[i]} {e}."
+                )
+        if bot_to_build != NONE:
+            print(
+                f"The new {elem[bot_to_build]} robot is ready; you now have {bots[bot_to_build] +1} of them."
+            )
 
     return max_geodes
-
-
-from utils import print_time_taken
 
 
 @print_time_taken
@@ -161,14 +148,21 @@ def solve(inputs: str) -> None:
         blueprints[bp_id] = ((ore1, ore2, ore3, ore4), clay_cost, obsidian_cost)
         # print(bp_id, ore4 + obsidian_cost * ore3 + obsidian_cost * clay_cost * ore2)
 
-    part1 = sum(
-        bp_id * max_geodes(blueprint) for bp_id, blueprint in blueprints.items()
-    )
-    print(f"Part 1: {part1}")
+    case = 14  # <<------
+
+    if case > 1:
+        part1 = f"Case {case}: {max_geodes(blueprints[case], 24, debug=True)} geodes\n"
+    else:
+        geode_sum = 0
+        for bp_id, blueprint in tqdm(blueprints.items()):
+            max_g = max_geodes(blueprint, 24)
+            geode_sum += bp_id * max_g
+            print(f"{bp_id}: {max_g}\n")
+        part1 = str(geode_sum)
+    print(f"Part 1: {str(part1)}")
+
     # print(f"Part 2: {False}\n")
 
-
-# Part 1 - 954 too low
 
 solve(sample_input)
 solve(actual_input)
