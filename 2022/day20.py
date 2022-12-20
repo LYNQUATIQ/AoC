@@ -27,50 +27,65 @@ class Node:
 
 
 def mix_coordinates(inputs: str, multiplier=1, iterations=1) -> int:
-    zero_node = Node(-1, None, None)
-    prior_node = Node(0, None, None)
-    nodes: list[Node] = []
-    for v in map(int, inputs.splitlines()):
-        this_node = Node(v * multiplier, prior_node, None)
-        prior_node.next_node = this_node
-        prior_node = this_node
-        nodes.append(this_node)
-        if v == 0:
-            zero_node = this_node
-    nodes[0].prior_node = prior_node
-    this_node.next_node = nodes[0]
-    file_length = len(nodes)
+    file_data = inputs.splitlines()
+    file_length = len(file_data)
 
-    for i in range(iterations):
-        for node in nodes:
-            node.prior_node.next_node = node.next_node
-            node.next_node.prior_node = node.prior_node
-            shift = abs(node.value) % (file_length - 1)
-            if node.value > 0:
+    node_values: list[int] = [0] * file_length
+    next_node_index: list[int] = [0] * file_length
+    prior_node_index: list[int] = [0] * file_length
+
+    for i, v in enumerate(map(int, file_data)):
+        node_values[i] = v * multiplier
+        next_node_index[i] = (i + 1) % file_length
+        prior_node_index[i] = (i - 1) % file_length
+        if v == 0:
+            zero_node_index = i
+
+    def print_values():
+        print(
+            ", ".join(
+                str(node_values[ni])
+                for ni in [next_node_index[-1]] + next_node_index[:-1]
+            ),
+        )
+
+    print("Initial arraangement")
+    print_values()
+
+    for _ in range(iterations):
+        for i, value in enumerate(node_values):
+            print("Moving ", value)
+            next_index, prior_index = next_node_index[i], prior_node_index[i]
+            next_node_index[prior_index] = next_index
+            prior_node_index[next_index] = prior_index
+            print_values()
+            shift = abs(value) % (file_length - 1)
+            if value > 0:
                 for _ in range(shift):
-                    node.next_node = node.next_node.next_node
-                node.prior_node = node.next_node.prior_node
+                    next_node_index[i] = next_node_index[next_node_index[i]]
+                prior_node_index[i] = prior_node_index[next_node_index[i]]
             else:
                 for _ in range(shift):
-                    node.prior_node = node.prior_node.prior_node
-                node.next_node = node.prior_node.next_node
-            node.prior_node.next_node = node
-            node.next_node.prior_node = node
+                    prior_node_index[i] = prior_node_index[prior_node_index[i]]
+                next_node_index[i] = next_node_index[next_node_index[i]]
+            next_node_index[prior_node_index[i]] = i
+            prior_node_index[next_node_index[i]] = i
+            print_values()
 
-    node = zero_node
+    i = zero_node_index
     coordinates = 0
     for _ in range(3):
         for _ in range(1000):
-            node = node.next_node
-        coordinates += node.value
+            i = next_node_index[i]
+        coordinates += node_values[i]
     return coordinates
 
 
 @print_time_taken
 def solve(inputs: str) -> None:
     print(f"Part 1: {mix_coordinates(inputs)}")
-    print(f"Part 2: {mix_coordinates(inputs,DECRYPTION_KEY, 10)}\n")
+    # print(f"Part 2: {mix_coordinates(inputs,DECRYPTION_KEY, 10)}\n")
 
 
 solve(sample_input)
-solve(actual_input)
+# solve(actual_input)
