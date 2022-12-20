@@ -20,7 +20,7 @@ def print_time_taken(func) -> Callable:
             time_str = f"{time_taken*1_000_000:.2f}µs"
         else:
             time_str = f"{time_taken*1_000_000_000:.2f}ns"
-        print(f"Time taken: {time_str}\n")
+        print(f"Time taken: {time_str}")
         return retval
 
     return _wrapped_func
