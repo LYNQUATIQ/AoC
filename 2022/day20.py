@@ -2,6 +2,8 @@
 from __future__ import annotations
 import os
 
+from tqdm import tqdm
+
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day20_input.txt")) as f:
     actual_input = f.read()
 
@@ -43,10 +45,8 @@ from functools import lru_cache
 
 
 @lru_cache(maxsize=None)
-def get_shift(n: int) -> int:
-    shift = abs(n) % 5000
-    shift += abs(n) // 5000
-    return shift
+def get_shift(n: int, cycle: int) -> int:
+    return abs(n) % (cycle - 1)
 
 
 def mix_coordinates(inputs: str, multiplier=1, iterations=1) -> int:
@@ -65,42 +65,39 @@ def mix_coordinates(inputs: str, multiplier=1, iterations=1) -> int:
     this_node.next_node = nodes[0]
     file_length = len(nodes)
     assert zero_node.value == 0
-
-    first_node = nodes[0]
-
-    if file_length == 7 and False:
+    if file_length == 7:
+        print(f"Initial arrangement")
         output = []
-        n = first_node
+        n = zero_node
         for _ in range(file_length):
             output.append(str(n.value))
             n = n.next_node
         print(", ".join(output))
 
-    for _ in range(iterations):
+    for i in range(iterations):
         for node in nodes.values():
             node.prior_node.next_node = node.next_node
             node.next_node.prior_node = node.prior_node
+            shift = get_shift(abs(node.value), file_length)
             if node.value > 0:
-                shift = get_shift(node.value)
                 for _ in range(shift):
                     node.next_node = node.next_node.next_node
                 node.prior_node = node.next_node.prior_node
             else:
-                shift = get_shift(abs(node.value))
                 for _ in range(shift):
                     node.prior_node = node.prior_node.prior_node
                 node.next_node = node.prior_node.next_node
             node.prior_node.next_node = node
             node.next_node.prior_node = node
 
-            if file_length == 7 and False:
-                print("Moving ", node.value)
-                output = []
-                n = first_node
-                for _ in range(file_length):
-                    output.append(str(n.value))
-                    n = n.next_node
-                print(", ".join(output))
+        if file_length == 7:
+            print(f"After round{i+1} of mixing")
+            output = []
+            n = zero_node
+            for _ in range(file_length):
+                output.append(str(n.value))
+                n = n.next_node
+            print(", ".join(output))
 
     node = zero_node
     coordinates = 0
@@ -116,7 +113,7 @@ from utils import print_time_taken
 @print_time_taken
 def solve(inputs: str) -> None:
     print(f"Part 1: {mix_coordinates(inputs)}")
-    # print(f"Part 2: {mix_coordinates(inputs,DECRYPTION_KEY, 3)}\n")
+    # print(f"Part 2: {mix_coordinates(inputs,DECRYPTION_KEY, 1)}\n")
 
 
 solve(sample_input)
