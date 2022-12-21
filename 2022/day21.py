@@ -21,14 +21,9 @@ lgvd: ljgn * ptdq
 drzm: hmdt - zczc
 hmdt: 32"""
 
-from collections import defaultdict
-
 
 def solve(inputs: str) -> None:
-    operations = {}
-    values = {}
-    used_humn = {"humn"}
-    target, to_solve = 0, "xxxx"
+    operations, values = {}, {}
     for monkey, token in map(lambda x: x.split(": "), inputs.splitlines()):
         if any(op in token for op in "+-/*"):
             a, operation, b = token.split()
@@ -36,6 +31,7 @@ def solve(inputs: str) -> None:
         else:
             values[monkey] = int(token)
 
+    used_humn = {"humn"}
     while not "root" in values:
         for monkey, (a, operation, b, solved) in operations.items():
             if solved:
@@ -47,34 +43,28 @@ def solve(inputs: str) -> None:
                     "*": values[a] * values[b],
                     "/": values[a] // values[b],
                 }[operation]
-                values[monkey] = result
-                operations[monkey] = (a, operation, b, True)
-                operations[monkey] = (a, operation, b, True)
+                values[monkey], operations[monkey] = result, (a, operation, b, True)
                 if a in used_humn or b in used_humn:
                     used_humn.add(monkey)
-                if monkey == "root":
-                    assert (a in used_humn) != (b in used_humn)
-                    if a in used_humn:
-                        target, to_solve = values[b], a
-                    else:
-                        target, to_solve = values[a], b
 
     print(f"Part 1: {values['root']}")
 
+    a, _, b, _ = operations["root"]
+    target, to_solve = values[b], a
+    if b in used_humn:
+        target, to_solve = values[a], b
+
     while to_solve != "humn":
         a, operation, b, _ = operations[to_solve]
-        assert (a in used_humn) != (b in used_humn)
         if a in used_humn:
-            to_solve = a
-            target = {
+            to_solve, target = a, {
                 "+": target - values[b],
                 "-": target + values[b],
                 "*": target // values[b],
                 "/": target * values[b],
             }[operation]
         else:
-            to_solve = b
-            target = {
+            to_solve, target = b, {
                 "+": target - values[a],
                 "-": values[a] - target,
                 "*": target // values[a],
