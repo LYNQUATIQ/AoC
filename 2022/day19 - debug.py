@@ -3,6 +3,8 @@ from math import ceil, prod
 import os
 import re
 
+from contextlib import redirect_stdout
+
 from utils import print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day19_input.txt")) as f:
@@ -30,8 +32,92 @@ State = tuple[int, tuple[int, ...], tuple[int, ...], int]
 
 from collections import deque
 
+SAMPLE_ANSWERS = {
+    24: {1: 9, 2: 12},
+    32: {1: 56, 2: 62},
+}
+ACTUAL_ANSWERS = {
+    1: 0,
+    2: 0,
+    3: 1,
+    4: 5,
+    5: 3,
+    6: 2,
+    7: 0,
+    8: 1,
+    9: 14,
+    10: 0,
+    11: 1,
+    12: 0,
+    13: 5,
+    14: 6,
+    15: 0,
+    16: 0,
+    17: 1,
+    18: 0,
+    19: 15,
+    20: 6,
+    21: 0,
+    22: 5,
+    23: 0,
+    24: 0,
+    25: 6,
+    26: 4,
+    27: 1,
+    28: 0,
+    29: 8,
+    30: 0,
+}
 
-def find_max_geodes(blueprint: BluePrint, max_minutes: int) -> int:
+
+def print_path(blueprint, g_scores, prior_states, max_time) -> None:
+    ore_costs, obsidianbot_clay_cost, geobot_obsidian_cost = blueprint
+
+    max_geodes = max(g_scores.values())
+    max_states = [
+        s for s, g in g_scores.items() if s[0] == max_time and g == max_geodes
+    ]
+    path = [max_states[0]]
+    s = path[0]
+    while True:
+        try:
+            s = prior_states[s]
+        except KeyError:
+            break
+        path.append(s)
+    elem = {ORE: "ore", CLAY: "clay", OBSIDIAN: "obsidian", GEODE: "geode"}
+    for state in sorted(path):  # type: ignore
+        time, resources, bots, bot_to_build = state
+        print(f"\n== Minute {time} ==", state)
+        res = list(resources)
+        if bot_to_build != DO_NOTHING:
+            res[ORE] -= ore_costs[bot_to_build]
+            extra = ""
+            if bot_to_build == GEODE:
+                extra = f" and {geobot_obsidian_cost} obsidian"
+                res[OBSIDIAN] -= geobot_obsidian_cost
+            if bot_to_build == OBSIDIAN:
+                extra = f" and {obsidianbot_clay_cost} clay"
+                res[CLAY] -= obsidianbot_clay_cost
+            print(
+                f"Spend {ore_costs[bot_to_build]} ore{extra} to start building a {elem[bot_to_build]} robot."
+            )
+        for i in ELEMENTS:
+
+            if bots[i] > 0:
+                e = elem[i]
+                print(
+                    f"{bots[i]} {e} robot collect {bots[i]} {e}; you now have {res[i] + bots[i]} {e}."
+                )
+        if bot_to_build != DO_NOTHING:
+            print(
+                f"The new {elem[bot_to_build]} robot is ready; you now have {bots[bot_to_build] +1} of them."
+            )
+
+
+def find_max_geodes(
+    blueprint: BluePrint, max_minutes: int, bp_id: int, sample: bool
+) -> int:
     ore_costs, obsidianbot_clay_cost, geobot_obsidian_cost = blueprint
 
     initial_bots = (1, 0, 0, 0)
@@ -87,7 +173,26 @@ def find_max_geodes(blueprint: BluePrint, max_minutes: int) -> int:
             queue.append(next_state)  # type: ignore
             prior_states[next_state] = state
 
-    return max(g_scores.values())
+    retval = max(g_scores.values())
+    if not (max_minutes == 32 and not sample):
+        correct_answer = (
+            SAMPLE_ANSWERS[max_minutes][bp_id] if sample else ACTUAL_ANSWERS[bp_id]
+        )
+        d, suffix = ("success", "") if retval == correct_answer else ("fail", "_FAIL")
+        s = "example" if sample else "actual"
+        p = "part1" if max_minutes == 24 else "part2"
+        with open(
+            os.path.join(
+                os.path.dirname(__file__), f"Day19/{d}/{s}s/{s}{bp_id}_{p}{suffix}.txt"
+            ),
+            "w",
+        ) as f:
+            with redirect_stdout(f):
+                print_path(blueprint, g_scores, prior_states, max_minutes)
+        if retval != correct_answer:
+            assert False
+
+    return retval
 
 
 def get_bot_options(blueprint: BluePrint, bots, next_resources) -> set[int]:
@@ -143,6 +248,9 @@ def get_bot_options(blueprint: BluePrint, bots, next_resources) -> set[int]:
     return bot_options
 
 
+from tqdm import tqdm
+
+
 @print_time_taken
 def solve(inputs: str, sample: bool = False) -> None:
     blueprints: dict[int, BluePrint] = {}
@@ -158,14 +266,29 @@ def solve(inputs: str, sample: bool = False) -> None:
             geobot_obsidian_cost,
         )
 
-    quality_levels = [
-        bp_id * find_max_geodes(plan, 24) for bp_id, plan in blueprints.items()
-    ]
+    quality_levels = []
+    for bp_id, blueprint in tqdm(blueprints.items()):
+        try:
+            max_geode = find_max_geodes(blueprint, 24, bp_id, sample)
+            quality_levels.append(bp_id * max_geode)
+            # print(f"{bp_id}: {max_geode}")
+        except AssertionError:
+            print(f"{bp_id}: FAIL")
+
     print(f"Part 1: {sum(quality_levels)}")
 
+    max_geodes = []
     first_3_blueprints = list(blueprints.values())[:3]
-    print(f"Part 2: {prod(find_max_geodes(plan, 32) for plan in first_3_blueprints)}\n")
+    for bp_id, blueprint in tqdm(enumerate(first_3_blueprints, 1)):
+        try:
+            max_geode = find_max_geodes(blueprint, 32, bp_id, sample)
+            max_geodes.append(max_geode)
+            print(f"{bp_id}: {max_geode}")
+        except AssertionError:
+            print(f"{bp_id}: FAIL")
+
+    print(f"Part 2: {prod(max_geodes)}\n")
 
 
-solve(sample_input)  # N.B. First example still fails part 2 (54... not 56)
+solve(sample_input, sample=True)
 solve(actual_input)
