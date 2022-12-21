@@ -3,6 +3,8 @@ import math
 import os
 import re
 
+from heapq import heappop, heappush
+
 from utils import print_time_taken
 
 with open(os.path.join(os.path.dirname(__file__), f"inputs/day19_input.txt")) as f:
@@ -82,14 +84,18 @@ def find_max_geodes(blueprint: BluePrint, max_minutes: int, debug: bool = False)
 
     prior_states: dict[State, State] = {}
     g_scores: dict[State, int] = {initial_state: 0}
+    visited: set[State] = set()
+    to_visit: list[tuple[float, State]] = []
 
-    queue = deque([initial_state])
-    while queue:
-        state = queue.popleft()
+    heappush(to_visit, (0, initial_state))
+    while to_visit:
+        f_score, state = heappop(to_visit)
+        print(f_score, state, len(to_visit))
+        visited.add(state)
         time, resources, bots, bot_to_build = state
 
         if time == max_minutes:
-            continue
+            break
 
         # Collect resources that existing bots generate
         next_resources = list(resources[e] + bots[e] for e in ELEMENTS)
@@ -134,16 +140,38 @@ def find_max_geodes(blueprint: BluePrint, max_minutes: int, debug: bool = False)
                 bot_to_build,
             )
 
-            if next_state in g_scores:
+            g_score = next_resources[GEODE] + next_bots[GEODE]
+            if next_state in visited and g_score <= g_scores.get(next_state, 0):
                 continue
-            g_scores[next_state] = next_resources[GEODE] + next_bots[GEODE]
-            queue.append(next_state)  # type: ignore
+            g_scores[next_state] = g_score
+            h_score = calc_h_score(next_state, max_minutes, obsidian_cost * clay_cost)
+            f_score = g_score + h_score
+            heappush(to_visit, (-f_score, next_state))
             prior_states[next_state] = state
 
     if debug:
         print_path(blueprint, g_scores, prior_states)
 
     return max(g_scores.values())
+
+
+def calc_h_score(state: State, max_time: int, obs_x_clay_cost: int) -> float:
+    time, resources, bots, bot_to_build = state
+
+    geode_bots = bots[GEODE] + (1 if bot_to_build == GEODE else 0)
+    obs_bots = bots[OBSIDIAN] + (1 if bot_to_build == OBSIDIAN else 0)
+    clay_bots = bots[CLAY] + (1 if bot_to_build == CLAY else 0)
+    _, clay, obsidian, _ = resources
+    time_remaining = max_time - time
+    multiplier = 0.5 * time_remaining * (time_remaining + 1)
+
+    h = (multiplier ** 3) * (time_remaining + clay_bots)
+    h += (multiplier ** 2) * (clay + obs_bots)
+    h += multiplier * obsidian
+    h /= obs_x_clay_cost
+    h += multiplier * geode_bots
+
+    return h
 
 
 @print_time_taken
@@ -157,17 +185,17 @@ def solve(inputs: str) -> None:
         )
         blueprints[bp_id] = ((ore1, ore2, ore3, ore4), clay_cost, obsidian_cost)
 
-    # quality_levels = []
-    # for bp_id, blueprint in blueprints.items():
-    #     max_geode = find_max_geodes(blueprint, 24)
-    #     quality_levels.append(bp_id * max_geode)
-    #     print(f"{bp_id}: {max_geode}")
-    # print(f"Part 1: {sum(quality_levels)}")
+    quality_levels = []
+    for bp_id, blueprint in blueprints.items():
+        max_geode = find_max_geodes(blueprint, 24)
+        quality_levels.append(bp_id * max_geode)
+        print(f"{bp_id}:  {max_geode} geodes")
+    print(f"Part 1: {sum(quality_levels)}")
 
-    first_3_blueprints = list(blueprints.values())[:3]
-    max_geodes = [find_max_geodes(blueprint, 32) for blueprint in first_3_blueprints]
-    print(f"Part 2: {max_geodes}\n")
-    print(f"Part 2: {math.prod(max_geodes)}\n")
+    # first_3_blueprints = list(blueprints.values())[:3]
+    # max_geodes = [find_max_geodes(blueprint, 32) for blueprint in first_3_blueprints]
+    # print(f"Part 2: {max_geodes}\n")
+    # print(f"Part 2: {math.prod(max_geodes)}\n")
 
 
 # solve(sample_input)
