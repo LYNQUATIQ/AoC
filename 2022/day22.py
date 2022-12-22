@@ -72,14 +72,18 @@ def navigate_path(
     if is_cube:
         links = EXAMPLE_CUBE_LINKS if face_size == 4 else ACTUAL_CUBE_LINKS
 
-    current_face, x, y, facing = 0, 0, 0, EAST
+    current_face, x, y, moving = 0, 0, 0, EAST
     ptr = 0
     finished = False
     while not finished:
+
+        # Check if we're turning
         if instructions[ptr] in "LR":
-            facing = TURN[instructions[ptr]][facing]
+            moving = TURN[instructions[ptr]][moving]
             ptr += 1
             continue
+
+        # If not determine the steps we're moving
         steps = 0
         while instructions[ptr].isdigit():
             steps = steps * 10 + int(instructions[ptr])
@@ -88,58 +92,60 @@ def navigate_path(
                 finished = True
             if finished or not instructions[ptr].isdigit():
                 break
+
+        # Keep taking steps (navigating over face edges) until we're done or hit a wall
         while steps:
-            next_face, next_facing = current_face, facing
-            if facing == EAST:
+            next_face, next_direction = current_face, moving
+            if moving == EAST:
                 next_x, next_y = x + 1, y
-                if next_x == face_size:
-                    next_face, next_facing = links[current_face][EAST]
+                if next_x >= face_size:
+                    next_face, next_direction = links[current_face][moving]
                     next_x, next_y = {
                         EAST: (0, next_y),
                         SOUTH: (face_size - next_y - 1, 0),
                         WEST: (face_size - 1, face_size - next_y - 1),
                         NORTH: (next_y, face_size - 1),
-                    }[next_facing]
-            elif facing == SOUTH:
+                    }[next_direction]
+            elif moving == SOUTH:
                 next_x, next_y = x, y + 1
-                if next_y == face_size:
-                    next_face, next_facing = links[current_face][SOUTH]
+                if next_y >= face_size:
+                    next_face, next_direction = links[current_face][moving]
                     next_x, next_y = {
                         EAST: (0, face_size - next_x - 1),
                         SOUTH: (next_x, 0),
                         WEST: (face_size - 1, next_x),
                         NORTH: (face_size - next_x - 1, face_size - 1),
-                    }[next_facing]
-            elif facing == WEST:
+                    }[next_direction]
+            elif moving == WEST:
                 next_x, next_y = x - 1, y
-                if next_x == -1:
-                    next_face, next_facing = links[current_face][WEST]
+                if next_x < 0:
+                    next_face, next_direction = links[current_face][moving]
                     next_x, next_y = {
                         EAST: (0, face_size - next_y - 1),
                         SOUTH: (next_y, 0),
                         WEST: (face_size - 1, next_y),
                         NORTH: (face_size - next_y - 1, face_size - 1),
-                    }[next_facing]
-            elif facing == NORTH:
+                    }[next_direction]
+            elif moving == NORTH:
                 next_x, next_y = x, y - 1
-                if next_y == -1:
-                    next_face, next_facing = links[current_face][NORTH]
+                if next_y < 0:
+                    next_face, next_direction = links[current_face][moving]
                     next_x, next_y = {
                         EAST: (0, next_x),
                         SOUTH: (face_size - next_x - 1, 0),
                         WEST: (face_size - 1, face_size - next_x - 1),
                         NORTH: (next_x, face_size - 1),
-                    }[next_facing]
+                    }[next_direction]
 
             if faces[next_face][next_y][next_x] == "#":
                 break
-            current_face, x, y, facing = next_face, next_x, next_y, next_facing
+            current_face, x, y, moving = next_face, next_x, next_y, next_direction
             steps -= 1
 
     layout = EXAMPLE_LAYOUT if face_size == 4 else ACTUAL_LAYOUT
     offset_x, offset_y = layout[current_face]
     x, y = offset_x * face_size + x, offset_y * face_size + y
-    return 1000 * (y + 1) + 4 * (x + 1) + facing
+    return 1000 * (y + 1) + 4 * (x + 1) + moving
 
 
 def solve(inputs: str, face_size: int) -> None:
