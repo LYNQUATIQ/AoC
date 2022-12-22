@@ -20,40 +20,70 @@ sample_input = """        ...#
 
 10R5L5R10L4R5L5"""
 
-LEFT, RIGHT, UP, DOWN = (-1 + 0j, 1 + 0j, 0 - 1j, 0 + 1j)
-FACING = {RIGHT: 0, DOWN: 1, LEFT: 2, UP: 3}
-TURN_ANTICLOCKWISE = {RIGHT: UP, UP: LEFT, LEFT: DOWN, DOWN: RIGHT}
-TURN_CLOCKWISE = {RIGHT: DOWN, DOWN: LEFT, LEFT: UP, UP: RIGHT}
+
+EXAMPLE_LAYOUT = ((2, 0), (0, 1), (1, 1), (2, 1), (2, 2), (3, 2))
+ACTUAL_LAYOUT = ((1, 0), (2, 0), (1, 1), (0, 2), (1, 2), (0, 3))
+
+EAST, SOUTH, WEST, NORTH = 0, 1, 2, 3
+# Which patch (and the side on the patch) is connected to the E,S,W,N of this patch
+EXAMPLE_PART_1_LINKS = (
+    ((0, EAST), (3, SOUTH), (0, WEST), (4, NORTH)),
+    ((2, EAST), (1, SOUTH), (3, WEST), (1, NORTH)),
+    ((3, EAST), (2, SOUTH), (1, WEST), (2, NORTH)),
+    ((1, EAST), (4, SOUTH), (2, WEST), (0, NORTH)),
+    ((5, EAST), (0, SOUTH), (5, WEST), (3, NORTH)),
+    ((4, EAST), (5, SOUTH), (4, WEST), (5, NORTH)),
+)
+EXAMPLE_PART_2_LINKS = (
+    ((5, WEST), (3, SOUTH), (2, SOUTH), (1, SOUTH)),
+    ((2, EAST), (4, NORTH), (5, NORTH), (0, SOUTH)),
+    ((3, EAST), (4, EAST), (1, WEST), (0, EAST)),
+    ((5, SOUTH), (4, SOUTH), (2, WEST), (0, NORTH)),
+    ((5, EAST), (1, NORTH), (2, NORTH), (3, NORTH)),
+    ((0, WEST), (1, EAST), (4, WEST), (3, WEST)),
+)
+ACTUAL_PART_1_LINKS = (
+    ((1, EAST), (2, SOUTH), (1, WEST), (4, NORTH)),
+    ((0, EAST), (1, SOUTH), (0, WEST), (1, NORTH)),
+    ((2, EAST), (4, SOUTH), (2, WEST), (0, NORTH)),
+    ((4, EAST), (5, SOUTH), (4, WEST), (5, NORTH)),
+    ((3, EAST), (0, SOUTH), (3, WEST), (2, NORTH)),
+    ((5, EAST), (3, SOUTH), (5, WEST), (3, NORTH)),
+)
+ACTUAL_PART_2_LINKS = (
+    ((1, EAST), (2, SOUTH), (3, EAST), (5, EAST)),
+    ((4, WEST), (2, WEST), (0, WEST), (5, NORTH)),
+    ((1, NORTH), (4, SOUTH), (3, SOUTH), (0, NORTH)),
+    ((4, EAST), (5, SOUTH), (0, EAST), (2, EAST)),
+    ((1, WEST), (5, WEST), (3, WEST), (2, NORTH)),
+    ((4, NORTH), (1, SOUTH), (0, SOUTH), (3, NORTH)),
+)
+
+
+FACING = {EAST: 0, SOUTH: 1, WEST: 2, NORTH: 3}
+TURN_ANTICLOCKWISE = {EAST: NORTH, NORTH: WEST, WEST: SOUTH, SOUTH: EAST}
+TURN_CLOCKWISE = {EAST: SOUTH, SOUTH: WEST, WEST: NORTH, NORTH: EAST}
 TURN = {"L": TURN_ANTICLOCKWISE, "R": TURN_CLOCKWISE}
 
-VOID, WALL, OPEN = " ", "#", "."
+# DX_DY = {EAST: (1, 0), SOUTH: (0, 1), WEST: (-1, 0), NORTH: (0, -1)}
+WALL = "#"
 
 
-def solve(inputs: str) -> None:
-    map_data, instructions = inputs.split("\n\n")
+def navigate_path(
+    instructions: str, patches: list[list[str]], patch_size: int, is_part2: bool
+) -> int:
+    layout = EXAMPLE_LAYOUT if patch_size == 4 else ACTUAL_LAYOUT
+    links = {
+        False: EXAMPLE_PART_1_LINKS if patch_size == 4 else ACTUAL_PART_1_LINKS,
+        True: EXAMPLE_PART_2_LINKS if patch_size == 4 else ACTUAL_PART_2_LINKS,
+    }[is_part2]
 
-    grid: dict[complex, str] = {}
-    left_extent: list[int] = []
-    right_extent: list[int] = []
-    max_x = 0
-    for y, row in enumerate(map_data.splitlines()):
-        x = 0
-        while row[x] == " ":
-            x += 1
-        left_extent.append(x)
-        while x != " " and x < len(row):
-            max_x = max(max_x, x)
-            grid[complex(x, y)] = row[x]
-            x += 1
-        right_extent.append(x - 1)
-    rows, columns = y + 1, max_x + 1
-
-    xy, direction = complex(left_extent[0], 0), 1 + 0j
+    current_patch, x, y, facing = 0, 0, 0, EAST
     ptr = 0
     finished = False
     while not finished:
         if instructions[ptr] in "LR":
-            direction = TURN[instructions[ptr]][direction]
+            facing = TURN[instructions[ptr]][facing]
             ptr += 1
             continue
         steps = 0
@@ -65,20 +95,79 @@ def solve(inputs: str) -> None:
             if finished or not instructions[ptr].isdigit():
                 break
         while steps:
-            next_xy = xy + direction
-            next_xy = complex(next_xy.real % columns, next_xy.imag % rows)
-            while grid.get(next_xy, VOID) == VOID:
-                next_xy += direction
-                next_xy = complex(next_xy.real % columns, next_xy.imag % rows)
-            if grid.get(next_xy) == WALL:
+            next_patch, next_facing = current_patch, facing
+            if facing == EAST:
+                next_x, next_y = x + 1, y
+                if next_x == patch_size:
+                    next_patch, next_facing = links[current_patch][EAST]
+                    next_x, next_y = {
+                        EAST: (0, next_y),
+                        SOUTH: (patch_size - next_y - 1, 0),
+                        WEST: (patch_size - 1, patch_size - next_y - 1),
+                        NORTH: (next_y, patch_size - 1),
+                    }[next_facing]
+            elif facing == SOUTH:
+                next_x, next_y = x, y + 1
+                if next_y == patch_size:
+                    next_patch, next_facing = links[current_patch][SOUTH]
+                    next_x, next_y = {
+                        EAST: (0, patch_size - next_x - 1),
+                        SOUTH: (next_x, 0),
+                        WEST: (patch_size - 1, next_x),
+                        NORTH: (patch_size - next_x - 1, patch_size - 1),
+                    }[next_facing]
+            elif facing == WEST:
+                next_x, next_y = x - 1, y
+                if next_x == -1:
+                    next_patch, next_facing = links[current_patch][WEST]
+                    next_x, next_y = {
+                        EAST: (0, patch_size - next_y - 1),
+                        SOUTH: (next_y, 0),
+                        WEST: (patch_size - 1, next_y),
+                        NORTH: (patch_size - next_y - 1, patch_size - 1),
+                    }[next_facing]
+            elif facing == NORTH:
+                next_x, next_y = x, y - 1
+                if next_y == -1:
+                    next_patch, next_facing = links[current_patch][NORTH]
+                    next_x, next_y = {
+                        EAST: (0, next_x),
+                        SOUTH: (patch_size - next_x - 1, 0),
+                        WEST: (patch_size - 1, patch_size - next_x - 1),
+                        NORTH: (next_x, patch_size - 1),
+                    }[next_facing]
+
+            if patches[next_patch][next_y][next_x] == WALL:
                 break
-            xy = next_xy
+            current_patch, x, y, facing = next_patch, next_x, next_y, next_facing
             steps -= 1
 
-    x, y, facing = int(xy.real) + 1, int(xy.imag) + 1, FACING[direction]
-    print(f"Part 1: {1000 * y + 4 *x + facing}")
-    print(f"Part 2: {False}\n")
+            # offset_x, offset_y = layout[current_patch]
+            # print((offset_x * patch_size + x, offset_y * patch_size + y), end="")
+            # print(f"    (Patch: {current_patch} - {x},{y})")
+
+    offset_x, offset_y = layout[current_patch]
+    x, y = offset_x * patch_size + x, offset_y * patch_size + y
+    # print(x, y, facing)
+    return 1000 * (y + 1) + 4 * (x + 1) + facing
 
 
-solve(sample_input)
-solve(actual_input)
+def solve(inputs: str, patch_size: int) -> None:
+    map_data, instructions = inputs.split("\n\n")
+    input_data = [row for row in map_data.splitlines()]
+    patches = []
+    for (offset_x, offset_y) in EXAMPLE_LAYOUT if patch_size == 4 else ACTUAL_LAYOUT:
+        offset_x *= patch_size
+        offset_y *= patch_size
+        patch = []
+        for y in range(offset_y, offset_y + patch_size):
+            patch.append(input_data[y][offset_x : offset_x + patch_size])
+        patches.append(patch)
+
+    print(f"Part 1: {navigate_path(instructions, patches, patch_size, is_part2=False)}")
+    print(f"Part 2: {navigate_path(instructions, patches, patch_size, is_part2=True)}")
+    print()
+
+
+solve(sample_input, 4)
+solve(actual_input, 50)
