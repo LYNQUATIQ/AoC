@@ -38,8 +38,7 @@ def solve(inputs: str) -> None:
                 elves.add(complex(x, y))
 
     round = 0
-    while True:
-        round += 1
+    while round := round + 1:
         check_order = next(CHECK_ORDER)
         directions = [d for d in (CHECKS[c] for c in check_order)]
         proposals: defaultdict[complex, list[complex]] = defaultdict(list)
@@ -54,21 +53,16 @@ def solve(inputs: str) -> None:
         elves_moved = False
         for proposal, movers in proposals.items():
             if len(movers) == 1:
-                elf = movers[0]
-                elves.remove(elf)
+                elves.remove(movers[0])
                 elves.add(proposal)
                 elves_moved = True
 
         if round == 10:
-            min_x, max_x = float("inf"), float("-inf")
-            min_y, max_y = float("inf"), float("-inf")
+            x0, x1, y0, y1 = float("inf"), float("-inf"), float("inf"), float("-inf")
             for elf in elves:
                 x, y = int(elf.real), int(elf.imag)
-                min_x, max_x = min(min_x, x), max(max_x, x)
-                min_y, max_y = min(min_y, y), max(max_y, y)
-            x_extent = max_x - min_x + 1
-            y_extent = max_y - min_y + 1
-            print(f"Part 1: {x_extent * y_extent - len(elves)}")
+                x0, x1, y0, y1 = min(x0, x), max(x1, x), min(y0, y), max(y1, y)
+            print(f"Part 1: {(x1 - x0 + 1) * (y1 - y0 + 1) - len(elves)}")
 
         if not elves_moved:
             break
