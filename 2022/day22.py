@@ -73,25 +73,22 @@ def navigate_path(
         links = EXAMPLE_CUBE_LINKS if face_size == 4 else ACTUAL_CUBE_LINKS
 
     current_face, x, y, moving = 0, 0, 0, EAST
-    ptr = 0
-    finished = False
+    i, finished = 0, False
     while not finished:
 
         # Check if we're turning
-        if instructions[ptr] in "LR":
-            moving = TURN[instructions[ptr]][moving]
-            ptr += 1
+        if instructions[i] in "LR":
+            moving = TURN[instructions[i]][moving]
+            i += 1
             continue
 
-        # If not determine the steps we're moving
+        # If not determine the number of steps we're moving (and noting if we're done)
         steps = 0
-        while instructions[ptr].isdigit():
-            steps = steps * 10 + int(instructions[ptr])
-            ptr += 1
-            if ptr == len(instructions):
+        while not finished and instructions[i].isdigit():
+            steps = steps * 10 + int(instructions[i])
+            i += 1
+            if i == len(instructions):
                 finished = True
-            if finished or not instructions[ptr].isdigit():
-                break
 
         # Keep taking steps (navigating over face edges) until we're done or hit a wall
         while steps:
@@ -148,9 +145,11 @@ def navigate_path(
     return 1000 * (y + 1) + 4 * (x + 1) + moving
 
 
-def solve(inputs: str, face_size: int) -> None:
+def solve(inputs: str) -> None:
     map_data, instructions = inputs.split("\n\n")
     map_rows = [row for row in map_data.splitlines()]
+    face_size = int(((map_data.count(".") + map_data.count("#")) / 6) ** 0.5)
+
     faces = []
     for (offset_x, offset_y) in EXAMPLE_LAYOUT if face_size == 4 else ACTUAL_LAYOUT:
         x, y = offset_x * face_size, offset_y * face_size
@@ -160,5 +159,5 @@ def solve(inputs: str, face_size: int) -> None:
     print(f"Part 2: {navigate_path(instructions, faces, face_size, is_cube=True)}\n")
 
 
-solve(sample_input, 4)
-solve(actual_input, 50)
+solve(sample_input)
+solve(actual_input)
