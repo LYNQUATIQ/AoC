@@ -40,21 +40,21 @@ def solve(inputs: str) -> None:
     round = 0
     while round := round + 1:
         check_order = next(CHECK_ORDER)
-        directions = [d for d in (CHECKS[c] for c in check_order)]
+        directions_to_check = [CHECKS[c] for c in check_order]
         proposals: defaultdict[complex, list[complex]] = defaultdict(list)
         for elf in elves:
             if not any((elf + d) in elves for d in (N, NE, E, SE, S, SW, W, NW)):
                 continue
-            for checks in directions:
+            for checks in directions_to_check:
                 if not any((elf + d) in elves for d in checks):
                     proposals[elf + checks[0]].append(elf)
                     break
 
         elves_moved = False
-        for proposal, movers in proposals.items():
-            if len(movers) == 1:
-                elves.remove(movers[0])
-                elves.add(proposal)
+        for new_elf, (old_elf, *other_elves) in proposals.items():
+            if not other_elves:
+                elves.remove(old_elf)
+                elves.add(new_elf)
                 elves_moved = True
 
         if round == 10:
