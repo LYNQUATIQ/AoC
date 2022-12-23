@@ -38,7 +38,6 @@ def solve(inputs: str) -> None:
                 elves.add(complex(x, y))
 
     round = 0
-    states: set[frozenset[complex]] = set()
     while True:
         round += 1
         check_order = next(CHECK_ORDER)
@@ -51,11 +50,14 @@ def solve(inputs: str) -> None:
                 if not any((elf + d) in elves for d in checks):
                     proposals[elf + checks[0]].append(elf)
                     break
+
+        elves_moved = False
         for proposal, movers in proposals.items():
             if len(movers) == 1:
                 elf = movers[0]
                 elves.remove(elf)
                 elves.add(proposal)
+                elves_moved = True
 
         if round == 10:
             min_x, max_x = float("inf"), float("-inf")
@@ -67,10 +69,12 @@ def solve(inputs: str) -> None:
             x_extent = max_x - min_x + 1
             y_extent = max_y - min_y + 1
             print(f"Part 1: {x_extent * y_extent - len(elves)}")
+
+        if not elves_moved:
             break
 
-    print(f"Part 2: {False}\n")
+    print(f"Part 2: {round}\n")
 
 
 solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
