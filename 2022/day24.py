@@ -17,25 +17,19 @@ sample_input = """#.######
 #>v.><>#
 #<^v^^>#
 ######.#"""
-# sample_input = """#.####
-# #....#
-# #.>..#
-# #..v.#
-# #....#
-# #....#
-# ####.#"""
-LEFT, RIGHT, UP, DOWN, WAIT = (-1, 0), (1, 0), (0, -1), (0, 1), (0, 0)
-BLIZZARD_FLAGS = {"<": 1, ">": 2, "^": 4, "v": 8}
-BLIZZARDS = {1: LEFT, 2: RIGHT, 4: UP, 8: DOWN}
-MOVES = (LEFT, RIGHT, UP, DOWN, WAIT)
 
-OPEN, WALL, EXPEDITION = ".", "#", "E"
+
+LEFT, RIGHT, UP, DOWN, WAIT = (-1, 0), (1, 0), (0, -1), (0, 1), (0, 0)
+MOVES = (LEFT, RIGHT, UP, DOWN, WAIT)
 
 
 Xy = tuple[int, int]
 
 
 class Valley:
+    BLIZZARD_FLAGS = {"<": 1, ">": 2, "^": 4, "v": 8}
+    BLIZZARDS = {1: LEFT, 2: RIGHT, 4: UP, 8: DOWN}
+
     def __init__(
         self, blizzards: dict[Xy, int], walls: set[Xy], width: int, height: int
     ) -> None:
@@ -64,10 +58,10 @@ class Valley:
         blizzards: defaultdict[Xy, int] = defaultdict(int)
         for y, row in enumerate(rows):
             for x, c in enumerate(row):
-                if c == WALL:
+                if c == "#":
                     walls.add((x, y))
-                if c in BLIZZARD_FLAGS:
-                    blizzards[(x, y)] |= BLIZZARD_FLAGS[c]
+                if c in cls.BLIZZARD_FLAGS:
+                    blizzards[(x, y)] |= cls.BLIZZARD_FLAGS[c]
         return cls(dict(blizzards), walls, width, height)
 
     @classmethod
@@ -76,7 +70,7 @@ class Valley:
         updated_blizzards: defaultdict[Xy, int] = defaultdict(int)
         for (x, y), flow in valley.blizzards.items():
 
-            for mask, (dx, dy) in BLIZZARDS.items():
+            for mask, (dx, dy) in cls.BLIZZARDS.items():
                 if flow & mask:
                     bx, by = x + dx, y + dy
                     bx = 1 if bx == width - 1 else width - 2 if bx == 0 else bx
@@ -85,47 +79,25 @@ class Valley:
                     updated_blizzards[(bx, by)] |= mask
         return cls(updated_blizzards, walls, width, height)
 
-    def print(self, you: Xy) -> None:
-        x0, y0 = you
-        assert you not in self.walls
-        assert you not in self.blizzards
-        for y in range(self.height):
-            for x in range(self.width):
-                xy = (x, y)
-                c = EXPEDITION if xy == you else WALL if xy in self.walls else OPEN
-                if xy in self.blizzards:
-                    c = {1: "<", 2: ">", 4: "^", 8: "v"}.get(self.blizzards[xy], "*")
-                print(c, end="")
-            print()
+
+State = tuple[int, Xy]  # State records point in cycle and the expedition's location
 
 
-# State records the point in the blizzard cycle and the expedition's location
-State = tuple[int, Xy]
-
-
-@print_time_taken
 def navigate_valley(
     valley_states: dict[int, Valley], cycle: int, start: Xy, target: Xy
 ) -> tuple[int, int]:
     initial_valley = valley_states[cycle]
     cycle_length = (initial_valley.width - 2) * (initial_valley.height - 2)
 
-    prior_states: dict[State, State] = {}
     visited: set[State] = set()
     g_scores: dict[State, int] = {(cycle, start): 0}
-    possible_times: dict[int, int] = {}
-    best_time = 9_999_999_999
     queue: list[tuple[float, State]] = []
     heappush(queue, (0, (cycle, start)))
     while queue:
         _, state = heappop(queue)
         cycle, (x, y) = state
         if (x, y) == target:
-            possible_times[cycle] = g_scores[state]
-            best_time = min(possible_times.values())
             return g_scores[state], cycle
-        if g_scores[state] >= best_time:
-            continue
         visited.add(state)
         next_cycle = (cycle + 1) % cycle_length
         try:
@@ -136,34 +108,17 @@ def navigate_valley(
         possible_moves = [(x + dx, y + dy) for dx, dy in MOVES]
         for next_xy in (m for m in possible_moves if m not in next_valley.blocked):
             next_state = (next_cycle, next_xy)
-            time_to_here = g_scores[state] + 1
-            if next_state not in g_scores or time_to_here < g_scores[next_state]:
-                g_scores[next_state] = time_to_here
+            g_score = g_scores[state] + 1
+            if next_state not in g_scores or g_score < g_scores[next_state]:
+                g_scores[next_state] = g_score
                 h_score = abs(target[0] - next_xy[0]) + abs(target[1] - next_xy[1])
-                f_score = time_to_here + h_score
+                f_score = g_score + h_score
                 heappush(queue, (f_score, next_state))
-                prior_states[next_state] = state
 
-    if not possible_times:
-        raise ValueError("No path found")
-
-    max_states = [s for s, g in g_scores.items() if g == best_time and s[1] == target]
-    path = [max_states[0]]
-    s = path[0]
-    while True:
-        try:
-            s = prior_states[s]
-        except KeyError:
-            break
-        path.append(s)
-    for i, (cycle_point, expedition) in enumerate(reversed(path)):
-        valley = valley_states[cycle_point]
-        print(f"\nMinute {i} (E={expedition})\n----------")
-        valley.print(expedition)
-
-    return g_scores[state], cycle
+    raise ValueError("No path found")
 
 
+@print_time_taken
 def solve(inputs: str) -> None:
     initial_valley = Valley.from_inputs(inputs)
     valley_states = {0: initial_valley}
@@ -172,13 +127,9 @@ def solve(inputs: str) -> None:
     travel_time, cycle = navigate_valley(valley_states, 0, start, end)
     print(f"Part 1: {travel_time}")
 
-    total_time = travel_time
-    travel_time, cycle = navigate_valley(valley_states, cycle, end, start)
-    total_time += travel_time
-    travel_time, cycle = navigate_valley(valley_states, cycle, start, end)
-    total_time += travel_time
-
-    print(f"Part 2: {total_time}\n")
+    time_to_go_back, cycle = navigate_valley(valley_states, cycle, end, start)
+    time_to_return, _ = navigate_valley(valley_states, cycle, start, end)
+    print(f"Part 2: {travel_time + time_to_go_back + time_to_return}\n")
 
 
 solve(sample_input)
