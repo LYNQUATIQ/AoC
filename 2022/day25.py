@@ -37,24 +37,33 @@ def solve(inputs: str) -> None:
     power = 0
     while (5 ** power) * 2 < total:
         power += 1
-    num_digits = power + 1
 
     digits = {p: 0 for p in range(power, -1, -1)}
-    print(total, power)
 
     def remainder():
         return total - sum(v * (5 ** p) for p, v in digits.items())
 
     while remainder() != 0:
-
-        digits[power] = remainder() // (5 ** power)
+        proposed_digit = remainder() // (5 ** power)
+        if proposed_digit < -2:
+            d = power + 1
+            while digits[d] == -2:
+                d += 1
+            digits[d] -= 1
+            continue
+        if proposed_digit > 2:
+            d = power + 1
+            while digits[d] == 2:
+                d += 1
+            digits[d] += 1
+            continue
+        digits[power] = proposed_digit
         power -= 1
-        break
+        continue
 
     snafu = "".join({-2: "=", -1: "-"}.get(d, str(d)) for d in digits.values())
     print(f"Part 1: {snafu}")
-    # Initially worked it out on a spreadsheet!
 
 
 solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
