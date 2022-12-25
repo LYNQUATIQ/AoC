@@ -40,7 +40,7 @@ def solve(inputs: str) -> None:
     num_digits = power + 1
 
     digits = {p: 0 for p in range(power, -1, -1)}
-    print(total, power, digits)
+    print(total, power)
 
     def remainder():
         return total - sum(v * (5 ** p) for p, v in digits.items())
@@ -53,6 +53,7 @@ def solve(inputs: str) -> None:
 
     snafu = "".join({-2: "=", -1: "-"}.get(d, str(d)) for d in digits.values())
     print(f"Part 1: {snafu}")
+    # Initially worked it out on a spreadsheet!
 
 
 solve(sample_input)
