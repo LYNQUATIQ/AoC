@@ -1,5 +1,7 @@
 """https://adventofcode.com/2022/day/24"""
 from __future__ import annotations
+
+import math
 import os
 
 from collections import defaultdict
@@ -82,12 +84,14 @@ class Valley:
 
 State = tuple[int, Xy]  # State records point in cycle and the expedition's location
 
+import math
+
 
 def navigate_valley(
     valley_states: dict[int, Valley], cycle: int, start: Xy, target: Xy
 ) -> tuple[int, int]:
     initial_valley = valley_states[cycle]
-    cycle_length = (initial_valley.width - 2) * (initial_valley.height - 2)
+    cycle_length = math.lcm((initial_valley.width - 2), (initial_valley.height - 2))
 
     visited: set[State] = set()
     g_scores: dict[State, int] = {(cycle, start): 0}
