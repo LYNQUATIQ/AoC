@@ -1,7 +1,9 @@
 """https://adventofcode.com/2022/day/19"""
-from math import ceil, prod
 import os
 import re
+
+from collections import deque
+from math import prod
 
 from utils import print_time_taken
 
@@ -11,6 +13,7 @@ with open(os.path.join(os.path.dirname(__file__), f"inputs/day19_input.txt")) as
 
 sample_input = """Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
 Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian."""
+
 
 REGEX = r"^Blueprint (?P<i>\d+): Each ore robot costs (?P<o1>\d+) ore. Each clay robot costs (?P<o2>\d+) ore. Each obsidian robot costs (?P<o3>\d+) ore and (?P<cl>\d+) clay. Each geode robot costs (?P<o4>\d+) ore and (?P<ob>\d+) obsidian.$"
 
@@ -25,122 +28,104 @@ ELEMENTS = (ORE, CLAY, OBSIDIAN, GEODE)
 # Blueprint is a tuple of ore costs, and the clay and obsidian requirments
 BluePrint = tuple[tuple[int, int, int, int], int, int]
 
-# State is a tuple of time, initial bots, initial resources and which bot to build
+# State is a tuple of time, initial bots, initial resources, and bot to build
 State = tuple[int, tuple[int, ...], tuple[int, ...], int]
-
-from collections import deque
 
 
 def find_max_geodes(blueprint: BluePrint, max_minutes: int) -> int:
     ore_costs, obsidianbot_clay_cost, geobot_obsidian_cost = blueprint
+    max_ore = max(ore_costs[CLAY], ore_costs[OBSIDIAN], ore_costs[GEODE])
 
     initial_bots = (1, 0, 0, 0)
     initial_state = (1, (0, 0, 0, 0), initial_bots, DO_NOTHING)
 
     prior_states: dict[State, State] = {}
-    g_scores: dict[State, int] = {initial_state: 0}
-    best_geode_score = 0
+    end_states: dict[State, int] = {initial_state: 0}
+    best_geodes_so_far = 0
     queue = deque([initial_state])
 
     while queue:
-        state = queue.pop()
-        time, resources, bots, bot_to_build = state
+        state = queue.popleft()
+        time, resources_at_start, bots_at_start, bot_to_build = state
+
+        # Update resources with output of existing bots and any spend on a new bot
+        updated_resources = list(
+            resources_at_start[e] + bots_at_start[e] for e in ELEMENTS
+        )
+        if bot_to_build != DO_NOTHING:
+            updated_resources[ORE] -= ore_costs[bot_to_build]
+            if bot_to_build == OBSIDIAN:
+                updated_resources[CLAY] -= obsidianbot_clay_cost
+            if bot_to_build == GEODE:
+                updated_resources[OBSIDIAN] -= geobot_obsidian_cost
+        next_bots = tuple(
+            n + int(i == bot_to_build) for i, n in enumerate(bots_at_start)
+        )
 
         if time == max_minutes:
-            best_geode_score = max(best_geode_score, g_scores[state])
+            end_states[state] = updated_resources[GEODE]
+            best_geodes_so_far = max(best_geodes_so_far, updated_resources[GEODE])
             continue
 
-        # Collect resources that existing bots generate
-        next_resources = list(resources[e] + bots[e] for e in ELEMENTS)
+        # Determine what bots could be built and how many minutes it would take
+        time_remaining = max_minutes - time
+        ore, clay, obsidian, _ = updated_resources
+        ore_bots, clay_bots, obsidian_bots, _ = next_bots
+        bots_to_build: list[tuple[int, int]] = []
+        if obsidian_bots:
+            geodoe_minutes = max(
+                0,
+                -((obsidian - geobot_obsidian_cost) // obsidian_bots),
+                -((ore - ore_costs[GEODE]) // ore_bots),
+            )
+            if geodoe_minutes < time_remaining:
+                bots_to_build.append((geodoe_minutes, GEODE))
+        if (obsidian_bots < geobot_obsidian_cost) and clay_bots:
+            obsidian_minutes = max(
+                0,
+                -((clay - obsidianbot_clay_cost) // clay_bots),
+                -((ore - ore_costs[OBSIDIAN]) // ore_bots),
+            )
+            if obsidian_minutes < time_remaining:
+                bots_to_build.append((obsidian_minutes, OBSIDIAN))
+        if clay_bots < obsidianbot_clay_cost:
+            clay_minutes = max(0, -((ore - ore_costs[CLAY]) // ore_bots))
+            if clay_minutes < time_remaining:
+                bots_to_build.append((clay_minutes, CLAY))
+        if ore_bots < max_ore:
+            ore_minutes = max(0, -((ore - ore_costs[ORE]) // ore_bots))
+            if ore_minutes < time_remaining:
+                bots_to_build.append((ore_minutes, ORE))
+        if ore >= ore_costs[GEODE] and obsidian >= geobot_obsidian_cost:
+            # Always make geode immediately if possible
+            bots_to_build = [(0, GEODE)]
+        if not bots_to_build:
+            bots_to_build.append((0, DO_NOTHING))
 
-        # Spend resources to build new bots
-        next_bots = list(bots)
-        if bot_to_build != DO_NOTHING:
-            next_bots[bot_to_build] += 1
-            next_resources[ORE] -= ore_costs[bot_to_build]
-            if bot_to_build == OBSIDIAN:
-                next_resources[CLAY] -= obsidianbot_clay_cost
-            if bot_to_build == GEODE:
-                next_resources[OBSIDIAN] -= geobot_obsidian_cost
-
-        for bot_to_build in get_bot_options(blueprint, bots, next_resources):
+        for minutes, next_bot_to_build in bots_to_build:
+            next_resources = tuple(
+                updated_resources[e] + next_bots[e] * minutes for e in ELEMENTS
+            )
             next_state = (
-                time + 1,
-                tuple(next_resources),
-                tuple(next_bots),
-                bot_to_build,
+                time + minutes + 1,
+                next_resources,
+                next_bots,
+                next_bot_to_build,
             )
 
-            if next_state in g_scores:
-                continue
-
-            time_remaining = max_minutes - time
+            time_remaining = max_minutes - (time + minutes)
             potential_geodes = (
                 next_resources[GEODE]
-                + time_remaining * bots[GEODE]
+                + time_remaining * next_bots[GEODE]
                 + time_remaining * (time_remaining + 1) * 0.5
             )
-            if potential_geodes < best_geode_score:
+            if potential_geodes < best_geodes_so_far:
                 continue
 
-            g_scores[next_state] = next_resources[GEODE] + next_bots[GEODE]
             queue.append(next_state)  # type: ignore
             prior_states[next_state] = state
 
-    return max(g_scores.values())
-
-
-def get_bot_options(blueprint: BluePrint, bots, next_resources) -> set[int]:
-    """Determine what bots we should build next"""
-    ore_costs, obsidianbot_clay_cost, geobot_obsidian_cost = blueprint
-    orebot_ore_cost, claybot_ore_cost, obsidianbot_ore_cost, geobot_ore_cost = ore_costs
-    max_ore = max(claybot_ore_cost, obsidianbot_ore_cost, geobot_ore_cost)
-
-    ore, clay, obsidian, _ = next_resources
-    need_ore = bots[ORE] < max_ore
-    need_clay = bots[CLAY] < obsidianbot_clay_cost
-    need_obsidian = bots[OBSIDIAN] < geobot_obsidian_cost
-    can_make_ore = ore >= orebot_ore_cost
-    can_make_clay = ore >= claybot_ore_cost
-    can_make_obsidian = ore >= obsidianbot_ore_cost and clay >= obsidianbot_clay_cost
-    can_make_geode = ore >= geobot_ore_cost and obsidian >= geobot_obsidian_cost
-
-    if can_make_geode:
-        return {GEODE}
-
-    if need_obsidian and can_make_obsidian:
-        if bots[OBSIDIAN]:
-            time_to_geode_if_do_nothing = max(
-                ceil((geobot_ore_cost - ore) / bots[ORE]),
-                ceil((geobot_obsidian_cost - obsidian) / bots[OBSIDIAN]),
-            )
-            time_to_geode_if_extra_obsidian = max(
-                ceil((geobot_ore_cost - ore + obsidianbot_ore_cost) / bots[ORE]),
-                ceil((geobot_obsidian_cost - obsidian) / (bots[OBSIDIAN] + 1)),
-            )
-            if time_to_geode_if_do_nothing < time_to_geode_if_extra_obsidian:
-                return {DO_NOTHING}
-        return {OBSIDIAN}
-
-    if need_clay and can_make_clay and bots[CLAY]:
-        time_to_obsidian_if_do_nothing = max(
-            ceil((obsidianbot_ore_cost - ore) / bots[ORE]),
-            ceil((obsidianbot_clay_cost - clay) / bots[CLAY]),
-        )
-        time_to_obsidian_if_extra_clay = max(
-            ceil((obsidianbot_ore_cost - ore + claybot_ore_cost) / bots[ORE]),
-            ceil((obsidianbot_clay_cost - clay) / (bots[CLAY] + 1)),
-        )
-        if time_to_obsidian_if_do_nothing < time_to_obsidian_if_extra_clay:
-            return {DO_NOTHING}
-
-    bot_options = set()
-    if need_clay and can_make_clay:
-        bot_options.add(CLAY)
-    if need_ore and can_make_ore:
-        bot_options.add(ORE)
-    bot_options.add(DO_NOTHING)
-    return bot_options
+    return best_geodes_so_far
 
 
 @print_time_taken
@@ -167,5 +152,5 @@ def solve(inputs: str, sample: bool = False) -> None:
     print(f"Part 2: {prod(find_max_geodes(plan, 32) for plan in first_3_blueprints)}\n")
 
 
-solve(sample_input)  # N.B. First example still fails part 2 (54... not 56)
+solve(sample_input)
 solve(actual_input)
