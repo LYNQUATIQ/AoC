@@ -1,7 +1,7 @@
 """ Generates daily py files for AOC"""
 import os
 
-YYYY = 2022
+YYYY = 2023
 
 
 for i in range(1, 26):
