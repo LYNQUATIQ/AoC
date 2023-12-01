@@ -1,7 +1,7 @@
 """https://adventofcode.com/2023/day/16"""
 import os
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day16_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day16_input.txt")) as f:
     actual_input = f.read()
 
 

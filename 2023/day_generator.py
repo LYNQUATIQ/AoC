@@ -14,7 +14,7 @@ for i in range(1, 26):
         f.write(f'"""https://adventofcode.com/{YYYY}/day/{i}"""\n')
         f.write("import os\n\n")
         f.write(
-            f'with open(os.path.join(os.path.dirname(__file__), f"inputs/day{i:02d}_input.txt")) as f:\n'
+            f'with open(os.path.join(os.path.dirname(__file__), "inputs/day{i:02d}_input.txt")) as f:\n'
         )
         f.write("    actual_input = f.read()\n\n\n")
         f.write('sample_input = """xxx"""\n\n\n')
