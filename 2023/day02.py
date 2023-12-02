@@ -23,11 +23,9 @@ def solve(inputs):
     for game in inputs.splitlines():
         game_id = int(re.search(r"\d+", game).group())
         max_count = {RED: 0, GREEN: 0, BLUE: 0}
-        for cube_set in game.split(": ")[1].split("; "):
-            for cubes in cube_set.split(", "):
-                count, color = cubes.split(" ")
-                max_count[color] = max(int(count), max_count[color])
-        if all(max_count[c] <= MAX_COUNT[c] for c in MAX_COUNT):
+        for color in max_count:
+            max_count[color] = max(map(int, re.findall(rf"(\d+) {color}", game)))
+        if all(max_count[c] <= MAX_COUNT[c] for c in max_count):
             total += game_id
         total_power += math.prod(max_count.values())
 
