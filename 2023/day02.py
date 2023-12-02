@@ -22,12 +22,13 @@ def solve(inputs):
     total_power = 0
     for game in inputs.splitlines():
         game_id = int(re.search(r"\d+", game).group())
-        max_count = {RED: 0, GREEN: 0, BLUE: 0}
-        for color in max_count:
-            max_count[color] = max(map(int, re.findall(rf"(\d+) {color}", game)))
-        if all(max_count[c] <= MAX_COUNT[c] for c in max_count):
+        cube_count = {
+            colour: max(map(int, re.findall(rf"(\d+) {colour}", game)))
+            for colour in [RED, GREEN, BLUE]
+        }
+        if all(cube_count[c] <= MAX_COUNT[c] for c in cube_count):
             total += game_id
-        total_power += math.prod(max_count.values())
+        total_power += math.prod(cube_count.values())
 
     print(f"Part 1: {total}")
     print(f"Part 2: {total_power}\n")
