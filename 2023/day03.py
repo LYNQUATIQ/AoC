@@ -27,9 +27,9 @@ def number_neighbours(number: str, xy: Xy) -> list[Xy]:
     x, y = xy
     min_x, max_x = x - 1, x + len(number)
     return (
-        [(x, y - 1) for x in range(min_x, max_x + 1)]
+        [(min_x, y), (max_x, y)]
+        + [(x, y - 1) for x in range(min_x, max_x + 1)]
         + [(x, y + 1) for x in range(min_x, max_x + 1)]
-        + [(min_x, y), (max_x, y)]
     )
 
 
@@ -57,9 +57,7 @@ def solve(inputs):
     print(f"Part 1: {total_part_number}")
 
     total_gear_ratio = 0
-    for gear_xy, symbol in symbols.items():
-        if symbol != GEAR:
-            continue
+    for gear_xy in [xy for xy, symbol in symbols.items() if symbol == GEAR]:
         neighbours = [
             int(number)
             for number_xy, number in numbers.items()
