@@ -37,10 +37,10 @@ def solve(inputs):
     numbers: dict[Xy, str] = {}
     symbols: dict[Xy, str] = {}
 
-    current_number = ""
     for y, line in enumerate(inputs.splitlines()):
+        current_number = ""
         for x, c in enumerate(line + "."):
-            if not c.isdigit() and current_number:
+            if current_number and not c.isdigit():
                 numbers[(x - len(current_number), y)] = current_number
                 current_number = ""
             if c == ".":
