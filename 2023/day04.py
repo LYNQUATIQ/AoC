@@ -17,16 +17,16 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"""
 def solve(inputs):
     matches, scratchcards = [], []
     for card_id, card in enumerate(inputs.splitlines()):
-        winning_values, in_hand = map(
+        winning_numbers, numbers_you_have = map(
             lambda x: set(map(int, re.findall(r"\d+", x))),
             card.split(":")[1].split("|"),
         )
-        matches.append(len(winning_values & in_hand))
+        matches.append(len(winning_numbers & numbers_you_have))
         scratchcards.append(
             1  # The original card...
             + sum(  # ...plus the total copies of the card based on prior cards' matches
                 scratchcards[prior_id]
-                for prior_id in range(card_id - len(winning_values), card_id)
+                for prior_id in range(card_id - len(winning_numbers), card_id)
                 if prior_id >= 0 and (prior_id + matches[prior_id] >= card_id)
             )
         )
