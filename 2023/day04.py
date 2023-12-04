@@ -27,9 +27,9 @@ def solve(inputs):
 
     # Play every original scratchcard once then lookback and add in any copies
     scratchcards = {card_id: 1 for card_id, _ in enumerate(matches)}
-    max_lookback = len(winning_values)
+    lookback = len(winning_values)
     for card_id in range(len(matches)):
-        for prior_id in range(max(card_id - max_lookback, 0), card_id):
+        for prior_id in range(max(card_id - lookback, 0), card_id):
             if prior_id + matches[prior_id] >= card_id:
                 scratchcards[card_id] += scratchcards[prior_id]
     print(f"Part 2: {sum(scratchcards.values())}\n")
