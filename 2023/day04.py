@@ -23,11 +23,11 @@ def solve(inputs):
         )
         matches.append(len(winning_values & in_hand))
         scratchcards.append(
-            1
-            + sum(
+            1  # The original card...
+            + sum(  # ...plus the total copies of the card based on prior cards' matches
                 scratchcards[prior_id]
-                for prior_id in range(max(card_id - len(winning_values), 0), card_id)
-                if prior_id + matches[prior_id] >= card_id
+                for prior_id in range(card_id - len(winning_values), card_id)
+                if prior_id >= 0 and (prior_id + matches[prior_id] >= card_id)
             )
         )
 
