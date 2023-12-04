@@ -1,6 +1,5 @@
 """https://adventofcode.com/2023/day/4"""
 import os
-import re
 
 with open(os.path.join(os.path.dirname(__file__), "inputs/day04_input.txt")) as f:
     actual_input = f.read()
@@ -18,7 +17,7 @@ def solve(inputs):
     matches, scratchcards = [], []
     for card_id, card in enumerate(inputs.splitlines()):
         winning_numbers, numbers_you_have = map(
-            lambda x: set(re.findall(r"\d+", x)), card.split(":")[1].split("|")
+            lambda x: set(x.split()), card.split(":")[1].split("|")
         )
         matches.append(len(winning_numbers & numbers_you_have))
         scratchcards.append(
