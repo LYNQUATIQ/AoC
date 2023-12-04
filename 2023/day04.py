@@ -29,7 +29,7 @@ def solve(inputs):
             )
         )
 
-    print(f"Part 1: {sum(map(lambda x : 2 ** (x - 1) if x else 0, matches))}")
+    print(f"Part 1: {sum(map(lambda x : 2 ** (x - 1) if x > 0 else 0, matches))}")
     print(f"Part 2: {sum(scratchcards)}\n")
 
 
