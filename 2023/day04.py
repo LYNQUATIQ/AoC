@@ -15,23 +15,19 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"""
 
 
 def solve(inputs):
-    matches = []
-    for card in inputs.splitlines():
+    matches, scratchcards = [], {}
+    for card_id, card in enumerate(inputs.splitlines()):
         winning_values, in_hand = map(
             lambda x: set(map(int, re.findall(r"\d+", x))),
             card.split(":")[1].split("|"),
         )
         matches.append(len(winning_values & in_hand))
-
-    print(f"Part 1: {sum(map(lambda x : 2 ** (x - 1) if x else 0, matches))}")
-
-    # Play every original scratchcard once then lookback and add in any copies
-    scratchcards = {card_id: 1 for card_id, _ in enumerate(matches)}
-    lookback = len(winning_values)
-    for card_id in range(len(matches)):
-        for prior_id in range(max(card_id - lookback, 0), card_id):
+        scratchcards[card_id] = 1
+        for prior_id in range(max(card_id - len(winning_values), 0), card_id):
             if prior_id + matches[prior_id] >= card_id:
                 scratchcards[card_id] += scratchcards[prior_id]
+
+    print(f"Part 1: {sum(map(lambda x : 2 ** (x - 1) if x else 0, matches))}")
     print(f"Part 2: {sum(scratchcards.values())}\n")
 
 
