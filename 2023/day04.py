@@ -18,8 +18,7 @@ def solve(inputs):
     matches, scratchcards = [], []
     for card_id, card in enumerate(inputs.splitlines()):
         winning_numbers, numbers_you_have = map(
-            lambda x: set(map(int, re.findall(r"\d+", x))),
-            card.split(":")[1].split("|"),
+            lambda x: set(re.findall(r"\d+", x)), card.split(":")[1].split("|")
         )
         matches.append(len(winning_numbers & numbers_you_have))
         scratchcards.append(
