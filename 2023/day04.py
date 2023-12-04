@@ -17,11 +17,11 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"""
 def solve(inputs):
     matches = []
     for card in inputs.splitlines():
-        _, values = card.split(":")
-        left, right = values.split("|")
-        winning_values = set(map(int, re.findall(r"\d+", left)))
-        your_values = set(map(int, re.findall(r"\d+", right)))
-        matches.append(len(winning_values & your_values))
+        winning_values, in_hand = map(
+            lambda x: set(map(int, re.findall(r"\d+", x))),
+            card.split(":")[1].split("|"),
+        )
+        matches.append(len(winning_values & in_hand))
 
     print(f"Part 1: {sum(map(lambda x : 2 ** (x - 1) if x else 0, matches))}")
 
