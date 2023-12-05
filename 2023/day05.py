@@ -63,7 +63,7 @@ def solve(inputs):
         for item in ITEMS:
             next_item = item_key
             for dest, source, length in maps[item]:
-                if source <= item_key <= source + length:
+                if source <= item_key < source + length:
                     next_item = dest + item_key - source
                     break
             seed_data[seed][item] = next_item
@@ -74,14 +74,14 @@ def solve(inputs):
     seed_ranges = [(a, b) for a, b in zip(seeds[0::2], seeds[1::2])]
 
     def is_valid_seed(seed: int) -> bool:
-        return any(a <= seed <= a + b for a, b in seed_ranges)
+        return any(a <= seed < a + b for a, b in seed_ranges)
 
     location = 0
     while True:
         item_key = location
         for item in ITEMS[::-1]:
             for dest, source, length in maps[item]:
-                if dest <= item_key <= dest + length:
+                if dest <= item_key < dest + length:
                     item_key = source + item_key - dest
                     break
         if is_valid_seed(item_key):
