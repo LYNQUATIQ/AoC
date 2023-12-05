@@ -42,71 +42,64 @@ humidity-to-location map:
 60 56 37
 56 93 4"""
 
-ITEMS = ["soil", "fertilizer", "water", "light", "temperature", "humidity", "location"]
-
 
 def get_mapped_range(
-    range_start: int, range_length, mappings: list[tuple[int, int, int]]
+    range_start: int, range_length, item_map: list[tuple[int, int, int]]
 ) -> list[tuple[int, int]]:
     if range_length == 0:
         return []
-    for dest_start, source_start, length in mappings:
+    for dest_start, source_start, length in item_map:
         if source_start <= range_start < source_start + length:
             offset = range_start - source_start
-            length -= offset
-            range_found = min(length, range_length)
+            range_found = min(length - offset, range_length)
             remainder = range_length - range_found
-            return [
-                (dest_start + offset, min(length, range_length))
-            ] + get_mapped_range(range_start + range_found, remainder, mappings)
+            return [(dest_start + offset, range_found)] + get_mapped_range(
+                range_start + range_found, remainder, item_map
+            )
         range_end = range_start + range_length - 1
         if source_start <= range_end < source_start + length:
             range_found = range_end - source_start + 1
             remainder = range_length - range_found
-            return get_mapped_range(range_start, remainder, mappings) + [
+            return get_mapped_range(range_start, remainder, item_map) + [
                 (dest_start, range_found)
             ]
-
     return [(range_start, range_length)]
 
 
 def get_mapped_ranges(
-    sources: list[tuple[int, int]], mappings: list[tuple[int, int, int]]
+    source_ranges: list[tuple[int, int]], item_map: list[tuple[int, int, int]]
 ) -> list[tuple[int, int]]:
-    destinations = []
-    for start, length in sources:
-        destinations += get_mapped_range(start, length, mappings)
-    return destinations
+    destination_ranges = []
+    for start, length in source_ranges:
+        destination_ranges += get_mapped_range(start, length, item_map)
+    return destination_ranges
 
 
 def get_seed_locations(
-    seed_ranges: list[tuple[int, int]], item_maps: dict[str, list[tuple[int, int, int]]]
+    seed_ranges: list[tuple[int, int]], item_maps: list[list[tuple[int, int, int]]]
 ) -> list[int]:
     item_ranges = seed_ranges
-    for item in ITEMS:
-        item_ranges = get_mapped_ranges(item_ranges, item_maps[item])
+    for item_map in item_maps:
+        item_ranges = get_mapped_ranges(item_ranges, item_map)
     return [x[0] for x in list(chain(item_ranges))]
 
 
 def solve(inputs):
     seeds_data, *maps_data = inputs.split("\n\n")
-
-    seeds = list(map(int, re.findall(r"\d+", seeds_data)))
-    item_maps = {}
-    for map_data in maps_data:
-        label, *mappings = map_data.splitlines()
-        map_key = label.split()[0].split("-to-")[1]
-        item_maps[map_key] = [
-            tuple(map(int, re.findall(r"\d+", mapping))) for mapping in mappings
+    seeds = [int(n) for n in re.findall(r"\d+", seeds_data)]
+    item_maps = [
+        [
+            tuple(int(n) for n in re.findall(r"\d+", map_range))
+            for map_range in map_data.splitlines()[1:]
         ]
+        for map_data in maps_data
+    ]
 
     seed_ranges = [(a, 1) for a in seeds]
-    locations = get_seed_locations(seed_ranges, item_maps)
-    print(f"Part 1: {min(locations)}")
+    print(f"Part 1: {min(get_seed_locations(seed_ranges, item_maps))}")
 
     seed_ranges = [(a, b) for a, b in zip(seeds[0::2], seeds[1::2])]
-    locations = get_seed_locations(seed_ranges, item_maps)
-    print(f"Part 2: {min(locations)}\n")
+    print(f"Part 2: {min(get_seed_locations(seed_ranges, item_maps))}\n")
 
 
 solve(sample_input)
