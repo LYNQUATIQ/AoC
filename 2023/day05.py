@@ -2,7 +2,6 @@
 import os
 import re
 
-from collections import defaultdict
 
 with open(os.path.join(os.path.dirname(__file__), "inputs/day05_input.txt")) as f:
     actual_input = f.read()
@@ -57,7 +56,7 @@ def solve(inputs):
             tuple(map(int, re.findall(r"\d+", mapping))) for mapping in mappings
         ]
 
-    seed_data = defaultdict(dict)
+    locations = []
     for seed in seeds:
         item_key = seed
         for item in ITEMS:
@@ -66,15 +65,11 @@ def solve(inputs):
                 if source <= item_key < source + length:
                     next_item = dest + item_key - source
                     break
-            seed_data[seed][item] = next_item
-            item_key = seed_data[seed][item]
-
-    print(f"Part 1: {min(s['location'] for s in seed_data.values())}")
+            item_key = next_item
+        locations.append(item_key)
+    print(f"Part 1: {min(locations)}")
 
     seed_ranges = [(a, b) for a, b in zip(seeds[0::2], seeds[1::2])]
-
-    def is_valid_seed(seed: int) -> bool:
-        return any(a <= seed < a + b for a, b in seed_ranges)
 
     location = 0
     while True:
@@ -84,12 +79,10 @@ def solve(inputs):
                 if dest <= item_key < dest + length:
                     item_key = source + item_key - dest
                     break
-        if is_valid_seed(item_key):
+        if any(a <= item_key < a + b for a, b in seed_ranges):
             break
         location += 1
-
     print(f"Part 2: {location}\n")
-    # 4917125 too high
 
 
 solve(sample_input)
