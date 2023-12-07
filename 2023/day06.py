@@ -12,10 +12,10 @@ Distance:  9  40  200"""
 
 
 def ways_to_win(time: int, distance: int) -> int:
-    root1 = (-time + (time * time - 4 * distance) ** 0.5) / -2
-    root2 = (-time - (time * time - 4 * distance) ** 0.5) / -2
-    root2 = root2 - 1 if root2 == int(root2) else root2
-    return math.floor(root2) - math.floor(root1)
+    root1 = (time + (time * time - 4 * distance) ** 0.5) / 2
+    root2 = (time - (time * time - 4 * distance) ** 0.5) / 2
+    root1 = root1 - 1 if root1 == int(root1) else root1
+    return math.floor(root1) - math.floor(root2)
 
 
 def solve(inputs):
