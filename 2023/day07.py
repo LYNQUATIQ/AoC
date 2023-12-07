@@ -22,9 +22,28 @@ HANDS = [
     (1, 1, 1, 1, 1),
 ]
 
-CARDS = "AKQJT9876543210"
-CARDS2 = "AKQT9876543210J"
 JOKER = "J"
+
+
+def sort_key(hand: str) -> tuple[int, tuple[int, int, int, int, int]]:
+    return (
+        HANDS.index(tuple(sorted(Counter(hand).values(), reverse=True))),
+        tuple("AKQJT98765432".index(c) for c in hand),
+    )
+
+
+def sort_key2(hand: str) -> tuple[int, tuple[int, int, int, int, int]]:
+    counts = {
+        k: v for k, v in sorted(Counter(hand).items(), key=lambda x: x[1], reverse=True)
+    }
+    jokers = counts.get(JOKER, 0)
+    if jokers and jokers != 5:
+        counts = {k: v for k, v in counts.items() if k != JOKER}
+        counts[next(iter(counts))] += jokers
+    return (
+        HANDS.index(tuple(counts.values())),
+        tuple("AKQT98765432J".index(c) for c in hand),
+    )
 
 
 def solve(inputs):
@@ -33,43 +52,13 @@ def solve(inputs):
         hand, bid = line.split()
         hands[hand] = int(bid)
 
-    def sort_key(hand: str) -> tuple[int, str]:
-        return (
-            HANDS.index(tuple(sorted(Counter(hand).values(), reverse=True))),
-            tuple(CARDS.index(c) for c in hand),
-        )
+    sorted_hands = sorted(hands.keys(), key=sort_key, reverse=True)
+    winnings = sum([rank * hands[hand] for rank, hand in enumerate(sorted_hands, 1)])
+    print(f"Part 1: {winnings}")
 
-    sorted_hands = {
-        k: hands[k] for k in sorted(hands.keys(), key=sort_key, reverse=True)
-    }
-
-    total = 0
-    for rank, bid in enumerate(sorted_hands.values(), 1):
-        total += rank * bid
-    print(f"Part 1: {total}")
-
-    def sort_key2(hand: str) -> tuple[int, str]:
-        counts = {
-            k: v
-            for k, v in sorted(Counter(hand).items(), key=lambda x: x[1], reverse=True)
-        }
-        jokers = counts.get(JOKER, 0)
-        if jokers and jokers != 5:
-            counts = {k: v for k, v in counts.items() if k != JOKER}
-            counts[list(counts.keys())[0]] += jokers
-        return (
-            HANDS.index(tuple(sorted(counts.values(), reverse=True))),
-            tuple(CARDS2.index(c) for c in hand),
-        )
-
-    sorted_hands = {
-        k: hands[k] for k in sorted(hands.keys(), key=sort_key2, reverse=True)
-    }
-
-    total = 0
-    for rank, bid in enumerate(sorted_hands.values(), 1):
-        total += rank * bid
-    print(f"Part 2: {total}\n")
+    sorted_hands = sorted(hands.keys(), key=sort_key2, reverse=True)
+    winnings = sum([rank * hands[hand] for rank, hand in enumerate(sorted_hands, 1)])
+    print(f"Part 2: {winnings}\n")
 
 
 solve(sample_input)
