@@ -8,4 +8,4 @@
 ![](https://img.shields.io/badge/Stars%202020%20⭐-50-yellow)
 ![](https://img.shields.io/badge/Stars%202021%20⭐-50-yellow)
 ![](https://img.shields.io/badge/Stars%202022%20⭐-50-yellow)
-![](https://img.shields.io/badge/Stars%202023%20⭐-12-yellow)
+![](https://img.shields.io/badge/Stars%202023%20⭐-14-yellow)
