@@ -21,6 +21,6 @@ for i in range(1, 26):
         f.write("def solve(inputs):\n")
         f.write("    values = tuple(map(int, inputs.splitlines()))\n\n")
         f.write('    print(f"Part 1: {False}")\n')
-        f.write('    print(f"Part 2: {False}")\n\n\n')
+        f.write('    print(f"Part 2: {False}\n")\n\n\n')
         f.write("solve(sample_input)\n")
         f.write("# solve(actual_input)\n")
