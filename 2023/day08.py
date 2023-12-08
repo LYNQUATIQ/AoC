@@ -27,33 +27,35 @@ XXX = (XXX, XXX)"""
 
 
 def read_node_data(
-    node_data: str, start: str, end: str
+    node_data: str, start: str, target: str
 ) -> tuple[dict[str, tuple[str, str]], list[str], set[str]]:
-    nodes, starts, ends = {}, [], set()
+    nodes, starts, targets = {}, [], set()
     for line in node_data.splitlines():
         node = line[0:3]
         nodes[node] = (line[7:10], line[12:15])
         if node.endswith(start):
             starts.append(node)
-        if node.endswith(end):
-            ends.add(node)
-    return nodes, starts, ends
+        if node.endswith(target):
+            targets.add(node)
+    return nodes, starts, targets
 
 
-def traverse_map(nodes, route, start, targets) -> dict[str, int]:
+def traverse_map(
+    nodes: dict[str, tuple[str, str]], route: str, start: str, targets: set[str]
+) -> int:
     direction = cycle(route)
     steps, location = 0, start
-    while True:
+    while location not in targets:
         steps += 1
         location = nodes[location][0 if next(direction) == "L" else 1]
-        if location in targets:
-            return steps
+    return steps
 
 
 def solve(inputs, inputs2):
     route, node_data = inputs.split("\n\n")
     nodes, ghosts, targets = read_node_data(node_data, "AAA", "ZZZ")
-    print(f"Part 1: {traverse_map(nodes, route, 'AAA', targets)}")
+    steps = traverse_map(nodes, route, "AAA", targets)
+    print(f"Part 1: {steps}")
 
     route, node_data = inputs2.split("\n\n")
     nodes, ghosts, targets = read_node_data(node_data, "A", "Z")
