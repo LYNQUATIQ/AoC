@@ -28,10 +28,10 @@ XXX = (XXX, XXX)"""
 
 def parse_inputs(
     inputs: str, start: str, target: str
-) -> tuple[str, dict[str, tuple[str, str]], list[str], set[str]]:
+) -> tuple[str, dict[str, tuple[str, str]], set[str], set[str]]:
     route, node_data = inputs.split("\n\n")
     nodes = {line[0:3]: (line[7:10], line[12:15]) for line in node_data.splitlines()}
-    starts = [n for n in nodes if n.endswith(start)]
+    starts = {n for n in nodes if n.endswith(start)}
     targets = {n for n in nodes if n.endswith(target)}
     return (route, nodes, starts, targets)
 
