@@ -26,21 +26,17 @@ sample_input2 = """LR
 XXX = (XXX, XXX)"""
 
 
-def read_node_data(
-    node_data: str, start: str, target: str
-) -> tuple[dict[str, tuple[str, str]], list[str], set[str]]:
-    nodes, starts, targets = {}, [], set()
-    for line in node_data.splitlines():
-        node = line[0:3]
-        nodes[node] = (line[7:10], line[12:15])
-        if node.endswith(start):
-            starts.append(node)
-        if node.endswith(target):
-            targets.add(node)
-    return nodes, starts, targets
+def parse_inputs(
+    inputs: str, start: str, target: str
+) -> tuple[str, dict[str, tuple[str, str]], list[str], set[str]]:
+    route, node_data = inputs.split("\n\n")
+    nodes = {line[0:3]: (line[7:10], line[12:15]) for line in node_data.splitlines()}
+    starts = [n for n in nodes if n.endswith(start)]
+    targets = {n for n in nodes if n.endswith(target)}
+    return (route, nodes, starts, targets)
 
 
-def traverse_map(
+def traverse_nodes(
     nodes: dict[str, tuple[str, str]], route: str, start: str, targets: set[str]
 ) -> int:
     direction = cycle(route)
@@ -52,14 +48,12 @@ def traverse_map(
 
 
 def solve(inputs, inputs2):
-    route, node_data = inputs.split("\n\n")
-    nodes, ghosts, targets = read_node_data(node_data, "AAA", "ZZZ")
-    steps = traverse_map(nodes, route, "AAA", targets)
+    route, nodes, _, targets = parse_inputs(inputs, "AAA", "ZZZ")
+    steps = traverse_nodes(nodes, route, "AAA", targets)
     print(f"Part 1: {steps}")
 
-    route, node_data = inputs2.split("\n\n")
-    nodes, ghosts, targets = read_node_data(node_data, "A", "Z")
-    steps = [traverse_map(nodes, route, ghost, targets) for ghost in ghosts]
+    route, nodes, ghosts, targets = parse_inputs(inputs2, "A", "Z")
+    steps = [traverse_nodes(nodes, route, ghost, targets) for ghost in ghosts]
     print(f"Part 2: {math.lcm(*steps)}\n")
 
 
