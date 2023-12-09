@@ -13,8 +13,7 @@ sample_input = """0 3 6 9 12 15
 def extrapolate(values: list[int], back: bool = False) -> int:
     if all(n == 0 for n in values):
         return 0
-    differences = [b - a for a, b in zip(values[:-1], values[1:])]
-    x = extrapolate(differences, back)
+    x = extrapolate([b - a for a, b in zip(values[:-1], values[1:])], back)
     return values[0] - x if back else values[-1] + x
 
 
