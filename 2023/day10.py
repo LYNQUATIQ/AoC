@@ -76,7 +76,6 @@ def solve(inputs):
                     or (pipe_start == "F" and pipe_end == "J")
                 ):
                     within_loop = not within_loop
-
     print(f"Part 2: {enclosed}\n")
 
 
