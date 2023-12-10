@@ -14,6 +14,14 @@ LJ..."""
 
 START = "S"
 NORTH, SOUTH, EAST, WEST = -1j, +1j, 1, -1
+PIPES = {
+    (NORTH, SOUTH): "|",
+    (NORTH, EAST): "L",
+    (NORTH, WEST): "J",
+    (SOUTH, EAST): "F",
+    (SOUTH, WEST): "7",
+    (EAST, WEST): "-",
+}
 DIRECTIONS = {
     (NORTH, "|"): NORTH,
     (SOUTH, "|"): SOUTH,
@@ -40,55 +48,40 @@ def solve(inputs):
                 start = complex(x, y)
     width, height = x + 1, y + 1
 
-    valid_headings = tuple(
-        heading
-        for heading in (NORTH, SOUTH, EAST, WEST)
-        if (heading, grid.get(start + heading)) in DIRECTIONS
+    start_headings = tuple(
+        h for h in (NORTH, SOUTH, EAST, WEST) if (h, grid.get(start + h)) in DIRECTIONS
     )
-    grid[start] = {
-        (NORTH, SOUTH): "|",
-        (NORTH, EAST): "L",
-        (NORTH, WEST): "J",
-        (SOUTH, EAST): "F",
-        (SOUTH, WEST): "7",
-        (EAST, WEST): "-",
-    }[valid_headings]
+    grid[start] = PIPES[start_headings]
 
-    direction = valid_headings[0]
-    path, location = {start}, start + direction
-    while location != start:
-        path.add(location)
+    direction = start_headings[0]
+    pipe_path, location = {start}, start
+    while (location := location + direction) != start:
+        pipe_path.add(location)
         direction = DIRECTIONS[direction, grid[location]]
-        location += direction
-    print(f"Part 1: {len(path)//2}")
+    print(f"Part 1: {len(pipe_path)//2}")
 
     enclosed = 0
     for y in range(height):
         within_loop, x = False, 0
         while x < width:
-            if within_loop and complex(x, y) not in path:
+            if within_loop and complex(x, y) not in pipe_path:
                 enclosed += 1
-            while x < width and complex(x, y) not in path:
+            while x < width and complex(x, y) not in pipe_path:
                 x += 1
-                if within_loop and complex(x, y) not in path:
+                if within_loop and complex(x, y) not in pipe_path:
                     enclosed += 1
             if x >= width:
                 break
-            pipe = grid[complex(x, y)]
-            if pipe == "|":
+            pipe_start = grid[complex(x, y)]
+            while (pipe_end := grid[complex(x, y)]) not in ("|", "7", "J"):
+                x += 1
+            if (
+                (pipe_start == "|")
+                or (pipe_start == "L" and pipe_end == "7")
+                or (pipe_start == "F" and pipe_end == "J")
+            ):
                 within_loop = not within_loop
-            elif pipe == "L":
-                x += 1
-                while grid[complex(x, y)] == "-":
-                    x += 1
-                if grid[complex(x, y)] == "7":
-                    within_loop = not within_loop
-            elif pipe == "F":
-                x += 1
-                while grid[complex(x, y)] == "-":
-                    x += 1
-                if grid[complex(x, y)] == "J":
-                    within_loop = not within_loop
+
             x += 1
 
     print(f"Part 2: {enclosed}\n")
