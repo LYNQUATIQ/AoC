@@ -62,27 +62,20 @@ def solve(inputs):
 
     enclosed = 0
     for y in range(height):
-        within_loop, x = False, 0
-        while x < width:
-            if within_loop and complex(x, y) not in pipe_path:
-                enclosed += 1
-            while x < width and complex(x, y) not in pipe_path:
-                x += 1
-                if within_loop and complex(x, y) not in pipe_path:
-                    enclosed += 1
-            if x >= width:
-                break
-            pipe_start = grid[complex(x, y)]
-            while (pipe_end := grid[complex(x, y)]) not in ("|", "7", "J"):
-                x += 1
-            if (
-                (pipe_start == "|")
-                or (pipe_start == "L" and pipe_end == "7")
-                or (pipe_start == "F" and pipe_end == "J")
-            ):
-                within_loop = not within_loop
-
-            x += 1
+        within_loop, x = False, -1
+        while (x := x + 1) < width:
+            if complex(x, y) not in pipe_path:
+                enclosed += within_loop
+            else:
+                pipe_start = grid[complex(x, y)]
+                while (pipe_end := grid[complex(x, y)]) not in ("|", "7", "J"):
+                    x += 1
+                if (
+                    (pipe_start == "|")
+                    or (pipe_start == "L" and pipe_end == "7")
+                    or (pipe_start == "F" and pipe_end == "J")
+                ):
+                    within_loop = not within_loop
 
     print(f"Part 2: {enclosed}\n")
 
