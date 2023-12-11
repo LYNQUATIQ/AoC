@@ -8,7 +8,7 @@ from heapq import heappush, heappop
 from itertools import product
 from typing import TypeAlias
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day23_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day23_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -47,7 +47,7 @@ def possible_next_states(state: State) -> list[State]:
             target = (amphipod + 1) * 2
             steps_sd = abs(start - destination) + 1  # Extra step to leave room
             step_change = abs(target - destination) - abs(target - start) - 1
-            energy_cost = 10 ** amphipod
+            energy_cost = 10**amphipod
             next_states.append(
                 (
                     energy_so_far + steps_sd * energy_cost,
@@ -65,7 +65,7 @@ def possible_next_states(state: State) -> list[State]:
             continue  # There's somebody in the room who still needs to move
         if any(hallway[step] is not None for step in BETWEEN[(start, destination)]):
             continue  # There's somebody blocking the way en route to target
-        energy_change = (abs(start - destination) + 1) * 10 ** amphipod
+        energy_change = (abs(start - destination) + 1) * 10**amphipod
         next_states.append(
             (
                 energy_so_far + energy_change,
@@ -79,7 +79,6 @@ def possible_next_states(state: State) -> list[State]:
 
 
 def organise_amphipods(amphipod_rows: tuple[tuple[str, str, str, str], ...]) -> int:
-
     extra_energy, amphipod_count = 0, defaultdict(int)
 
     # Build room tuples, stripping out any amphipods who are already in place.
@@ -93,11 +92,11 @@ def organise_amphipods(amphipod_rows: tuple[tuple[str, str, str, str], ...]) -> 
             occupants.pop()
         for position_in_room, amphipod in enumerate(occupants):
             amphipod_count[amphipod] += 1
-            extra_energy += position_in_room * 10 ** amphipod
+            extra_energy += position_in_room * 10**amphipod
 
     # ...and add extra energy required for amphipods arriving at their destination
     for variant, count in amphipod_count.items():
-        extra_energy += {1: 0, 2: 1, 3: 3, 4: 6}[count] * 10 ** variant
+        extra_energy += {1: 0, 2: 1, 3: 3, 4: 6}[count] * 10**variant
 
     rooms = tuple(tuple(occupants) for occupants in room_occupants.values())
 
@@ -105,7 +104,7 @@ def organise_amphipods(amphipod_rows: tuple[tuple[str, str, str, str], ...]) -> 
     cost_to_complete = 0
     for i, occupants in enumerate(rooms):
         cost_to_complete += sum(
-            (abs((a + 1) * 2 - ((i + 1) * 2)) + 2) * 10 ** a for a in occupants
+            (abs((a + 1) * 2 - ((i + 1) * 2)) + 2) * 10**a for a in occupants
         )
 
     hallway = tuple(None for _ in range(11))
@@ -128,7 +127,6 @@ EXTRA_ROWS = (("D", "C", "B", "A"), ("D", "B", "A", "C"))
 
 
 def solve(inputs):
-
     amphipod_data = inputs.splitlines()
     first_row = tuple(re.findall(r"[ABCD]", amphipod_data[2]))
     last_row = tuple(re.findall(r"[ABCD]", amphipod_data[3]))

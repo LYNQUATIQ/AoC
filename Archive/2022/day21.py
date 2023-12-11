@@ -1,7 +1,7 @@
 """https://adventofcode.com/2022/day/21"""
 import os
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day21_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day21_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -57,19 +57,25 @@ def solve(inputs: str) -> None:
     while to_solve != "humn":
         a, operation, b, _ = operations[to_solve]
         if a in used_humn:
-            to_solve, target = a, {
-                "+": target - values[b],
-                "-": target + values[b],
-                "*": target // values[b],
-                "/": target * values[b],
-            }[operation]
+            to_solve, target = (
+                a,
+                {
+                    "+": target - values[b],
+                    "-": target + values[b],
+                    "*": target // values[b],
+                    "/": target * values[b],
+                }[operation],
+            )
         else:
-            to_solve, target = b, {
-                "+": target - values[a],
-                "-": values[a] - target,
-                "*": target // values[a],
-                "/": values[a] // target,
-            }[operation]
+            to_solve, target = (
+                b,
+                {
+                    "+": target - values[a],
+                    "-": values[a] - target,
+                    "*": target // values[a],
+                    "/": values[a] // target,
+                }[operation],
+            )
 
     print(f"Part 2: {target}\n")
 

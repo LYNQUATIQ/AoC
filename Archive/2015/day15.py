@@ -5,7 +5,7 @@ from collections import namedtuple
 from itertools import combinations_with_replacement, permutations
 
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day15_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day15_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """Butterscotch: capacity -1, durability -2, flavor 6, texture 3, calories 8

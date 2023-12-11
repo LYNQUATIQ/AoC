@@ -1,7 +1,7 @@
 """https://adventofcode.com/2021/day/7"""
 import os
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day07_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day07_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """16,1,2,0,4,2,7,1,2,14"""

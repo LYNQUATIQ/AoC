@@ -5,9 +5,9 @@ import os
 from functools import reduce
 from itertools import product
 
-from utils import  print_time_taken
+from utils import print_time_taken
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day18_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day18_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -26,11 +26,11 @@ sample_input = """[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
 class SnailfishNumber:
     def __init__(self, input_string, parent=None) -> None:
         self.parent = parent
-        self.depth = self.parent.depth+1 if self.parent else 0
-        self.left= None
+        self.depth = self.parent.depth + 1 if self.parent else 0
+        self.left = None
         self.right = None
         self.value = None
-        
+
         if input_string.isdigit():
             self.depth = None
             self.value = int(input_string)
@@ -39,33 +39,36 @@ class SnailfishNumber:
         bracket_count = 0
         for comma_position, c in enumerate(input_string):
             match c:
-                case '[':
-                    bracket_count +=1
-                case ']':
-                    bracket_count -=1
-                case ',':
-                    if bracket_count==1:
+                case "[":
+                    bracket_count += 1
+                case "]":
+                    bracket_count -= 1
+                case ",":
+                    if bracket_count == 1:
                         break
-        left, right =  input_string[1:comma_position], input_string[comma_position+1:-1]
-        self.left =  SnailfishNumber(left, self)
-        self.right =  SnailfishNumber(right, self)
-        
+        left, right = (
+            input_string[1:comma_position],
+            input_string[comma_position + 1 : -1],
+        )
+        self.left = SnailfishNumber(left, self)
+        self.right = SnailfishNumber(right, self)
+
     def __repr__(self) -> str:
-        return f'[{self.left},{self.right}]'if self.value is None else str(self.value) 
+        return f"[{self.left},{self.right}]" if self.value is None else str(self.value)
 
     def __add__(self, other):
-        return SnailfishNumber(f'[{self},{other}]').reduce()
-    
+        return SnailfishNumber(f"[{self},{other}]").reduce()
+
     @property
-    def magnitude(self)-> int:
+    def magnitude(self) -> int:
         _magnitude = lambda x: x.magnitude if x.value is None else x.value
         return 3 * _magnitude(self.left) + 2 * _magnitude(self.right)
-    
+
     @classmethod
-    def ordered_values(cls,n: SnailfishNumber):
+    def ordered_values(cls, n: SnailfishNumber):
         if n.value is not None:
             return [n]
-        return cls.ordered_values(n.left) +cls.ordered_values(n.right)
+        return cls.ordered_values(n.left) + cls.ordered_values(n.right)
 
     def value_above_nine(self):
         integers_above_nine = [n for n in self.ordered_values(self) if n.value > 9]
@@ -81,26 +84,26 @@ class SnailfishNumber:
 
     def reduce(self):
         while self.pair_at_depth_four() or self.value_above_nine():
-            
             while to_explode := self.pair_at_depth_four():
                 ordered_values = self.ordered_values(self)
                 for node_index, node in enumerate(ordered_values):
                     if node.parent == to_explode:
                         break
-                for delta, explode in zip((-1,+2), (to_explode.left, to_explode.right)):
-                    if 0 <=node_index+delta <len(ordered_values):
-                        ordered_values[node_index+delta].value += explode.value
+                for delta, explode in zip(
+                    (-1, +2), (to_explode.left, to_explode.right)
+                ):
+                    if 0 <= node_index + delta < len(ordered_values):
+                        ordered_values[node_index + delta].value += explode.value
                 to_explode.value = 0
                 to_explode.left, to_explode.right = None, None
 
-            if node:=self.value_above_nine():
+            if node := self.value_above_nine():
                 node.depth = node.parent.depth + 1
-                node.left = SnailfishNumber(f'{node.value//2}', node)
-                node.right = SnailfishNumber(f'{(node.value+1)//2}', node)
+                node.left = SnailfishNumber(f"{node.value//2}", node)
+                node.right = SnailfishNumber(f"{(node.value+1)//2}", node)
                 node.value = None
 
         return self
-
 
 
 REDUCTION_TESTS = {

@@ -3,7 +3,7 @@ import os
 from utils import powerset, print_time_taken
 
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day14_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day14_input.txt")) as f:
     actual_input = f.read()
 
 sample_input1 = """mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X
@@ -21,7 +21,7 @@ def decode_bitmask(inputs, floating_mode=False):
     memory = {}
     for token, value in [input_line.split(" = ") for input_line in inputs.split("\n")]:
         if token == "mask":
-            x_bits = [2 ** i for i, b in enumerate(value[::-1]) if b == "X"]
+            x_bits = [2**i for i, b in enumerate(value[::-1]) if b == "X"]
             mask_1 = int(value.replace("X", "0"), 2)
             mask_0 = int(value.replace("X", "1"), 2)
             continue

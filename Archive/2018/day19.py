@@ -4,7 +4,7 @@ import re
 
 from utils import print_time_taken
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day19_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day19_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -51,7 +51,7 @@ def solve(inputs):
             print(f"Part 1: {registers[0]}")
 
     n = registers[2]
-    factor_sum = sum(i + n // i for i in range(1, int(n ** 0.5) + 1) if n % i == 0)
+    factor_sum = sum(i + n // i for i in range(1, int(n**0.5) + 1) if n % i == 0)
     print(f"Part 2: {factor_sum}\n")
 
 

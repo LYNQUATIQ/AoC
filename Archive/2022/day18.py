@@ -7,7 +7,7 @@ import re
 from collections import deque
 from itertools import product
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day18_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day18_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -45,7 +45,6 @@ def neighbours(xyz: tuple[int, int, int], span: int = 999) -> set[tuple[int, int
 
 
 def solve(inputs: str) -> None:
-
     cubes = set()
     for line in inputs.splitlines():
         x, y, z = list(map(int, re.findall(r"\d+", line)))

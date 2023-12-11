@@ -6,7 +6,7 @@ import re
 
 from itertools import combinations, product
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day15_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day15_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -27,7 +27,6 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3"""
 
 
 def solve(inputs: str, y_row: int) -> None:
-
     rotate = lambda x, y: (x + y, y - x)
     unrotate = lambda x, y: ((x - y) // 2, (x + y) // 2)
 

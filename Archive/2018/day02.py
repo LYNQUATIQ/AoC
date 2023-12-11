@@ -4,7 +4,7 @@ import os
 from collections import Counter
 from itertools import combinations
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day02_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day02_input.txt")) as f:
     actual_input = f.read()
 
 sample_input1 = """abcdef
@@ -25,7 +25,6 @@ wvxyz"""
 
 
 def solve(inputs):
-
     box_ids = inputs.splitlines()
 
     counts = [Counter(box_id) for box_id in box_ids]

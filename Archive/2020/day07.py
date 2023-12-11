@@ -3,7 +3,7 @@ import re
 
 from collections import defaultdict
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day07_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day07_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """light red bags contain 1 bright white bag, 2 muted yellow bags.

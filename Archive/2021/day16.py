@@ -3,7 +3,7 @@ import os
 
 from packet_decoder import BitStream, Packet
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day16_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day16_input.txt")) as f:
     actual_input = f.read()
 
 

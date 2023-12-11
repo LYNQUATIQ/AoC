@@ -9,7 +9,7 @@ from functools import partial
 from typing import Callable
 
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day11_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day11_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -42,14 +42,17 @@ Monkey 3:
     If false: throw to monkey 1
 """
 
-def multiply_item(value:int, multiplier:int) -> int:
-    return value * multiplier 
 
-def add_to_item(value:int, adjustment: int) -> int:
+def multiply_item(value: int, multiplier: int) -> int:
+    return value * multiplier
+
+
+def add_to_item(value: int, adjustment: int) -> int:
     return value + adjustment
 
-def square_item(value:int) -> int:
-    return  value ** 2
+
+def square_item(value: int) -> int:
+    return value**2
 
 
 @dataclass
@@ -61,22 +64,23 @@ class Monkey:
     if_false: int
     inspections: int = 0
 
+
 def do_monkey_business(inputs: str, rounds: int, reduce_worry: bool) -> int:
     monkeys: list[Monkey] = []
     for attributes in map(str.splitlines, inputs.split("\n\n")):
         items = list(map(int, re.findall(r"\d+", attributes[1])))
         match attributes[2].split()[-2:]:
-            case ['*', 'old']:
+            case ["*", "old"]:
                 inspection = square_item
-            case ['*', value]:
+            case ["*", value]:
                 inspection = partial(multiply_item, multiplier=int(value))
-            case ['+', value]:
+            case ["+", value]:
                 inspection = partial(add_to_item, adjustment=int(value))
         divisibility_test = int(attributes[3].split()[-1])
         if_true = int(attributes[4].split()[-1])
         if_false = int(attributes[5].split()[-1])
         monkeys.append(Monkey(items, inspection, divisibility_test, if_true, if_false))
-    
+
     modulo = math.prod(m.divisibility_test for m in monkeys)
     for _ in range(rounds):
         for monkey in monkeys:
@@ -90,7 +94,7 @@ def do_monkey_business(inputs: str, rounds: int, reduce_worry: bool) -> int:
                 else:
                     monkeys[monkey.if_false].items.append(item)
             monkey.items = []
-            
+
     return math.prod(sorted(m.inspections for m in monkeys)[-2:])
 
 

@@ -8,7 +8,7 @@ from itertools import product
 
 from utils import print_time_taken
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day22_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day22_input.txt")) as f:
     actual_input = f.read()
 
 

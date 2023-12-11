@@ -2,7 +2,7 @@
 import os
 from itertools import chain
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day08_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day08_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe

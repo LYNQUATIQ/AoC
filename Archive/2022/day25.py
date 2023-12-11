@@ -1,7 +1,7 @@
 """https://adventofcode.com/2022/day/25"""
 import os
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day25_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day25_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -22,18 +22,18 @@ sample_input = """1=-0-2
 
 def decode(snafu: str) -> int:
     return sum(
-        (5 ** i) * {"=": -2, "-": -1, "0": 0, "1": 1, "2": 2}[digit]
+        (5**i) * {"=": -2, "-": -1, "0": 0, "1": 1, "2": 2}[digit]
         for i, digit in enumerate(snafu[::-1])
     )
 
 
 def encode(value: int) -> str:
     power = 0
-    while (5 ** power) * 2 < value:
+    while (5**power) * 2 < value:
         power += 1
     digits = {p: 0 for p in range(power, -1, -1)}
-    while remainder := value - sum(v * (5 ** p) for p, v in digits.items()):
-        proposed_digit = remainder // (5 ** power)
+    while remainder := value - sum(v * (5**p) for p, v in digits.items()):
+        proposed_digit = remainder // (5**power)
         if proposed_digit < -2:
             d = power + 1
             while digits[d] == -2:

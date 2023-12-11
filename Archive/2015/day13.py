@@ -3,7 +3,7 @@ import re
 
 from itertools import permutations
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day13_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day13_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """Alice would gain 54 happiness units by sitting next to Bob.

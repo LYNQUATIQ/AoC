@@ -3,7 +3,7 @@ import os
 from collections import defaultdict
 from itertools import combinations
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day17_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day17_input.txt")) as f:
     actual_input = f.read()
 
 TARGET = 150

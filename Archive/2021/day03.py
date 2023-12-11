@@ -1,7 +1,7 @@
 """https://adventofcode.com/2021/day/3"""
 import os
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day03_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day03_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """00100
@@ -23,8 +23,8 @@ def solve(inputs):
     bit_count = len(values[0])
 
     gamma_bits = tuple(column.count("1") > column.count("0") for column in zip(*values))
-    gamma = sum(2 ** i for i, c in enumerate(reversed(gamma_bits)) if c)
-    epsilon = gamma ^ (2 ** bit_count - 1)
+    gamma = sum(2**i for i, c in enumerate(reversed(gamma_bits)) if c)
+    epsilon = gamma ^ (2**bit_count - 1)
     print(f"Part 1: {gamma * epsilon}")
 
     def get_rating(doing_o2: bool):

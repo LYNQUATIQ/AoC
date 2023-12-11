@@ -5,7 +5,7 @@ from itertools import product
 
 from utils import flatten, print_time_taken
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day19_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day19_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """42: 9 14 | 10 1

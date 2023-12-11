@@ -5,7 +5,7 @@ import re
 from collections import defaultdict, deque
 from itertools import product
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day05_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day05_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -21,7 +21,6 @@ move 1 from 1 to 2"""
 
 
 def move_crates(arrangement: str, procedures: str, is_9001: bool = False) -> str:
-
     stacks: dict[int, deque[str]] = defaultdict(deque)
 
     # Read arrangement into stacks data structure (dict of deques)

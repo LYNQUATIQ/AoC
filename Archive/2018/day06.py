@@ -6,7 +6,7 @@ import sys
 from itertools import product
 
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day06_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day06_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """1, 1
@@ -18,7 +18,6 @@ sample_input = """1, 1
 
 
 def solve(inputs, d_range):
-
     coords = {tuple(map(int, line.split(", "))) for line in inputs.splitlines()}
     min_x, min_y = min(c[0] for c in coords), min(c[1] for c in coords)
     max_x, max_y = max(c[0] for c in coords) + 1, max(c[1] for c in coords) + 1

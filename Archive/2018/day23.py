@@ -7,7 +7,7 @@ from itertools import product
 
 from utils import print_time_taken
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day23_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day23_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -116,7 +116,7 @@ def solve(inputs):
         cloud.min_y + (cloud.max_y - cloud.min_y) // 2,
         cloud.min_z + (cloud.max_z - cloud.min_z) // 2,
     )
-    radius = 2 ** 32
+    radius = 2**32
     while radius >= 1:
         last_xyz = None
         while xyz != last_xyz:

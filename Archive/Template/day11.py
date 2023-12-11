@@ -13,7 +13,7 @@ from utils import flatten, grouper, powerset, print_time_taken
 
 # log_file = os.path.join(os.path.dirname(__file__), f"logs/day11.log")
 # logging.basicConfig(level=logging.WARNING, filename=log_file, filemode="w")
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day11_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day11_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """sample"""

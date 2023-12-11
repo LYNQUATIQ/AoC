@@ -7,7 +7,7 @@ import sys
 from collections import deque
 
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day05_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day05_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """dabAcCaCBAcCcaDA"""

@@ -6,7 +6,7 @@ from collections import defaultdict
 
 from utils import print_time_taken
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day09_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day09_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """10 players; last marble is worth 1618 points"""

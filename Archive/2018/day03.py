@@ -5,7 +5,7 @@ import re
 from collections import defaultdict
 from itertools import product
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day03_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day03_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """#1 @ 1,3: 4x4
@@ -16,7 +16,6 @@ REGEX = r"^#(?P<id>\d+) @ (?P<x>\d+),(?P<y>\d+): (?P<w>\d+)x(?P<h>\d+)$"
 
 
 def solve(inputs):
-
     cloth = defaultdict(int)
     claims = {}
 

@@ -2,7 +2,7 @@ import os
 
 from collections import Counter
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day10_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day10_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """16

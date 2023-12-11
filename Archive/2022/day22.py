@@ -3,7 +3,7 @@ import os
 
 from itertools import product
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day22_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day22_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -51,7 +51,7 @@ class ForceFieldBoard:
                 self.layout.append((x, y))
 
         self.faces = []
-        for (offset_x, offset_y) in self.layout:
+        for offset_x, offset_y in self.layout:
             x, y = offset_x * self.face_size, offset_y * self.face_size
             self.faces.append(
                 [
@@ -100,7 +100,6 @@ class ForceFieldBoard:
         face, x, y, heading = 0, 0, 0, EAST
         i, finished = 0, False
         while not finished:
-
             # Check if we're turning
             if instructions[i] in "LR":
                 heading = TURN[instructions[i]][heading]

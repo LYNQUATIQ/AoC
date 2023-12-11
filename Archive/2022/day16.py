@@ -6,7 +6,7 @@ from heapq import heappop, heappush
 
 from tqdm import tqdm
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day16_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day16_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -66,7 +66,7 @@ def parse_inputs(
     }
     valve_distances |= {"AA": find_shortest_paths("AA", valves_to_open)}
 
-    flag_map: dict[str, int] = {v: 2 ** i for i, v in enumerate(valves_to_open)}
+    flag_map: dict[str, int] = {v: 2**i for i, v in enumerate(valves_to_open)}
     flag_map["AA"] = 0
     target_valves = (2 ** len(valves_to_open)) - 1
     flows = {flag_map[v]: f for v, f in flow_rates.items() if f > 0}
@@ -83,7 +83,6 @@ def max_release(
     targets: int,
     max_time: int = 30,
 ) -> int:
-
     # Do an a* search
     initial_state = (0, 0, 0, targets)
     visited: set[State] = set()
@@ -96,7 +95,7 @@ def max_release(
         visited.add(state)
 
         possible_moves = [(d, v) for v, d in distances[valve].items() if v & to_open]
-        for (steps, next_valve) in possible_moves:
+        for steps, next_valve in possible_moves:
             if current_time + steps > max_time:
                 continue
 
@@ -127,7 +126,6 @@ def max_release(
 
 
 def solve(inputs: str) -> None:
-
     distances, flow_rates, targets = parse_inputs(inputs)
 
     print(f"Part 1: {max_release(distances, flow_rates, targets, 30)}")

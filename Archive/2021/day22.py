@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from itertools import chain, product
 
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day22_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day22_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """on x=-5..47,y=-31..22,z=-19..33

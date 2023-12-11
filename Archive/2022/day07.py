@@ -6,7 +6,7 @@ import os
 from abc import ABC, abstractmethod
 from typing import cast
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day07_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day07_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -67,13 +67,11 @@ class File(FileSystemObject):
 
 
 def solve(inputs: str) -> None:
-
     root = Directory(container=None, name="/")
     current = root
     all_directories = {root}
 
     for command in inputs.split("$ "):
-
         if command.startswith("cd"):
             _, target = command.split()
             if target == "/":

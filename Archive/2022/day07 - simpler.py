@@ -5,7 +5,7 @@ import os
 
 from typing import Optional
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day07_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day07_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -46,13 +46,11 @@ class Directory:
 
 
 def solve(inputs: str) -> None:
-
     root = Directory()
     all_directories: set[Directory] = {root}
 
     current = root
     for command in inputs.split("$ "):
-
         if command.startswith("cd"):
             _, target = command.split()
             if target == "/":

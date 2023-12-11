@@ -1,7 +1,7 @@
 """https://adventofcode.com/2022/day/10"""
 import os
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day10_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day10_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -157,7 +157,6 @@ LIT, DARK = "\u2588", " "
 
 
 def solve(inputs: str) -> None:
-
     x_register, cycle, signal_strength = 1, 0, 0
     raster = ""
 

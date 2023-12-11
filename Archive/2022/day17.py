@@ -1,7 +1,7 @@
 """https://adventofcode.com/2022/day/17"""
 import os
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day17_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day17_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -31,19 +31,20 @@ def play_tetris(puffs: str, number_of_rocks: int) -> int:
         rocks += 1
         shape = list(SHAPES[shape_index])
         shape_index = (shape_index + 1) % shape_cycle
-        
+
         i = 4 - len(shape)
         while True:
-            
             # Try moving left/right making sure we don't move into an edge
             puff = puffs[puff_index]
             puff_index = (puff_index + 1) % puff_cycle
             match puff:
-                case '>': shifted, edge = [x // 2 for x in shape], 1
-                case '<': shifted, edge = [x * 2 for x in shape], 256
+                case ">":
+                    shifted, edge = [x // 2 for x in shape], 1
+                case "<":
+                    shifted, edge = [x * 2 for x in shape], 256
             if not any((s & edge) or (s & c) for s, c in zip(shifted, chamber[i:])):
                 shape = shifted
-                
+
             # Try moving down - break out if we hit any rocks in the cavern
             if any((s & c) for s, c in zip(shape, chamber[i + 1 :])):
                 break

@@ -4,7 +4,7 @@ import os
 from itertools import cycle
 from collections import defaultdict
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day23_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day23_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -30,7 +30,6 @@ CHECKS = {N: (N, NE, NW), S: (S, SE, SW), W: (W, NW, SW), E: (E, NE, SE)}
 
 
 def solve(inputs: str) -> None:
-
     elves: set[complex] = set()
     for y, row in enumerate(inputs.splitlines()):
         for x, c in enumerate(row):

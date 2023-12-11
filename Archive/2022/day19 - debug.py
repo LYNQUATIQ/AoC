@@ -7,7 +7,7 @@ from contextlib import redirect_stdout
 
 from utils import print_time_taken
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day19_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day19_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -103,7 +103,6 @@ def print_path(blueprint, g_scores, prior_states, max_time) -> None:
                 f"Spend {ore_costs[bot_to_build]} ore{extra} to start building a {elem[bot_to_build]} robot."
             )
         for i in ELEMENTS:
-
             if bots[i] > 0:
                 e = elem[i]
                 print(

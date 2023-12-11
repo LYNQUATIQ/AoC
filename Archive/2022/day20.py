@@ -4,7 +4,7 @@ import os
 
 from functools import lru_cache
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day20_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day20_input.txt")) as f:
     actual_input = f.read()
 
 

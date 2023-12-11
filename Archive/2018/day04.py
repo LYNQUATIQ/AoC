@@ -4,7 +4,7 @@ import re
 
 from collections import defaultdict, deque
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day04_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day04_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """[1518-11-01 00:00] Guard #10 begins shift
@@ -32,7 +32,6 @@ GUARD_REGX = r"^Guard #(?P<guard>\d+) begins shift$"
 
 
 def solve(inputs):
-
     comments = []
     for line in inputs.splitlines():
         match = re.match(REGEX, line)

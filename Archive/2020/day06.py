@@ -3,7 +3,7 @@ import string
 
 from collections import defaultdict
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day06_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day06_input.txt")) as f:
     actual_input = f.read()
 
 sample_input = """
@@ -25,7 +25,6 @@ b"""
 
 
 def solve(inputs, questions=string.ascii_lowercase):
-
     responses = []
     for line in inputs.split("\n"):
         if not responses or line == "":

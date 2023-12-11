@@ -6,7 +6,7 @@ import re
 from functools import reduce
 from itertools import product
 
-with open(os.path.join(os.path.dirname(__file__), f"inputs/day18_input.txt")) as f:
+with open(os.path.join(os.path.dirname(__file__), "inputs/day18_input.txt")) as f:
     actual_input = f.read()
 
 
@@ -34,25 +34,25 @@ class SnailfishNumber:
 
         self.left = int(left) if left.isdigit() else SnailfishNumber(left, self)
         self.right = int(right) if right.isdigit() else SnailfishNumber(right, self)
-        
+
     def __repr__(self) -> str:
-        return f'[{self.left},{self.right}]'
+        return f"[{self.left},{self.right}]"
 
     def __add__(self, other):
-        return SnailfishNumber(f'[{self},{other}]').reduce()
-    
+        return SnailfishNumber(f"[{self},{other}]").reduce()
+
     @staticmethod
     def _parse_input(input_string):
         bracket_count = 0
         for i, c in enumerate(input_string):
             match c:
-                case '[':
-                    bracket_count +=1
-                case ']':
-                    bracket_count -=1
-                case ',':
-                    if bracket_count==1:
-                        return (input_string[1:i],input_string[i+1:-1])
+                case "[":
+                    bracket_count += 1
+                case "]":
+                    bracket_count -= 1
+                case ",":
+                    if bracket_count == 1:
+                        return (input_string[1:i], input_string[i + 1 : -1])
         raise ValueError
 
     @property
@@ -60,10 +60,10 @@ class SnailfishNumber:
         return 0 if self.parent is None else self.parent.depth + 1
 
     @property
-    def magnitude(self)-> int:
+    def magnitude(self) -> int:
         _magnitude = lambda x: x if isinstance(x, int) else x.magnitude
         return 3 * _magnitude(self.left) + 2 * _magnitude(self.right)
-    
+
     def depth_four(self):
         if self.depth == 4:
             return self
@@ -77,23 +77,23 @@ class SnailfishNumber:
     def ordered_ints(self, limit=-1):
         left, right = None, None
         if isinstance(self.left, int):
-            left = [(self,True)] if self.left > limit else []
+            left = [(self, True)] if self.left > limit else []
         else:
             left = self.left.ordered_ints(limit)
         if isinstance(self.right, int):
-            right = [(self,False)] if self.right > limit else []
+            right = [(self, False)] if self.right > limit else []
         else:
             right = self.right.ordered_ints(limit)
         return left + right
-    
+
     def above_nine(self):
         retval = self.ordered_ints(9)
         return retval[0][0] if retval else None
 
     @staticmethod
-    def split(v:int, parent: SnailfishNumber)->SnailfishNumber:
-        return SnailfishNumber(f'[{v//2},{(v+1)//2}]', parent)
-    
+    def split(v: int, parent: SnailfishNumber) -> SnailfishNumber:
+        return SnailfishNumber(f"[{v//2},{(v+1)//2}]", parent)
+
     def reduce(self):
         while self.depth_four() or self.above_nine():
             while pair_to_explode := self.depth_four():
@@ -101,7 +101,7 @@ class SnailfishNumber:
                 for i, (node, _) in enumerate(ordered_nodes):
                     if node == pair_to_explode:
                         break
-                left,right = ordered_nodes[:i], ordered_nodes[i+2:]
+                left, right = ordered_nodes[:i], ordered_nodes[i + 2 :]
                 if left:
                     node, lhs = left[-1]
                     if lhs:
@@ -119,24 +119,29 @@ class SnailfishNumber:
                 else:
                     pair_to_explode.parent.right = 0
 
-            if pair_above_nine:=self.above_nine():
+            if pair_above_nine := self.above_nine():
                 if isinstance(pair_above_nine.left, int) and pair_above_nine.left > 9:
-                    pair_above_nine.left = self.split(pair_above_nine.left, pair_above_nine)
+                    pair_above_nine.left = self.split(
+                        pair_above_nine.left, pair_above_nine
+                    )
                 else:
-                    pair_above_nine.right = self.split(pair_above_nine.right, pair_above_nine)
+                    pair_above_nine.right = self.split(
+                        pair_above_nine.right, pair_above_nine
+                    )
         return self
-
 
 
 def solve(inputs):
     numbers = [SnailfishNumber(line) for line in inputs.splitlines()]
-    
+
     print(f"Part 1: {reduce(lambda a,b:a+b, numbers).magnitude}")
 
     magnitude = 0
     for a, b in product(inputs.splitlines(), inputs.splitlines()):
         if a != b:
-            magnitude=max((SnailfishNumber(a)+SnailfishNumber(b)).magnitude,magnitude)
+            magnitude = max(
+                (SnailfishNumber(a) + SnailfishNumber(b)).magnitude, magnitude
+            )
     print(f"Part 2: {magnitude}\n")
 
 
