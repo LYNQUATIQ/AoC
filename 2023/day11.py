@@ -30,8 +30,8 @@ def expand_galaxies(inputs: str, expansion: int = 2) -> set[tuple[int, int]]:
     empty_cols = set(x for x in range(width) if x not in {xy[0] for xy in galaxies})
     return {
         (
-            x + sum([c < x for c in empty_cols]) * (expansion - 1),
-            y + sum([r < y for r in empty_rows]) * (expansion - 1),
+            x + sum(c < x for c in empty_cols) * (expansion - 1),
+            y + sum(r < y for r in empty_rows) * (expansion - 1),
         )
         for x, y in galaxies
     }
@@ -39,15 +39,15 @@ def expand_galaxies(inputs: str, expansion: int = 2) -> set[tuple[int, int]]:
 
 def solve(inputs: str, expansion: int):
     galaxies = expand_galaxies(inputs)
-    distances = [
+    distances = (
         abs(x1 - x2) + abs(y1 - y2) for (x1, y1), (x2, y2) in combinations(galaxies, 2)
-    ]
+    )
     print(f"Part 1: {sum(distances)}")
 
     galaxies = expand_galaxies(inputs, expansion)
-    distances = [
+    distances = (
         abs(x1 - x2) + abs(y1 - y2) for (x1, y1), (x2, y2) in combinations(galaxies, 2)
-    ]
+    )
     print(f"Part 2: {sum(distances)}\n")
 
 
