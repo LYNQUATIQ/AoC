@@ -12,7 +12,7 @@ def solve(inputs):
     values = tuple(map(int, inputs.splitlines()))
 
     print(f"Part 1: {False}")
-    print(f"Part 2: {False}")
+    print(f"Part 2: {False}\n")
 
 
 solve(sample_input)
