@@ -19,35 +19,38 @@ sample_input = """...#......
 #...#....."""
 
 
-def expand_galaxies(inputs: str, expansion: int = 2) -> set[tuple[int, int]]:
+def distance(xy1: tuple[int, int], xy2: tuple[int, int]) -> int:
+    return abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
+
+
+def solve(inputs: str, expansion: int):
     galaxies = set()
     for y, line in enumerate(inputs.splitlines()):
         for x, c in enumerate(line):
             if c == "#":
                 galaxies.add((x, y))
     width, height = x + 1, y + 1
-    empty_rows = set(y for y in range(height) if y not in {xy[1] for xy in galaxies})
-    empty_cols = set(x for x in range(width) if x not in {xy[0] for xy in galaxies})
-    return {
+    empty_cols = set(y for y in range(height) if y not in {xy[1] for xy in galaxies})
+    empty_rows = set(x for x in range(width) if x not in {xy[0] for xy in galaxies})
+
+    expanded_galaxies = {
         (
-            x + sum(c < x for c in empty_cols) * (expansion - 1),
-            y + sum(r < y for r in empty_rows) * (expansion - 1),
+            x + sum(empty_row < x for empty_row in empty_rows),
+            y + sum(empty_col < y for empty_col in empty_cols),
         )
         for x, y in galaxies
     }
-
-
-def solve(inputs: str, expansion: int):
-    galaxies = expand_galaxies(inputs)
-    distances = (
-        abs(x1 - x2) + abs(y1 - y2) for (x1, y1), (x2, y2) in combinations(galaxies, 2)
-    )
+    distances = (distance(xy1, xy2) for xy1, xy2 in combinations(expanded_galaxies, 2))
     print(f"Part 1: {sum(distances)}")
 
-    galaxies = expand_galaxies(inputs, expansion)
-    distances = (
-        abs(x1 - x2) + abs(y1 - y2) for (x1, y1), (x2, y2) in combinations(galaxies, 2)
-    )
+    expanded_galaxies = {
+        (
+            x + sum(empty_row < x for empty_row in empty_rows) * (expansion - 1),
+            y + sum(empty_col < y for empty_col in empty_cols) * (expansion - 1),
+        )
+        for x, y in galaxies
+    }
+    distances = (distance(xy1, xy2) for xy1, xy2 in combinations(expanded_galaxies, 2))
     print(f"Part 2: {sum(distances)}\n")
 
 
