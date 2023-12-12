@@ -1,6 +1,5 @@
 """https://adventofcode.com/2023/day/12"""
 import os
-
 from functools import cache
 
 
@@ -27,7 +26,7 @@ def parse_condition_record(condition_record: str, groups: tuple[int, ...]) -> in
     if sum(groups) + len(groups) - 1 > len(condition_record):
         return 0
 
-    # Find all the legitimate positions for the first group
+    # Find all the legitimate positions for the first group and recurse teh remainder
     condition_record = "." + condition_record + "."
     group, groups = groups[0], groups[1:]
     i, retval = 0, 0
@@ -46,19 +45,23 @@ def parse_condition_record(condition_record: str, groups: tuple[int, ...]) -> in
 
 
 def solve(inputs):
-    options = 0
-    for line in inputs.splitlines():
-        condition_record, values_string = line.split(" ")
-        values = tuple(int(n) for n in values_string.split(","))
-        options += parse_condition_record(condition_record, values)
+    condition_records = [line.split(" ") for line in inputs.splitlines()]
+
+    options = sum(
+        parse_condition_record(
+            condition_record, tuple(int(n) for n in values.split(","))
+        )
+        for condition_record, values in condition_records
+    )
     print(f"Part 1: {options}")
 
-    options = 0
-    for line in inputs.splitlines():
-        condition_record, values_string = line.split(" ")
-        condition_record = "?".join(r for r in [condition_record] * 5)
-        values = tuple([int(n) for n in values_string.split(",")] * 5)
-        options += parse_condition_record(condition_record, values)
+    options = sum(
+        parse_condition_record(
+            "?".join(r for r in [condition_record] * 5),
+            tuple([int(n) for n in values.split(",")] * 5),
+        )
+        for condition_record, values in condition_records
+    )
     print(f"Part 2: {options}\n")
 
 
