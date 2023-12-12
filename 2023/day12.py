@@ -1,5 +1,6 @@
 """https://adventofcode.com/2023/day/12"""
 import os
+
 from functools import cache
 
 
@@ -17,8 +18,8 @@ sample_input = """???.### 1,1,3
 
 @cache
 def parse_condition_record(condition_record: str, groups: tuple[int, ...]) -> int:
-    # If run out of groups return 0 (infeasible) if we still have damaged springs, or 1
-    # if we can assume the remaining arranagment is all operational
+    # If run out of groups return 0 (infeasible) if we still have damaged springs
+    # (or 1 if we can assume the remaining arranagment is all operational)
     if not groups:
         return int("#" not in condition_record)
 
@@ -26,17 +27,16 @@ def parse_condition_record(condition_record: str, groups: tuple[int, ...]) -> in
     if sum(groups) + len(groups) - 1 > len(condition_record):
         return 0
 
-    # Find all the legitimate positions for the first group and recurse teh remainder
-    condition_record = "." + condition_record + "."
+    # Find all the legitimate start positions of first group and recurse the remainder
     group, groups = groups[0], groups[1:]
+    condition_record = "." + condition_record + "."
     i, retval = 0, 0
     for i, symbol in enumerate(condition_record[: -(group + 2)]):
         if symbol == "#":
             break
-        target_group = condition_record[i + 1 : i + group + 1].replace("?", "#")
         if (
             symbol in ".?"
-            and target_group == "#" * group
+            and condition_record[i + 1 : i + group + 1].replace("?", "#") == "#" * group
             and condition_record[i + group + 1] in ".?"
         ):
             retval += parse_condition_record(condition_record[i + group + 2 :], groups)
