@@ -17,50 +17,45 @@ sample_input = """???.### 1,1,3
 
 
 @cache
-def parse_condition_record(condition_record: str, groups: tuple[int, ...]) -> int:
-    # If we've run out of groups return 0 (infeasible) if we still have damaged springs
-    # (or 1 if we can assume the remaining arranagment is all operational)
-    if not groups:
-        return int("#" not in condition_record)
+def parse_spring_record(record: str, ranges: tuple[int, ...]) -> int:
+    # If we've run out of ranges return 0 (infeasible) if we still have broken springs
+    # (or 1 if we can assume the remaining springs are all operational)
+    if not ranges:
+        return int("#" not in record)
 
-    # If we still have groups left but have consumed too much of the record return 0
-    if sum(groups) + len(groups) - 1 > len(condition_record):
+    # If we still have springs left but have consumed too much of the record return 0
+    if sum(ranges) + len(ranges) - 1 > len(record):
         return 0
 
-    # Find all the legitimate start positions of first group and recurse the remainder
-    group, groups = groups[0], groups[1:]
-    condition_record = "." + condition_record + "."
-    i, retval = 0, 0
-    for i, symbol in enumerate(condition_record[: -(group + 2)]):
+    # Find all the legitimate start positions of first range and recurse the remainder
+    record = "." + record + "."
+    retval = 0
+    for i, symbol in enumerate(record[: -(ranges[0] + 2)]):
         if symbol == "#":
             break
         if (
             symbol in ".?"
-            and condition_record[i + 1 : i + group + 1].replace("?", "#") == "#" * group
-            and condition_record[i + group + 1] in ".?"
+            and record[i + 1 : i + ranges[0] + 1].replace("?", "#") == "#" * ranges[0]
+            and record[i + ranges[0] + 1] in ".?"
         ):
-            retval += parse_condition_record(condition_record[i + group + 2 :], groups)
-        i += 1
+            retval += parse_spring_record(record[i + ranges[0] + 2 :], ranges[1:])
     return retval
 
 
 def solve(inputs):
-    condition_records = [line.split(" ") for line in inputs.splitlines()]
+    record_values = [line.split(" ") for line in inputs.splitlines()]
 
     options = sum(
-        parse_condition_record(
-            condition_record, tuple(int(n) for n in values.split(","))
-        )
-        for condition_record, values in condition_records
+        parse_spring_record(record, tuple(int(n) for n in values.split(",")))
+        for record, values in record_values
     )
     print(f"Part 1: {options}")
 
     options = sum(
-        parse_condition_record(
-            "?".join(r for r in [condition_record] * 5),
-            tuple([int(n) for n in values.split(",")] * 5),
+        parse_spring_record(
+            "?".join([record] * 5), tuple([int(n) for n in values.split(",")] * 5)
         )
-        for condition_record, values in condition_records
+        for record, values in record_values
     )
     print(f"Part 2: {options}\n")
 
