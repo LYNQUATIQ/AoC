@@ -18,7 +18,7 @@ sample_input = """???.### 1,1,3
 
 @cache
 def parse_condition_record(condition_record: str, groups: tuple[int, ...]) -> int:
-    # If run out of groups return 0 (infeasible) if we still have damaged springs
+    # If we've run out of groups return 0 (infeasible) if we still have damaged springs
     # (or 1 if we can assume the remaining arranagment is all operational)
     if not groups:
         return int("#" not in condition_record)
