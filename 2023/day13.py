@@ -26,17 +26,12 @@ sample_input = """#.##..##.
 ASH, ROCK = ".", "#"
 
 
-class NoReflection(Exception):
-    """Raised if no relfection found"""
+def find_v_mirror(pattern: list[str], ignore: int = 0) -> int | None:
+    rows = ["".join(row[x] for row in pattern) for x in range(len(pattern[0]))]
+    return find_h_mirror(rows, ignore)
 
 
-def find_vertical_reflection(pattern: list[str], ignore: int = 0) -> int | None:
-    width = len(pattern[0])
-    rows = ["".join(row[x] for row in pattern) for x in range(width)]
-    return find_horizontal_reflection(rows, ignore)
-
-
-def find_horizontal_reflection(rows: list[str], ignore: int = 0) -> int | None:
+def find_h_mirror(rows: list[str], ignore: int = 0) -> int | None:
     n_rows = len(rows)
     for y in range(1, n_rows):
         if y == ignore:
@@ -50,55 +45,39 @@ def find_horizontal_reflection(rows: list[str], ignore: int = 0) -> int | None:
 def solve(inputs: str):
     patterns = [grid.splitlines() for grid in inputs.split("\n\n")]
 
-    vertical_mirrors, horizonatal_mirrors = [], []
-    reflection_lines = []
+    v_mirrors, h_mirrors, mirrors = [], [], []
     for pattern in patterns:
-        h_mirror = find_horizontal_reflection(pattern)
-        if h_mirror:
-            reflection_lines.append((0, h_mirror))
-            continue
-        v_mirror = find_vertical_reflection(pattern)
-        assert v_mirror is not None
-        reflection_lines.append((v_mirror, 0))
-    vertical_mirrors = sum(m[0] for m in reflection_lines)
-    horizonatal_mirrors = sum(m[1] for m in reflection_lines)
-    print(f"Part 1: {vertical_mirrors + 100 * horizonatal_mirrors}")
+        h_mirror = find_h_mirror(pattern)
+        if h_mirror is not None:
+            mirrors.append((0, h_mirror))
+            h_mirrors.append(h_mirror)
+        else:
+            assert (v_mirror := find_v_mirror(pattern)) is not None
+            mirrors.append((v_mirror, 0))
+            v_mirrors.append(v_mirror)
+    print(f"Part 1: {sum(v_mirrors) + 100 * sum(h_mirrors)}")
 
-    vertical_mirrors, horizonatal_mirrors = [], []
-    for i, pattern in enumerate(patterns):
-        width, height = len(pattern[0]), len(pattern)
-        for x, y in product(range(width), range(height)):
-            if i == 5 and y == 2 and x == 8:
-                breakpoint()
-            corrected_pattern = pattern[:]
-            row = pattern[y]
-            symbol = ASH if row[x] == ROCK else ROCK
-            corrected_pattern[y] = row[:x] + symbol + row[x + 1 :]
-            h_mirror = find_horizontal_reflection(
-                corrected_pattern, reflection_lines[i][1]
-            )
-            if h_mirror and reflection_lines[i] != (0, h_mirror):
-                horizonatal_mirrors.append(h_mirror)
-                print(
-                    f"Corrected ({x}, {y}) for pattern {i} - new horizontal reflection: {h_mirror}  vs {reflection_lines[i]}"
-                )
+    v_mirrors, h_mirrors = [], []
+    for pattern, (original_v_mirror, original_h_mirror) in zip(patterns, mirrors):
+        columns, rows = len(pattern[0]), len(pattern)
+        for x, y in product(range(columns), range(rows)):
+            correct_pattern = pattern[:]
+            correct_symbol = {ASH: ROCK, ROCK: ASH}[pattern[y][x]]
+            correct_pattern[y] = pattern[y][:x] + correct_symbol + pattern[y][x + 1 :]
+            h_mirror = find_h_mirror(correct_pattern, original_h_mirror)
+            if h_mirror is not None:
+                h_mirrors.append(h_mirror)
             else:
-                v_mirror = find_vertical_reflection(
-                    corrected_pattern, reflection_lines[i][0]
-                )
-                if v_mirror and reflection_lines[i] != (v_mirror, 0):
-                    vertical_mirrors.append(v_mirror)
-                    print(
-                        f"Corrected ({x}, {y}) for pattern {i} - new vertical reflection: {v_mirror}  vs {reflection_lines[i]}"
-                    )
+                v_mirror = find_v_mirror(correct_pattern, original_v_mirror)
+                if v_mirror is not None:
+                    v_mirrors.append(v_mirror)
                 else:
                     continue
             break
         else:
-            raise RuntimeError(f"No mirror found for pattern {i}")
-    print(f"Part 2: {sum(vertical_mirrors) + 100 * sum(horizonatal_mirrors)}\n")
+            raise RuntimeError(f"No mirror found for pattern: {pattern}")
+    print(f"Part 2: {sum(v_mirrors) + 100 * sum(h_mirrors)}\n")
 
 
 solve(sample_input)
 solve(actual_input)
-# 33128 is too low
