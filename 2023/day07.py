@@ -46,7 +46,7 @@ def sort_key2(hand: str) -> tuple[int, tuple[int, int, int, int, int]]:
     )
 
 
-def solve(inputs):
+def solve(inputs: str):
     hands = {}
     for line in inputs.splitlines():
         hand, bid = line.split()

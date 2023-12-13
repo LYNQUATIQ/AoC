@@ -42,7 +42,7 @@ def parse_spring_record(record: str, ranges: tuple[int, ...]) -> int:
     return retval
 
 
-def solve(inputs):
+def solve(inputs: str):
     record_values = [line.split(" ") for line in inputs.splitlines()]
 
     options = sum(

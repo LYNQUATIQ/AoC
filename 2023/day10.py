@@ -38,7 +38,7 @@ DIRECTIONS = {
 }
 
 
-def solve(inputs):
+def solve(inputs: str):
     grid: dict[complex, str] = {}
     start: complex | None = None
     for y, line in enumerate(inputs.splitlines()):

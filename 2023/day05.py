@@ -84,7 +84,7 @@ def get_seed_locations(
     return [x[0] for x in list(chain(item_ranges))]
 
 
-def solve(inputs):
+def solve(inputs: str):
     seeds_data, *maps_data = inputs.split("\n\n")
     seeds = [int(n) for n in re.findall(r"\d+", seeds_data)]
     item_maps = [

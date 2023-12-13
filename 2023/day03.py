@@ -33,7 +33,7 @@ def number_neighbours(number: str, xy: Xy) -> list[Xy]:
     )
 
 
-def solve(inputs):
+def solve(inputs: str):
     numbers: dict[Xy, str] = {}
     symbols: dict[Xy, str] = {}
 

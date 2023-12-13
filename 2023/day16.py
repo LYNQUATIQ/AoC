@@ -8,7 +8,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day16_input.txt")) as 
 sample_input = """xxx"""
 
 
-def solve(inputs):
+def solve(inputs: str):
     values = tuple(map(int, inputs.splitlines()))
 
     print(f"Part 1: {False}")

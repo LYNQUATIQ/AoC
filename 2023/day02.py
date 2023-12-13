@@ -17,7 +17,7 @@ RED, GREEN, BLUE = "red", "green", "blue"
 MAX_COUNT = {RED: 12, GREEN: 13, BLUE: 14}
 
 
-def solve(inputs):
+def solve(inputs: str):
     total = 0
     total_power = 0
     for game in inputs.splitlines():

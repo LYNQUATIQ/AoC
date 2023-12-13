@@ -18,7 +18,7 @@ def ways_to_win(time: int, distance: int) -> int:
     return math.floor(root1) - math.floor(root2)
 
 
-def solve(inputs):
+def solve(inputs: str):
     lines = inputs.splitlines()
     times = [int(n) for n in re.findall(r"\d+", lines[0])]
     distances = [int(n) for n in re.findall(r"\d+", lines[1])]

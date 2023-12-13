@@ -17,7 +17,7 @@ def extrapolate(values: list[int], back: bool = False) -> int:
     return values[0] - x if back else values[-1] + x
 
 
-def solve(inputs):
+def solve(inputs: str):
     histories = [[int(n) for n in line.split()] for line in inputs.splitlines()]
     print(f"Part 1: {sum(extrapolate(values) for values in histories)}")
     print(f"Part 2: {sum(extrapolate(values, back=True) for values in histories)}\n")
