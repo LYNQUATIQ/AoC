@@ -36,8 +36,7 @@ def find_h_mirror(rows: list[str], ignore: int = 0) -> int | None:
     for y in range(1, n_rows):
         if y == ignore:
             continue
-        rows_to_check = min(n_rows - y, y)
-        if all(rows[y + i] == rows[y - i - 1] for i in range(rows_to_check)):
+        if all(rows[y + i] == rows[y - i - 1] for i in range(min(n_rows - y, y))):
             return y
     return None
 
@@ -47,8 +46,7 @@ def solve(inputs: str):
 
     v_mirrors, h_mirrors, mirrors = [], [], []
     for pattern in patterns:
-        h_mirror = find_h_mirror(pattern)
-        if h_mirror is not None:
+        if (h_mirror := find_h_mirror(pattern)) is not None:
             mirrors.append((0, h_mirror))
             h_mirrors.append(h_mirror)
         else:
@@ -61,19 +59,16 @@ def solve(inputs: str):
     for pattern, (original_v_mirror, original_h_mirror) in zip(patterns, mirrors):
         columns, rows = len(pattern[0]), len(pattern)
         for x, y in product(range(columns), range(rows)):
-            correct_pattern = pattern[:]
-            correct_symbol = {ASH: ROCK, ROCK: ASH}[pattern[y][x]]
-            correct_pattern[y] = pattern[y][:x] + correct_symbol + pattern[y][x + 1 :]
-            h_mirror = find_h_mirror(correct_pattern, original_h_mirror)
-            if h_mirror is not None:
+            new_pattern = pattern[:]
+            exchanged_symbol = {ASH: ROCK, ROCK: ASH}[pattern[y][x]]
+            new_pattern[y] = pattern[y][:x] + exchanged_symbol + pattern[y][x + 1 :]
+            h_mirror = find_h_mirror(new_pattern, original_h_mirror)
+            if (h_mirror := find_h_mirror(new_pattern, original_h_mirror)) is not None:
                 h_mirrors.append(h_mirror)
-            else:
-                v_mirror = find_v_mirror(correct_pattern, original_v_mirror)
-                if v_mirror is not None:
-                    v_mirrors.append(v_mirror)
-                else:
-                    continue
-            break
+                break
+            if (v_mirror := find_v_mirror(new_pattern, original_v_mirror)) is not None:
+                v_mirrors.append(v_mirror)
+                break
         else:
             raise RuntimeError(f"No mirror found for pattern: {pattern}")
     print(f"Part 2: {sum(v_mirrors) + 100 * sum(h_mirrors)}\n")
