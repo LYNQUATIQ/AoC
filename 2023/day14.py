@@ -18,7 +18,7 @@ O.#..O.#.#
 #....###..
 #OO..#...."""
 
-BOULDER, SPACE, ROCK = "O", ".", "#"
+BOULDER, ROCK, SPACE = "O", "#", "."
 
 
 @cache
@@ -33,13 +33,11 @@ def tilt(rows: tuple[str]) -> tuple[str]:
             while y < height and grid[y][x] == SPACE:
                 last_space = y if last_space is None else last_space
                 y += 1
-            if y != height:
-                if grid[y][x] == ROCK or last_space is None:
-                    last_space = None
-                    continue
-                grid[last_space][x] = BOULDER
-                grid[y][x] = SPACE
+            if y < height and grid[y][x] == BOULDER and last_space is not None:
+                grid[last_space][x], grid[y][x] = BOULDER, SPACE
                 last_space += 1
+            else:
+                last_space = None
     return tuple("".join(row) for row in grid)
 
 
@@ -47,7 +45,7 @@ def tilt(rows: tuple[str]) -> tuple[str]:
 def cycle(rows: tuple[str]) -> tuple[str]:
     for _ in range(4):
         rows = tilt(rows)
-        rows = tuple("".join(row[::-1]) for row in zip(*rows))  # Rotate clockwise
+        rows = tuple("".join(column[::-1]) for column in zip(*rows))  # Rotate clockwise
     return rows
 
 
@@ -56,9 +54,10 @@ def calculate_load(rows: tuple[str]) -> int:
 
 
 def solve(inputs: str):
-    print(f"Part 1: {calculate_load(tilt(tuple(inputs.splitlines())))}")
-
     rows = tuple(inputs.splitlines())
+
+    print(f"Part 1: {calculate_load(tilt(rows))}")
+
     i, visited, states = 0, {}, [rows]
     while i <= 1_000_000_000:
         i += 1
