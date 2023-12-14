@@ -20,8 +20,6 @@ O.#..O.#.#
 
 BOULDER, SPACE = "O", "."
 
-DEBUG = False
-
 
 @cache
 def tilt(rows: tuple[str]) -> tuple[str]:
@@ -51,23 +49,12 @@ def cycle(rows: tuple[str]) -> tuple[str]:
 
 
 def calculate_load(rows: tuple[str]) -> int:
-    return sum(
-        rank * len(row.replace("#", "").replace(".", ""))
-        for rank, row in enumerate(rows[::-1], 1)
-    )
+    return sum(rank * row.count(BOULDER) for rank, row in enumerate(rows[::-1], 1))
 
 
 def solve(inputs: str):
     rows = tuple(inputs.splitlines())
     print(f"Part 1: {calculate_load(tilt(rows))}")
-
-    # rows = inputs.splitlines()
-    # for i in range(1, 4):
-    #     rows = cycle(rows)
-    #     print(f"After cycle {i}:")
-    #     for row in rows:
-    #         print(row)
-    #     print()
 
     rows = tuple(inputs.splitlines())
     i, visited, states = 0, {}, [rows]
@@ -76,12 +63,9 @@ def solve(inputs: str):
         rows = cycle(rows)
         states.append((rows))
         if (prior_i := visited.get(rows)) is not None:
-            cycle_length = i - prior_i
-            billionth_i = (1_000_000_000 - prior_i) % cycle_length + prior_i
-            rows = states[billionth_i]
+            rows = states[(1_000_000_000 - prior_i) % (i - prior_i) + prior_i]
             break
         visited[rows] = i
-
     print(f"Part 2: {calculate_load(rows)}\n")
 
 
