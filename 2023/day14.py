@@ -18,26 +18,29 @@ O.#..O.#.#
 #....###..
 #OO..#...."""
 
-BOULDER, SPACE = "O", "."
+BOULDER, SPACE, ROCK = "O", ".", "#"
 
 
 @cache
 def tilt(rows: tuple[str]) -> tuple[str]:
-    rows = list(rows)
-    something_rolled = True
-    while something_rolled:
-        something_rolled = False
-        prior_row = rows[0]
-        for y, this_row in enumerate(rows[1:], 1):
-            new_prior_row, new_this_row = "", ""
-            for this_c, prior_c in zip(this_row, prior_row):
-                roll_it = this_c == BOULDER and prior_c == SPACE
-                new_prior_row += BOULDER if roll_it else prior_c
-                new_this_row += SPACE if roll_it else this_c
-                something_rolled |= roll_it
-            rows[y - 1], rows[y] = new_prior_row, new_this_row
-            prior_row = new_this_row
-    return tuple(rows)
+    grid = [list(row) for row in rows]
+    width, height = len(grid[0]), len(grid)
+    for x in range(width):
+        y, last_space = 0, None
+        while y < height:
+            while y < height and grid[y][x] != SPACE:
+                y += 1
+            while y < height and grid[y][x] == SPACE:
+                last_space = y if last_space is None else last_space
+                y += 1
+            if y != height:
+                if grid[y][x] == ROCK or last_space is None:
+                    last_space = None
+                    continue
+                grid[last_space][x] = BOULDER
+                grid[y][x] = SPACE
+                last_space += 1
+    return tuple("".join(row) for row in grid)
 
 
 @cache
