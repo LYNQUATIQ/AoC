@@ -53,16 +53,14 @@ def calculate_load(rows: tuple[str]) -> int:
 
 
 def solve(inputs: str):
-    rows = tuple(inputs.splitlines())
-    print(f"Part 1: {calculate_load(tilt(rows))}")
+    print(f"Part 1: {calculate_load(tilt(tuple(inputs.splitlines())))}")
 
     rows = tuple(inputs.splitlines())
     i, visited, states = 0, {}, [rows]
     while i <= 1_000_000_000:
         i += 1
-        rows = cycle(rows)
-        states.append((rows))
-        if (prior_i := visited.get(rows)) is not None:
+        states.append(rows := cycle(rows))
+        if prior_i := visited.get(rows):
             rows = states[(1_000_000_000 - prior_i) % (i - prior_i) + prior_i]
             break
         visited[rows] = i
