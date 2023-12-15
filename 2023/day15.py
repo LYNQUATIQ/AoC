@@ -10,7 +10,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day15_input.txt")) as 
 sample_input = """rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7"""
 
 
-def hash_value(token: str):
+def hash_value(token: str) -> int:
     return reduce(lambda value, c: (value + ord(c)) * 17 % 256, token, 0)
 
 
