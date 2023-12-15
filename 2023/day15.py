@@ -26,10 +26,12 @@ def solve(inputs: str):
         else:
             label, lens = token.split("=")
             boxes[hash_value(label)][label] = int(lens)
-    focusing_power = 0
-    for box, lenses in boxes.items():
-        for i, lens in enumerate(lenses.values(), 1):
-            focusing_power += (box + 1) * i * lens
+
+    focusing_power = sum(
+        (box + 1) * slot * lens
+        for box, lenses in boxes.items()
+        for slot, lens in enumerate(lenses.values(), 1)
+    )
     print(f"Part 2: {focusing_power}\n")
 
 
