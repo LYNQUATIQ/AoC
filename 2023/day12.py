@@ -18,8 +18,7 @@ sample_input = """???.### 1,1,3
 
 @cache
 def parse_spring_record(record: str, ranges: tuple[int, ...]) -> int:
-    # If we've run out of ranges return 0 (infeasible) if we still have broken springs
-    # (or 1 if we can assume the remaining springs are all operational)
+    # If we've run out of ranges return 0 if we still have broken springs
     if not ranges:
         return int("#" not in record)
 
@@ -27,7 +26,7 @@ def parse_spring_record(record: str, ranges: tuple[int, ...]) -> int:
     if sum(ranges) + len(ranges) - 1 > len(record):
         return 0
 
-    # Find all the legitimate start positions of first range and recurse the remainder
+    # Find all the possible positions for the first range and then recurse the remainder
     record = "." + record + "."
     retval = 0
     for i, symbol in enumerate(record[: -(ranges[0] + 2)]):
