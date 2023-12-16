@@ -32,22 +32,29 @@ DIRECTIONS = {
     (SOUTH, "/"): (WEST,),
     (EAST, "/"): (NORTH,),
     (WEST, "/"): (SOUTH,),
-    (NORTH, chr(92)): (WEST,),
-    (SOUTH, chr(92)): (EAST,),
-    (EAST, chr(92)): (SOUTH,),
-    (WEST, chr(92)): (NORTH,),
+    (NORTH, "\\"): (WEST,),
+    (SOUTH, "\\"): (EAST,),
+    (EAST, "\\"): (SOUTH,),
+    (WEST, "\\"): (NORTH,),
     (NORTH, "."): (NORTH,),
     (SOUTH, "."): (SOUTH,),
     (EAST, "."): (EAST,),
     (WEST, "."): (WEST,),
 }
 
+Location = complex
+Direction = complex
+Beam = tuple[Location, Direction]
+
 
 def solve(inputs: str):
-    grid = inputs.splitlines()
-    width, height = len(grid[0]), len(grid)
+    grid: dict[Location, str] = {}
+    for y, line in enumerate(inputs.splitlines()):
+        for x, c in enumerate(line):
+            grid[complex(x, y)] = c
+    width, height = x + 1, y + 1
 
-    start_beams = set()
+    start_beams: set[Beam] = set()
     for x in range(width):
         start_beams.add((complex(x, -1), SOUTH))
         start_beams.add((complex(x, height), NORTH))
@@ -55,27 +62,27 @@ def solve(inputs: str):
         start_beams.add((complex(-1, y), EAST))
         start_beams.add((complex(width, y), WEST))
 
-    energised = defaultdict(set)
+    energised: dict[Beam, set[Location]] = defaultdict(set)
+
     for start_beam in start_beams:
+        energised_tiles, visited = set(), set()
         beams = {start_beam}
-        visited = set()
         while beams:
             new_beams = set()
             for location, direction in beams:
-                location += direction
-                x, y = int(location.real), int(location.imag)
-                if not (0 <= x < width and 0 <= y < height):
+                new_location = location + direction
+                if new_location not in grid:
                     continue
-                reflector = grid[y][x]
-                energised[start_beam].add(location)
-                for new_direction in DIRECTIONS[(direction, reflector)]:
-                    if (location, new_direction) in visited:
+                energised_tiles.add(new_location)
+                for new_direction in DIRECTIONS[(direction, grid[new_location])]:
+                    new_beam = (new_location, new_direction)
+                    if new_beam in visited:
                         continue
-                    visited.add((location, new_direction))
-                    new_beams.add((location, new_direction))
+                    visited.add(new_beam)
+                    new_beams.add(new_beam)
             beams = new_beams
+        energised[start_beam] = len(energised_tiles)
 
-    energised = {k: len(v) for k, v in energised.items()}
     print(f"Part 1: {energised[(-1, EAST)]}")
     print(f"Part 2: {max(energised.values())}\n")
 
