@@ -45,17 +45,14 @@ DIRECTIONS = {
 }
 
 Grid = list[str]
-Location = tuple[int, int]
-Direction = tuple[int, int]
-Beam = tuple[Location, Direction]
-State = tuple[Beam, Grid]
+Beam = tuple[tuple[int, int], tuple[int, int]]  # Location and direction
 
 
-def process_beam(state: State) -> int:
-    start_beam, grid = state
+def process_beam(state: tuple[Beam, Grid]) -> int:
+    initial_beam, grid = state
     width, height = len(grid[0]), len(grid)
     energised_tiles, visited = set(), set()
-    beams = {start_beam}
+    beams = {initial_beam}
     while beams:
         new_beams = set()
         for location, direction in beams:
@@ -74,7 +71,7 @@ def process_beam(state: State) -> int:
     return len(energised_tiles)
 
 
-def start_beams(grid: Grid) -> Generator[Iterable[State]]:
+def initial_beams(grid: Grid) -> Generator[Iterable[tuple[Beam, Grid]]]:
     width, height = len(grid[0]), len(grid)
     for x in range(width):
         yield ((((x, -1), SOUTH), grid))
@@ -89,7 +86,7 @@ def solve(inputs: str):
     print(f"Part 1: {process_beam((((-1,0), EAST), grid))}")
 
     with Pool(processes=4) as pool:
-        energy_values = list(pool.imap_unordered(process_beam, start_beams(grid)))
+        energy_values = list(pool.imap_unordered(process_beam, initial_beams(grid)))
     print(f"Part 2: {max(energy_values)}\n")
 
 
