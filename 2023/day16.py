@@ -1,6 +1,8 @@
 """https://adventofcode.com/2023/day/16"""
 import os
+from collections.abc import Generator
 from multiprocessing import Pool
+from typing import Iterable
 
 with open(os.path.join(os.path.dirname(__file__), "inputs/day16_input.txt")) as f:
     actual_input = f.read()
@@ -18,7 +20,7 @@ sample_input = r""".|...\....
 ..//.|...."""
 
 
-NORTH, SOUTH, EAST, WEST = -1j, +1j, 1, -1
+NORTH, SOUTH, EAST, WEST = (0, -1), (0, 1), (1, 0), (-1, 0)
 DIRECTIONS = {
     (NORTH, "|"): (NORTH,),
     (SOUTH, "|"): (SOUTH,),
@@ -42,22 +44,27 @@ DIRECTIONS = {
     (WEST, "."): (WEST,),
 }
 
-Location = complex
-Direction = complex
+Grid = list[str]
+Location = tuple[int, int]
+Direction = tuple[int, int]
 Beam = tuple[Location, Direction]
+State = tuple[Beam, Grid]
 
 
-def process_beam(start_beam, grid):
+def process_beam(state: State) -> int:
+    start_beam, grid = state
+    width, height = len(grid[0]), len(grid)
     energised_tiles, visited = set(), set()
     beams = {start_beam}
     while beams:
         new_beams = set()
         for location, direction in beams:
-            new_location = location + direction
-            if new_location not in grid:
+            new_location = (location[0] + direction[0], location[1] + direction[1])
+            x, y = new_location
+            if not (0 <= x < width and 0 <= y < height):
                 continue
             energised_tiles.add(new_location)
-            for new_direction in DIRECTIONS[(direction, grid[new_location])]:
+            for new_direction in DIRECTIONS[(direction, grid[y][x])]:
                 new_beam = (new_location, new_direction)
                 if new_beam in visited:
                     continue
@@ -67,24 +74,22 @@ def process_beam(start_beam, grid):
     return len(energised_tiles)
 
 
+def start_beams(grid: Grid) -> Generator[Iterable[State]]:
+    width, height = len(grid[0]), len(grid)
+    for x in range(width):
+        yield ((((x, -1), SOUTH), grid))
+        yield ((((x, height), NORTH), grid))
+    for y in range(height):
+        yield ((((-1, y), EAST), grid))
+        yield ((((width, y), WEST), grid))
+
+
 def solve(inputs: str):
-    grid: dict[Location, str] = {}
-    for y, line in enumerate(inputs.splitlines()):
-        for x, c in enumerate(line):
-            grid[complex(x, y)] = c
-    width, height = x + 1, y + 1
+    grid = inputs.splitlines()
+    print(f"Part 1: {process_beam((((-1,0), EAST), grid))}")
 
-    print(f"Part 1: {process_beam((-1, EAST), grid)}")
-
-    south_beams = {(complex(x, -1), SOUTH) for x in range(width)}
-    north_beams = {(complex(x, height), NORTH) for x in range(width)}
-    east_beams = {(complex(-1, y), EAST) for y in range(height)}
-    west_beams = {(complex(width, y), EAST) for y in range(height)}
-    start_beams = south_beams | north_beams | east_beams | west_beams
-
-    energy_values = Pool(processes=4).starmap(
-        process_beam, [(start_beam, grid) for start_beam in start_beams]
-    )
+    with Pool(processes=4) as pool:
+        energy_values = list(pool.imap_unordered(process_beam, start_beams(grid)))
     print(f"Part 2: {max(energy_values)}\n")
 
 
