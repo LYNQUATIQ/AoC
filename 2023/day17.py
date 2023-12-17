@@ -25,9 +25,8 @@ sample_input = """2413432311323
 4322674655533"""
 
 
-#  State is a location, next direction
 Xy = tuple[int, int]
-State = tuple[Xy, Xy]
+State = tuple[Xy, Xy]  # State is a location and a next direction
 
 
 class Grid:
@@ -67,7 +66,7 @@ def manhattan_distance(a: Xy, b: Xy) -> int:
 
 def best_path(grid: Grid, max_steps: int, min_steps: int = 1) -> int:
     target = (grid.width - 1, grid.height - 1)
-    start, initial_directions = (0, 0), ((0, 1), (1, 0))
+    start, initial_directions = (0, 0), [(0, 1), (1, 0)]
     initial_states = [(start, direction) for direction in initial_directions]
     to_visit = [(0, initial_state) for initial_state in initial_states]
     heat_losses = {initial_state: 0 for initial_state in initial_states}
@@ -77,11 +76,10 @@ def best_path(grid: Grid, max_steps: int, min_steps: int = 1) -> int:
             return heat_losses[this_state]
         next_states = possible_next_states(this_state, grid, min_steps, max_steps)
         for next_state, additional_heat_loss in next_states:
-            new_location = next_state[0]
             heat_loss = heat_losses[this_state] + additional_heat_loss
             if heat_loss < heat_losses.get(next_state, heat_loss + 1):
                 heat_losses[next_state] = heat_loss
-                f_score = heat_loss + manhattan_distance(new_location, target)
+                f_score = heat_loss + manhattan_distance(next_state[0], target)
                 heappush(to_visit, (f_score, next_state))
     raise RuntimeError("Never got to target")
 
