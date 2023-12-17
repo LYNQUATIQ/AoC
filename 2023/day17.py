@@ -25,9 +25,9 @@ sample_input = """2413432311323
 4322674655533"""
 
 
-#  State is a location, last direction, steps taken in this direction
+#  State is a location, last direction
 Xy = tuple[int, int]
-State = tuple[Xy, int, Xy, int]
+State = tuple[Xy, int, Xy]
 
 
 class Grid:
@@ -44,44 +44,48 @@ class Grid:
 
 def possible_next_states(
     this_state: State, grid: Grid, min_steps: int, max_steps: int
-) -> Generator[Iterable[State]]:
-    xy, current_direction, n_steps = this_state
-    go_back = (current_direction[0] * -1, current_direction[1] * -1)
-    for next_direction in ((0, 1), (0, -1), (1, 0), (-1, 0)):
-        next_xy = (xy[0] + next_direction[0], xy[1] + next_direction[1])
-        next_n_steps = n_steps + 1 if (next_direction == current_direction) else 1
-        if next_direction == go_back:
-            continue
-        if (next_direction != current_direction) and (n_steps < min_steps):
-            continue
-        if (next_direction == current_direction) and (n_steps == max_steps):
-            continue
-        if not grid.is_valid_location(next_xy):
-            continue
-        yield (next_xy, next_direction, next_n_steps)
+) -> Generator[Iterable[tuple[State, int]]]:
+    xy, current_direction = this_state
+    if current_direction == (0, 0):
+        turn_left, turn_right = (1, 0), (0, 1)
+    else:
+        turn_left = (current_direction[1], current_direction[0])
+        turn_right = (current_direction[1] * -1, current_direction[0] * -1)
+    for direction in (turn_left, turn_right):
+        additional_heat_loss = 0
+        new_xy = xy
+        for n_steps in range(max_steps):
+            new_xy = (new_xy[0] + direction[0], new_xy[1] + direction[1])
+            if not grid.is_valid_location(new_xy):
+                break
+            additional_heat_loss += grid.get(new_xy)
+            if n_steps < min_steps - 1:
+                continue
+            next_state = (new_xy, direction)
+            yield (next_state, additional_heat_loss)
 
 
 def manhattan_distance(a: Xy, b: Xy) -> int:
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 
-def best_path(grid: Grid, min_steps: int = 0, max_steps: int = 3) -> int:
+def best_path(grid: Grid, max_steps: int, min_steps: int = 1) -> int:
     target = (grid.width - 1, grid.height - 1)
-    initial_state = ((0, 0), (0, 0), 5)
+    initial_state = ((0, 0), (0, 0))
     to_visit = [(0, initial_state)]
     heat_losses = {initial_state: 0}
     while to_visit:
         _, this_state = heappop(to_visit)
-        if this_state[0] == target and this_state[2] >= min_steps:
+        if this_state[0] in ((7, 0), (7, 4)):
+            pass
+        if this_state[0] == target:
             return heat_losses[this_state]
-
-        for next_state in possible_next_states(this_state, grid, min_steps, max_steps):
+        next_states = possible_next_states(this_state, grid, min_steps, max_steps)
+        for next_state, additional_heat_loss in next_states:
             new_location = next_state[0]
-            heat_loss = heat_losses[this_state] + grid.get(new_location)
+            heat_loss = heat_losses[this_state] + additional_heat_loss
             best_heat_loss_so_far = heat_losses.get(next_state, heat_loss + 1)
-            if heat_loss < best_heat_loss_so_far and next_state not in [
-                i[1] for i in to_visit
-            ]:
+            if heat_loss < best_heat_loss_so_far:
                 heat_losses[next_state] = heat_loss
                 f_score = heat_loss + manhattan_distance(new_location, target)
                 heappush(to_visit, (f_score, next_state))
@@ -90,7 +94,6 @@ def best_path(grid: Grid, min_steps: int = 0, max_steps: int = 3) -> int:
 
 def solve(inputs: str):
     grid = Grid(inputs)
-
     print(f"Part 1: {best_path(grid, max_steps=3)}")
     print(f"Part 2: {best_path(grid, min_steps=4, max_steps=10)}\n")
 
