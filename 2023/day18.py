@@ -20,53 +20,88 @@ U 3 (#a77fa3)
 L 2 (#015232)
 U 2 (#7a21e3)"""
 
-DIRECTIONS = {"U": (0, -1), "D": (0, 1), "L": (-1, 0), "R": (1, 0)}
+DIRECTIONS = {"R": (1, 0), "D": (0, 1), "L": (-1, 0), "U": (0, -1)}
+HEX_DIRECTIONS = {"0": "R", "1": "D", "2": "L", "3": "U"}
+ADJUSTMENTS = {
+    # Changing direction on the interior
+    ("D", "R", "U"): (-1, 0),
+    ("U", "L", "D"): (-1, 0),
+    ("L", "D", "R"): (0, -1),
+    ("R", "U", "L"): (0, -1),
+    # Changing direction on the exterior
+    ("U", "R", "D"): (1, 0),
+    ("D", "L", "U"): (1, 0),
+    ("L", "U", "R"): (0, 1),
+    ("R", "D", "L"): (0, 1),
+    # Continuing in the same direction
+    ("D", "R", "D"): (0, 0),
+    ("U", "R", "U"): (0, 0),
+    ("D", "L", "D"): (0, 0),
+    ("U", "L", "U"): (0, 0),
+    ("R", "D", "R"): (0, 0),
+    ("L", "D", "L"): (0, 0),
+    ("R", "U", "R"): (0, 0),
+    ("L", "U", "L"): (0, 0),
+}
+
+
+def shoelace_area(vertices):
+    x_list = [xy[0] for xy in vertices]
+    y_list = [xy[1] for xy in vertices]
+    a1, a2 = 0, 0
+    x_list.append(x_list[0])
+    y_list.append(y_list[0])
+    for i in range(len(vertices)):
+        a1 += x_list[i] * y_list[i + 1]
+        a2 += y_list[i] * x_list[i + 1]
+    area = abs(a1 - a2) / 2
+    return int(area)
+
+
+def get_vertices(directions, lengths):
+    xy = (0, 0)
+    vertices = []
+    for i, (direction, length) in enumerate(zip(directions, lengths)):
+        dx, dy = DIRECTIONS[direction]
+        try:
+            prior_direction = directions[i - 1]
+        except IndexError:
+            prior_direction = directions[-1]
+        try:
+            next_direction = directions[i + 1]
+        except IndexError:
+            next_direction = directions[0]
+        ax, ay = ADJUSTMENTS[(prior_direction, direction, next_direction)]
+        xy = (xy[0] + dx * (length + ax), xy[1] + dy * (length + ay))
+        vertices.append(xy)
+    assert vertices[-1] == (0, 0)
+    return vertices
+
+
+def get_vertices_part_1(inputs: str):
+    directions, lengths = [], []
+    for line in inputs.splitlines():
+        direction, steps, _ = line.split()
+        directions.append(direction)
+        lengths.append(int(steps))
+    return get_vertices(directions, lengths)
+
+
+def get_vertices_part_2(inputs: str):
+    directions, lengths = [], []
+    for line in inputs.splitlines():
+        _, _, hexadecimal = line.split(" ")
+        steps = int(hexadecimal[2:-2], 16)
+        direction = HEX_DIRECTIONS[hexadecimal[-2:-1]]
+        directions.append(direction)
+        lengths.append(steps)
+    return get_vertices(directions, lengths)
 
 
 def solve(inputs: str):
-    xy = (0, 0)
-    lagoon_edges = {xy: ""}
-    for line in inputs.splitlines():
-        direction, steps, color = line.split()
-        for _ in range(int(steps)):
-            lagoon_edges[xy] = color[1:-1]
-            dx, dy = DIRECTIONS[direction]
-            xy = (xy[0] + dx, xy[1] + dy)
-    min_x = min(xy[0] for xy in lagoon_edges)
-    max_x = max(xy[0] for xy in lagoon_edges)
-    min_y = min(xy[1] for xy in lagoon_edges)
-    max_y = max(xy[1] for xy in lagoon_edges)
-
-    lagoon = set()
-    to_visit = {(1, 1)}
-    while to_visit:
-        xy = to_visit.pop()
-        lagoon.add(xy)
-        for dx, dy in DIRECTIONS.values():
-            next_xy = (xy[0] + dx, xy[1] + dy)
-            if next_xy in lagoon or next_xy in lagoon_edges:
-                continue
-            to_visit.add(next_xy)
-
-    if False:
-        for y in range(min_y - 1, max_y + 2):
-            line = ""
-            for x in range(min_x - 1, max_x + 2):
-                assert not ((x, y) in lagoon_edges and (x, y) in lagoon)
-                xy = (x, y)
-                c = "."
-                if xy in lagoon_edges:
-                    c = "#"
-                if xy in lagoon:
-                    c = "~"
-                line += c
-            print(line)
-        print()
-
-    print(f"Part 1: {len(lagoon_edges)+len(lagoon)}")
-    print(f"Part 2: {False}\n")
+    print(f"Part 1: {shoelace_area(get_vertices_part_1(inputs))}")
+    print(f"Part 2: {shoelace_area(get_vertices_part_2(inputs))}\n")
 
 
 solve(sample_input)
 solve(actual_input)
-# 49321 - WRONG
