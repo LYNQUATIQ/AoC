@@ -46,13 +46,11 @@ ADJUSTMENTS = {
 
 
 def shoelace_area(vertices: list[tuple[int, int]]) -> int:
-    x_list, y_list = [xy[0] for xy in vertices], [xy[1] for xy in vertices]
-    x_list.append(x_list[0])
-    y_list.append(y_list[0])
+    vertices.append(vertices[0])
     a1, a2 = 0, 0
-    for i in range(len(vertices)):
-        a1 += x_list[i] * y_list[i + 1]
-        a2 += y_list[i] * x_list[i + 1]
+    for xy1, xy2 in zip(vertices[:-1], vertices[1:]):
+        a1 += xy1[0] * xy2[1]
+        a2 += xy1[1] * xy2[0]
     return int(abs(a1 - a2) / 2)
 
 
