@@ -45,24 +45,20 @@ ADJUSTMENTS = {
 }
 
 
-def shoelace_area(vertices):
-    x_list = [xy[0] for xy in vertices]
-    y_list = [xy[1] for xy in vertices]
-    a1, a2 = 0, 0
+def shoelace_area(vertices: list[tuple[int, int]]) -> int:
+    x_list, y_list = [xy[0] for xy in vertices], [xy[1] for xy in vertices]
     x_list.append(x_list[0])
     y_list.append(y_list[0])
+    a1, a2 = 0, 0
     for i in range(len(vertices)):
         a1 += x_list[i] * y_list[i + 1]
         a2 += y_list[i] * x_list[i + 1]
-    area = abs(a1 - a2) / 2
-    return int(area)
+    return int(abs(a1 - a2) / 2)
 
 
-def get_vertices(directions, lengths):
-    xy = (0, 0)
-    vertices = []
+def get_vertices(directions: list[str], lengths: list[int]) -> list[tuple[int, int]]:
+    vertices, xy = [], (0, 0)
     for i, (direction, length) in enumerate(zip(directions, lengths)):
-        dx, dy = DIRECTIONS[direction]
         try:
             prior_direction = directions[i - 1]
         except IndexError:
@@ -72,6 +68,7 @@ def get_vertices(directions, lengths):
         except IndexError:
             next_direction = directions[0]
         ax, ay = ADJUSTMENTS[(prior_direction, direction, next_direction)]
+        dx, dy = DIRECTIONS[direction]
         xy = (xy[0] + dx * (length + ax), xy[1] + dy * (length + ay))
         vertices.append(xy)
     assert vertices[-1] == (0, 0)
@@ -90,11 +87,9 @@ def get_vertices_part_1(inputs: str):
 def get_vertices_part_2(inputs: str):
     directions, lengths = [], []
     for line in inputs.splitlines():
-        _, _, hexadecimal = line.split(" ")
-        steps = int(hexadecimal[2:-2], 16)
-        direction = HEX_DIRECTIONS[hexadecimal[-2:-1]]
-        directions.append(direction)
-        lengths.append(steps)
+        _, _, hexadecimal = line.split()
+        directions.append(HEX_DIRECTIONS[hexadecimal[-2:-1]])
+        lengths.append(int(hexadecimal[2:-2], 16))
     return get_vertices(directions, lengths)
 
 
