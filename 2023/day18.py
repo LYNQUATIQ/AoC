@@ -59,14 +59,8 @@ def shoelace_area(vertices: list[tuple[int, int]]) -> int:
 def get_vertices(directions: list[str], lengths: list[int]) -> list[tuple[int, int]]:
     vertices, xy = [], (0, 0)
     for i, (direction, length) in enumerate(zip(directions, lengths)):
-        try:
-            prior_direction = directions[i - 1]
-        except IndexError:
-            prior_direction = directions[-1]
-        try:
-            next_direction = directions[i + 1]
-        except IndexError:
-            next_direction = directions[0]
+        prior_direction = directions[i - 1]
+        next_direction = directions[(i + 1) % len(directions)]
         ax, ay = ADJUSTMENTS[(prior_direction, direction, next_direction)]
         dx, dy = DIRECTIONS[direction]
         xy = (xy[0] + dx * (length + ax), xy[1] + dy * (length + ay))
