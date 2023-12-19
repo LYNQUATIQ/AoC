@@ -1,7 +1,12 @@
 """https://adventofcode.com/2023/day/19"""
+from __future__ import annotations
+
+import math
 import os
 import re
 
+from collections import defaultdict
+from dataclasses import dataclass
 
 with open(os.path.join(os.path.dirname(__file__), "inputs/day19_input.txt")) as f:
     actual_input = f.read()
@@ -25,15 +30,14 @@ hdj{m>838:A,pv}
 {x=2461,m=1339,a=466,s=291}
 {x=2127,m=1623,a=2188,s=1013}"""
 
-COOL = "x"
-MUSICAL = "m"
-AERODYNAMIC = "a"
-SHINY = "s"
 
 REJECTED, ACCEPTED = "R", "A"
 START = "in"
 
 OPERATORS = {">": lambda a, b: a > b, "<": lambda a, b: a < b}
+MIN, MAX = 0, 1
+
+EVERYWHERE = ((1, 4000), (1, 4000), (1, 4000), (1, 4000))
 
 
 def is_accepted(part, workflows) -> bool:
@@ -44,17 +48,60 @@ def is_accepted(part, workflows) -> bool:
             if test is None:
                 break
             category, operator, value = test
-            if operator(part[category], value):
+            if OPERATORS[operator](part[category], value):
                 break
         workflow = next_workflow
     return workflow == ACCEPTED
 
 
+@dataclass(frozen=True)
+class RatingsSpace:
+    """Dataclass for a 4D space representing ranges of ratings"""
+
+    space: tuple[tuple[int, int], tuple[int, int], tuple[int, int], tuple[int, int]]
+
+    @property
+    def combinations(self):
+        """The number of combinations within this space."""
+        return math.prod(r[MAX] + 1 - r[MIN] for r in self.space)
+
+    def intersect(self, other: RatingsSpace) -> RatingsSpace | None:
+        return RatingsSpace(
+            tuple(
+                (
+                    max(self.space[i][MIN], other.space[i][MIN]),
+                    min(self.space[i][MAX], other.space[i][MAX]),
+                )
+                for i in range(4)
+            )
+        )
+
+    def union(self, other: RatingsSpace) -> set[RatingsSpace]:
+        """Returns the set of *disjoint* spaces that represent the union of this space
+        with the other"""
+        disjoint_spaces = set(self)
+        this_space = list(self.space)
+        other.space = other.space
+        for i in range(4):
+            if other.space[i][MIN] < this_space[i][MIN]:
+                new_space = this_space.copy()
+                new_space[i] = (other.space[i][MIN], this_space[i][MIN] - 1)
+                disjoint_spaces.add(RatingsSpace(tuple(new_space)))
+            if other.space[i][MAX] > this_space[i][MAX]:
+                new_space = this_space.copy()
+                new_space[i] = (this_space[i][MAX] + 1, other.space[i][MAX])
+                disjoint_spaces.add(RatingsSpace(tuple(new_space)))
+            this_space[i] = max(this_space[i][MIN], other.space[i][MIN]), min(
+                this_space[i][MAX], other.space[i][MAX]
+            )
+        return disjoint_spaces
+
+
 def solve(inputs: str):
-    workflows_input, parts_input = inputs.split("\n\n")
+    workflow_inputs, part_inputs = inputs.split("\n\n")
 
     workflows = {}
-    for line in workflows_input.splitlines():
+    for line in workflow_inputs.splitlines():
         label, test_inputs = line[:-1].split("{")
         tests = []
         for test_input in test_inputs.split(","):
@@ -62,39 +109,46 @@ def solve(inputs: str):
                 tests.append((None, test_input))
             else:
                 test, destination = test_input.split(":")
-                category, comparison, value = test[0], test[1], int(test[2:])
-                tests.append(((category, OPERATORS[comparison], value), destination))
+                tests.append(
+                    (("xmas".index(test[0]), test[1], int(test[2:])), destination)
+                )
         workflows[label] = tests
 
-    parts = []
-    for line in parts_input.splitlines():
-        values = [int(n) for n in re.findall(r"\d+", line)]
-        categories = re.findall(r"(\w)=", line)
-        parts.append(dict(zip(categories, values)))
-
-    total = sum(sum(part.values()) for part in parts if is_accepted(part, workflows))
+    parts = [
+        tuple(int(n) for n in re.findall(r"\d+", p)) for p in part_inputs.splitlines()
+    ]
+    total = sum(sum(part) for part in parts if is_accepted(part, workflows))
     print(f"Part 1: {total}")
 
-    # state = START
-    # to_visit = {START}
-    # while to_visit:
-    #     workflow = to_visit.pop()
+    ratings_to_get_to: dict[set[RatingsSpace]] = defaultdict(set[RatingsSpace])
+    ratings_to_get_to[START].add(RatingsSpace(EVERYWHERE))
+    to_visit = {START}
+    while to_visit:
+        here = to_visit.pop()
+        tests = workflows.get(here, [])
+        for ratings_to_here in ratings_to_get_to[here]:
+            ratings_to_dest = RatingsSpace(ratings_to_here.space)
+            for test, destination in tests:
+                to_visit.add(destination)
+                if test is None:
+                    ratings_to_get_to[destination].add(ratings_to_dest)
+                    continue
+                category, op, v = test
+                pass_test, fail_test = list(EVERYWHERE), list(EVERYWHERE)
+                pass_r = ((v + 1 if op == ">" else 1), (v - 1 if op == "<" else 4000))
+                fail_r = ((v if op == "<" else 1), (v if op == ">" else 4000))
+                pass_test[category] = pass_r
+                fail_test[category] = fail_r
 
-    print(f"Part 2: {False}\n")
+                pass_cube = ratings_to_dest.intersect(RatingsSpace(pass_test))
+                if pass_cube is not None:
+                    ratings_to_get_to[destination].add(pass_cube)
+                ratings_to_dest = ratings_to_dest.intersect(RatingsSpace(fail_test))
+                if ratings_to_dest is None:
+                    break
+
+    print(f"Part 2: {sum(r.combinations for r in ratings_to_get_to[ACCEPTED])}\n")
 
 
 solve(sample_input)
 solve(actual_input)
-
-"""
-Each of the four ratings (x, m, a, s) can have an integer value ranging from a 
-minimum of 1 to a maximum of 4000. Of all possible distinct combinations of ratings, 
-your job is to figure out which ones will be accepted.
-
-In the above example, there are 167409079868000 distinct combinations of ratings that 
-will be accepted.
-
-Consider only your list of workflows; the list of part ratings that the Elves wanted 
-you to sort is no longer relevant. 
-How many distinct combinations of ratings will be accepted by the Elves' workflows?
-"""
