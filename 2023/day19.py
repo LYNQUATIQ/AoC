@@ -34,21 +34,25 @@ hdj{m>838:A,pv}
 REJECTED, ACCEPTED = "R", "A"
 START = "in"
 
-OPERATORS = {">": lambda a, b: a > b, "<": lambda a, b: a < b}
 MIN, MAX = 0, 1
 
 EVERYWHERE = ((1, 4000), (1, 4000), (1, 4000), (1, 4000))
 
 
-def is_accepted(part, workflows) -> bool:
+Rules = list[tuple[tuple[int, str, int] | None, str]]
+Workflows = dict[str, Rules]
+Part = tuple[int, int, int, int]
+Range = tuple[int, int]
+
+
+def is_accepted(part: Part, workflow_tests: Workflows) -> bool:
     workflow = START
     while workflow not in (REJECTED, ACCEPTED):
-        tests = workflows[workflow]
-        for test, next_workflow in tests:
+        for test, next_workflow in workflow_tests[workflow]:
             if test is None:
                 break
-            category, operator, value = test
-            if OPERATORS[operator](part[category], value):
+            i, op, value = test
+            if (op == "<" and part[i] < value) or (op == ">" and part[i] > value):
                 break
         workflow = next_workflow
     return workflow == ACCEPTED
@@ -58,7 +62,7 @@ def is_accepted(part, workflows) -> bool:
 class RatingsSpace:
     """Dataclass for a 4D space representing ranges of ratings"""
 
-    space: tuple[tuple[int, int], tuple[int, int], tuple[int, int], tuple[int, int]]
+    space: tuple[Range, Range, Range, Range]
 
     @property
     def combinations(self):
@@ -77,20 +81,18 @@ class RatingsSpace:
         )
 
     def union(self, other: RatingsSpace) -> set[RatingsSpace]:
-        """Returns the set of *disjoint* spaces that represent the union of this space
-        with the other"""
+        """The set of *disjoint* spaces representing the union of this space and other"""
         disjoint_spaces = set(self)
         this_space = list(self.space)
-        other.space = other.space
         for i in range(4):
             if other.space[i][MIN] < this_space[i][MIN]:
-                new_space = this_space.copy()
+                new_space = this_space
                 new_space[i] = (other.space[i][MIN], this_space[i][MIN] - 1)
-                disjoint_spaces.add(RatingsSpace(tuple(new_space)))
+                disjoint_spaces.add(RatingsSpace(new_space))
             if other.space[i][MAX] > this_space[i][MAX]:
-                new_space = this_space.copy()
+                new_space = this_space
                 new_space[i] = (this_space[i][MAX] + 1, other.space[i][MAX])
-                disjoint_spaces.add(RatingsSpace(tuple(new_space)))
+                disjoint_spaces.add(RatingsSpace(new_space))
             this_space[i] = max(this_space[i][MIN], other.space[i][MIN]), min(
                 this_space[i][MAX], other.space[i][MAX]
             )
@@ -98,26 +100,21 @@ class RatingsSpace:
 
 
 def solve(inputs: str):
-    workflow_inputs, part_inputs = inputs.split("\n\n")
+    workflow_data, parts_data = (data.splitlines() for data in inputs.split("\n\n"))
 
-    workflows = {}
-    for line in workflow_inputs.splitlines():
-        label, test_inputs = line[:-1].split("{")
+    workflow_tests = {}
+    for label, test_data in (w[:-1].split("{") for w in workflow_data):
         tests = []
-        for test_input in test_inputs.split(","):
-            if ":" not in test_input:
+        for test_input in test_data.split(","):
+            if (match := re.match(r"([(xmas])([<>])(\d+):(\w+)", test_input)) is None:
                 tests.append((None, test_input))
             else:
-                test, destination = test_input.split(":")
-                tests.append(
-                    (("xmas".index(test[0]), test[1], int(test[2:])), destination)
-                )
-        workflows[label] = tests
+                category, op, value, destination = match.groups()
+                tests.append((("xmas".index(category), op, int(value)), destination))
+        workflow_tests[label] = tests
 
-    parts = [
-        tuple(int(n) for n in re.findall(r"\d+", p)) for p in part_inputs.splitlines()
-    ]
-    total = sum(sum(part) for part in parts if is_accepted(part, workflows))
+    parts = [tuple(int(n) for n in re.findall(r"\d+", p)) for p in parts_data]
+    total = sum(sum(part) for part in parts if is_accepted(part, workflow_tests))
     print(f"Part 1: {total}")
 
     ratings_to_get_to: dict[set[RatingsSpace]] = defaultdict(set[RatingsSpace])
@@ -125,26 +122,29 @@ def solve(inputs: str):
     to_visit = {START}
     while to_visit:
         here = to_visit.pop()
-        tests = workflows.get(here, [])
+        tests = workflow_tests.get(here, [])
         for ratings_to_here in ratings_to_get_to[here]:
-            ratings_to_dest = RatingsSpace(ratings_to_here.space)
+            ratings_to_next = RatingsSpace(ratings_to_here.space)
             for test, destination in tests:
                 to_visit.add(destination)
                 if test is None:
-                    ratings_to_get_to[destination].add(ratings_to_dest)
+                    ratings_to_get_to[destination].add(ratings_to_next)
                     continue
-                category, op, v = test
-                pass_test, fail_test = list(EVERYWHERE), list(EVERYWHERE)
-                pass_r = ((v + 1 if op == ">" else 1), (v - 1 if op == "<" else 4000))
-                fail_r = ((v if op == "<" else 1), (v if op == ">" else 4000))
-                pass_test[category] = pass_r
-                fail_test[category] = fail_r
+                i, op, v = test
+                pass_ratings, fail_ratings = list(EVERYWHERE), list(EVERYWHERE)
+                ratings_i = (
+                    (v + 1 if op == ">" else 1),
+                    (v - 1 if op == "<" else 4000),
+                )
+                pass_ratings[i] = ratings_i
+                fail_ratings_i = ((v if op == "<" else 1), (v if op == ">" else 4000))
+                fail_ratings[i] = fail_ratings_i
 
-                pass_cube = ratings_to_dest.intersect(RatingsSpace(pass_test))
-                if pass_cube is not None:
-                    ratings_to_get_to[destination].add(pass_cube)
-                ratings_to_dest = ratings_to_dest.intersect(RatingsSpace(fail_test))
-                if ratings_to_dest is None:
+                dest_ratings = ratings_to_next.intersect(RatingsSpace(pass_ratings))
+                if dest_ratings is not None:
+                    ratings_to_get_to[destination].add(dest_ratings)
+                ratings_to_next = ratings_to_next.intersect(RatingsSpace(fail_ratings))
+                if ratings_to_next is None:
                     break
 
     print(f"Part 2: {sum(r.combinations for r in ratings_to_get_to[ACCEPTED])}\n")
