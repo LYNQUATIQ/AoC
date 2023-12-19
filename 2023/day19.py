@@ -1,15 +1,12 @@
 """https://adventofcode.com/2023/day/19"""
-from __future__ import annotations
-
 import math
 import os
 import re
-
 from collections import defaultdict
+from typing import Sequence
 
 with open(os.path.join(os.path.dirname(__file__), "inputs/day19_input.txt")) as f:
     actual_input = f.read()
-
 
 sample_input = """px{a<2006:qkq,m>2090:A,rfg}
 pv{a>1716:R,A}
@@ -30,93 +27,82 @@ hdj{m>838:A,pv}
 {x=2127,m=1623,a=2188,s=1013}"""
 
 
-REJECTED, ACCEPTED = "R", "A"
-START = "in"
+REJECTED, ACCEPTED, START = "R", "A", "in"
+ALL_COMBINATIONS = ((1, 4000), (1, 4000), (1, 4000), (1, 4000))
 
-MIN, MAX = 0, 1
-
-EVERYWHERE = ((1, 4000), (1, 4000), (1, 4000), (1, 4000))
-
-
-Rules = list[tuple[tuple[int, str, int] | None, str]]
-Workflows = dict[str, Rules]
-Part = tuple[int, int, int, int]
-Space = tuple[tuple[int, int], tuple[int, int], tuple[int, int], tuple[int, int]]
+Workflows = dict[str, Sequence[tuple[tuple[int, str, int] | None, str]]]
+Combo = Sequence[tuple[int, int]]
 
 
-def is_accepted(part: Part, workflow_tests: Workflows) -> bool:
+def part_accepted(part: Sequence[int], workflow_rules: Workflows) -> bool:
     workflow = START
     while workflow not in (REJECTED, ACCEPTED):
-        for test, next_workflow in workflow_tests[workflow]:
-            if test is None:
+        for rule, next_workflow in workflow_rules[workflow]:
+            if rule is None:
                 break
-            i, op, value = test
-            if (op == "<" and part[i] < value) or (op == ">" and part[i] > value):
+            category, gt_lt, bound = rule
+            if {"<": part[category] < bound, ">": part[category] > bound}[gt_lt]:
                 break
         workflow = next_workflow
     return workflow == ACCEPTED
 
 
-def space_volume(space: Space) -> int:
-    return math.prod(r[MAX] + 1 - r[MIN] for r in space)
+def combo_volume(combo: Combo) -> int:
+    return math.prod(max_bound + 1 - min_bound for min_bound, max_bound in combo)
 
 
-def space_intersect(this: Space, other: Space) -> Space:
+def combo_intersect(this: Combo, other: Combo) -> Combo:
     return tuple(
-        (max(this[i][MIN], other[i][MIN]), min(this[i][MAX], other[i][MAX]))
-        for i in range(4)
+        (max(min_this, min_other), min(max_this, max_other))
+        for (min_this, max_this), (min_other, max_other) in zip(this, other)
     )
 
 
 def solve(inputs: str):
-    workflow_data, parts_data = (data.splitlines() for data in inputs.split("\n\n"))
+    workflows_data, parts_data = (data.splitlines() for data in inputs.split("\n\n"))
 
-    workflow_tests = {}
-    for label, test_data in (w[:-1].split("{") for w in workflow_data):
-        tests = []
-        for test_input in test_data.split(","):
-            if (match := re.match(r"([(xmas])([<>])(\d+):(\w+)", test_input)) is None:
-                tests.append((None, test_input))
+    workflow_rules = {}
+    for label, rules_data in (w[:-1].split("{") for w in workflows_data):
+        rules = []
+        for rule_input in rules_data.split(","):
+            if match := re.match(r"([(xmas])([<>])(\d+):(\w+)", rule_input):
+                category, gt_lt, bound, destination = match.groups()
+                rules.append((("xmas".index(category), gt_lt, int(bound)), destination))
             else:
-                category, op, value, destination = match.groups()
-                tests.append((("xmas".index(category), op, int(value)), destination))
-        workflow_tests[label] = tests
+                rules.append((None, rule_input))
+        workflow_rules[label] = rules
 
     parts = [tuple(int(n) for n in re.findall(r"\d+", p)) for p in parts_data]
-    total = sum(sum(part) for part in parts if is_accepted(part, workflow_tests))
+    total = sum(sum(part) for part in parts if part_accepted(part, workflow_rules))
     print(f"Part 1: {total}")
 
-    ratings_to_get_to = defaultdict(set[Space])
-    ratings_to_get_to[START].add(EVERYWHERE)
+    combos_to = defaultdict(set[Combo], {START: {ALL_COMBINATIONS}})
     to_visit = {START}
     while to_visit:
-        here = to_visit.pop()
-        tests = workflow_tests.get(here, [])
-        for ratings_to_here in ratings_to_get_to[here]:
-            ratings_to_next = ratings_to_here
-            for test, destination in tests:
-                to_visit.add(destination)
-                if test is None:
-                    ratings_to_get_to[destination].add(ratings_to_next)
+        this_workflow = to_visit.pop()
+        rules = workflow_rules.get(this_workflow, [])
+        for combo_here in combos_to[this_workflow]:
+            for rule, next_workflow in rules:
+                to_visit.add(next_workflow)
+                if rule is None:
+                    combos_to[next_workflow].add(combo_here)
                     continue
-                i, op, v = test
-                pass_ratings, fail_ratings = list(EVERYWHERE), list(EVERYWHERE)
-                ratings_i = (
-                    (v + 1 if op == ">" else 1),
-                    (v - 1 if op == "<" else 4000),
+                category, gt_lt, x = rule
+                pass_combo, fail_combo = list(ALL_COMBINATIONS), list(ALL_COMBINATIONS)
+                pass_combo[category] = tuple(
+                    (x + 1 if gt_lt == ">" else 1), (x - 1 if gt_lt == "<" else 4000)
                 )
-                pass_ratings[i] = ratings_i
-                fail_ratings_i = ((v if op == "<" else 1), (v if op == ">" else 4000))
-                fail_ratings[i] = fail_ratings_i
-
-                dest_ratings = space_intersect(ratings_to_next, tuple(pass_ratings))
-                if dest_ratings is not None:
-                    ratings_to_get_to[destination].add(dest_ratings)
-                ratings_to_next = space_intersect(ratings_to_next, tuple(fail_ratings))
-                if ratings_to_next is None:
+                fail_combo[category] = tuple(
+                    (x if gt_lt == "<" else 1), (x if gt_lt == ">" else 4000)
+                )
+                next_combo = combo_intersect(combo_here, pass_combo)
+                if next_combo is not None:
+                    combos_to[next_workflow].add(next_combo)
+                combo_here = combo_intersect(combo_here, fail_combo)
+                if combo_here is None:
                     break
 
-    print(f"Part 2: {sum(space_volume(r) for r in ratings_to_get_to[ACCEPTED])}\n")
+    print(f"Part 2: {sum(combo_volume(r) for r in combos_to[ACCEPTED])}\n")
 
 
 solve(sample_input)
