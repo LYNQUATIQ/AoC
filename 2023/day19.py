@@ -6,7 +6,6 @@ import os
 import re
 
 from collections import defaultdict
-from dataclasses import dataclass
 
 with open(os.path.join(os.path.dirname(__file__), "inputs/day19_input.txt")) as f:
     actual_input = f.read()
@@ -42,7 +41,7 @@ EVERYWHERE = ((1, 4000), (1, 4000), (1, 4000), (1, 4000))
 Rules = list[tuple[tuple[int, str, int] | None, str]]
 Workflows = dict[str, Rules]
 Part = tuple[int, int, int, int]
-Range = tuple[int, int]
+Space = tuple[tuple[int, int], tuple[int, int], tuple[int, int], tuple[int, int]]
 
 
 def is_accepted(part: Part, workflow_tests: Workflows) -> bool:
@@ -58,45 +57,15 @@ def is_accepted(part: Part, workflow_tests: Workflows) -> bool:
     return workflow == ACCEPTED
 
 
-@dataclass(frozen=True)
-class RatingsSpace:
-    """Dataclass for a 4D space representing ranges of ratings"""
+def space_volume(space: Space) -> int:
+    return math.prod(r[MAX] + 1 - r[MIN] for r in space)
 
-    space: tuple[Range, Range, Range, Range]
 
-    @property
-    def combinations(self):
-        """The number of combinations within this space."""
-        return math.prod(r[MAX] + 1 - r[MIN] for r in self.space)
-
-    def intersect(self, other: RatingsSpace) -> RatingsSpace | None:
-        return RatingsSpace(
-            tuple(
-                (
-                    max(self.space[i][MIN], other.space[i][MIN]),
-                    min(self.space[i][MAX], other.space[i][MAX]),
-                )
-                for i in range(4)
-            )
-        )
-
-    def union(self, other: RatingsSpace) -> set[RatingsSpace]:
-        """The set of *disjoint* spaces representing the union of this space and other"""
-        disjoint_spaces = set(self)
-        this_space = list(self.space)
-        for i in range(4):
-            if other.space[i][MIN] < this_space[i][MIN]:
-                new_space = this_space
-                new_space[i] = (other.space[i][MIN], this_space[i][MIN] - 1)
-                disjoint_spaces.add(RatingsSpace(new_space))
-            if other.space[i][MAX] > this_space[i][MAX]:
-                new_space = this_space
-                new_space[i] = (this_space[i][MAX] + 1, other.space[i][MAX])
-                disjoint_spaces.add(RatingsSpace(new_space))
-            this_space[i] = max(this_space[i][MIN], other.space[i][MIN]), min(
-                this_space[i][MAX], other.space[i][MAX]
-            )
-        return disjoint_spaces
+def space_intersect(this: Space, other: Space) -> Space:
+    return tuple(
+        (max(this[i][MIN], other[i][MIN]), min(this[i][MAX], other[i][MAX]))
+        for i in range(4)
+    )
 
 
 def solve(inputs: str):
@@ -117,14 +86,14 @@ def solve(inputs: str):
     total = sum(sum(part) for part in parts if is_accepted(part, workflow_tests))
     print(f"Part 1: {total}")
 
-    ratings_to_get_to: dict[set[RatingsSpace]] = defaultdict(set[RatingsSpace])
-    ratings_to_get_to[START].add(RatingsSpace(EVERYWHERE))
+    ratings_to_get_to = defaultdict(set[Space])
+    ratings_to_get_to[START].add(EVERYWHERE)
     to_visit = {START}
     while to_visit:
         here = to_visit.pop()
         tests = workflow_tests.get(here, [])
         for ratings_to_here in ratings_to_get_to[here]:
-            ratings_to_next = RatingsSpace(ratings_to_here.space)
+            ratings_to_next = ratings_to_here
             for test, destination in tests:
                 to_visit.add(destination)
                 if test is None:
@@ -140,14 +109,14 @@ def solve(inputs: str):
                 fail_ratings_i = ((v if op == "<" else 1), (v if op == ">" else 4000))
                 fail_ratings[i] = fail_ratings_i
 
-                dest_ratings = ratings_to_next.intersect(RatingsSpace(pass_ratings))
+                dest_ratings = space_intersect(ratings_to_next, tuple(pass_ratings))
                 if dest_ratings is not None:
                     ratings_to_get_to[destination].add(dest_ratings)
-                ratings_to_next = ratings_to_next.intersect(RatingsSpace(fail_ratings))
+                ratings_to_next = space_intersect(ratings_to_next, tuple(fail_ratings))
                 if ratings_to_next is None:
                     break
 
-    print(f"Part 2: {sum(r.combinations for r in ratings_to_get_to[ACCEPTED])}\n")
+    print(f"Part 2: {sum(space_volume(r) for r in ratings_to_get_to[ACCEPTED])}\n")
 
 
 solve(sample_input)
