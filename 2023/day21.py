@@ -51,18 +51,16 @@ def solve(inputs: str, steps_to_take: int):
 
     reached = defaultdict(set)
     reached[0] = set([start])
-    for i in range(26_501_365):
-        if i == steps_to_take:
-            print(f"Part 1: {len(reached[i])}")
+    for i in range(steps_to_take):
         for xy in reached[i]:
             for d in (NORTH, SOUTH, EAST, WEST):
-                next_xy = xy + d
-                if complex(next_xy.real % width, next_xy.imag % height) not in rocks:
-                    reached[i + 1].add(next_xy)
+                if xy + d not in rocks:
+                    reached[i + 1].add(xy + d)
 
     # for i in range(1, 4):
     #     print_map(rocks, start, width, height, reached[i])
-    print(f"Part 2: {len(reached[26_501_365])}\n")
+    print(f"Part 1: {len(reached[steps_to_take])}")
+    print(f"Part 2: {False}\n")
 
 
 solve(sample_input, 6)
