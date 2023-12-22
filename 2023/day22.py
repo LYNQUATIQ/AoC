@@ -5,8 +5,6 @@ import re
 from collections import defaultdict
 from itertools import product
 
-from utils import print_time_taken
-
 with open(os.path.join(os.path.dirname(__file__), "inputs/day22_input.txt")) as f:
     actual_input = f.read()
 
@@ -20,7 +18,6 @@ sample_input = """1,0,1~1,2,1
 1,1,8~1,1,9"""
 
 
-@print_time_taken
 def solve(inputs: str):
     bricks = {}
     x_range, y_range = 0, 0
