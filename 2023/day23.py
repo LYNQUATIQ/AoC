@@ -1,6 +1,8 @@
 """https://adventofcode.com/2023/day/23"""
 import os
+import re
 
+from collections import defaultdict
 from functools import cache
 from heapq import heappop, heappush
 
@@ -37,11 +39,10 @@ sample_input = """#.#####################
 # sample_input = """#.######
 # #.######
 # #.#...##
-# #.#.#.##
-# #.#...##
-# #.#.#.##
+# #.#v#.##
 # #......#
 # ######.#"""
+
 
 ALL_DIRECTIONS = ((1, 0), (0, 1), (-1, 0), (0, -1))
 SLOPE_DIRECTION = {">": (1, 0), "<": (-1, 0), "^": (0, -1), "v": (0, 1)}
@@ -56,75 +57,95 @@ def manhattan_distance(a, b) -> int:
 
 
 class Hike:
-    def __init__(self, inputs: str) -> None:
-        self.grid = list(inputs.splitlines())
-        self.width, self.height = len(self.grid[0]), len(self.grid)
+    def __init__(self, grid) -> None:
+        self.grid = grid
+        self.width, self.height = len(grid[0]), len(grid)
         self.start, self.target = (1, 0), (self.width - 2, self.height - 1)
-        self.n_paths = self.width * self.height - sum(
-            r.count(FOREST) for r in self.grid
-        )
+        self.edges = self.collate_nodes_and_edges()
 
-    def is_valid_location(self, xy: Xy) -> bool:
-        return (0 <= xy[0] < self.width) and (0 <= xy[1] < self.height)
+    def collate_nodes_and_edges(self):
+        edges = defaultdict(set)
+        to_visit = {(self.start, ((1, 1),))}
+        while to_visit:
+            this_node, next_nodes = to_visit.pop()
+            if this_node == self.target:
+                continue
+            for next_node in next_nodes:
+                last_step, distance = this_node, 0
+                while True:
+                    distance += 1
+                    possible_steps = [
+                        s for s in self.possible_steps(next_node) if s != last_step
+                    ]
+                    if len(possible_steps) != 1:  # Reached another node or a dead end
+                        break
+                    last_step, next_node = next_node, possible_steps.pop()
+                    if next_node == self.target:
+                        break
+                if not possible_steps:  # Reached a dead end (or a slope we can't climb)
+                    if next_node != self.target:  # ...unless we're at the target
+                        continue
+                if (next_node, distance) not in edges[this_node]:
+                    edges[this_node].add((next_node, distance))
+                    to_visit.add((next_node, tuple(possible_steps)))
 
-    def get(self, xy: Xy) -> str:
-        return self.grid[xy[1]][xy[0]]
-
-    def trail_map(self, route=None):
-        print()
-        for y in range(self.height):
-            raster = ""
-            for x in range(self.width):
-                xy = (x, y)
-                c = self.get(xy)
-                if route is not None and xy in route:
-                    c = "o"
-                if xy == self.start:
-                    c = "S"
-                raster += c
-            print(raster)
-        print()
+        return edges
 
     @cache
-    def possible_moves(self, xy, slippery_slopes_okay):
-        moves = []
+    def possible_steps(self, here):
+        steps = set()
         for direction in ((1, 0), (0, 1), (-1, 0), (0, -1)):
-            next_xy = (xy[0] + direction[0], xy[1] + direction[1])
-            if not self.is_valid_location(next_xy):
+            xy = (here[0] + direction[0], here[1] + direction[1])
+            if xy[0] < 0 or xy[1] < 0:
                 continue
-            next_step = self.get(next_xy)
+            next_step = self.grid[xy[1]][xy[0]]
             if next_step == FOREST:
                 continue
-            if not slippery_slopes_okay:
-                if next_step in SLOPES and direction != SLOPE_DIRECTION[next_step]:
-                    continue
-            moves.append(next_xy)
-        return moves
+            if next_step in SLOPES and direction != SLOPE_DIRECTION[next_step]:
+                continue
+            steps.add(xy)
+        return steps
 
-    @print_time_taken
-    def find_scenic_path(self, slippery_slopes_okay=False):
+    def find_scenic_path(self):
         to_visit = []
-        heappush(to_visit, (0, (self.start, [])))
+        heappush(to_visit, (0, (self.start, [], 0)))
         while to_visit:
-            _, (xy, route) = heappop(to_visit)
-            if xy == self.target:
-                self.trail_map(route + [self.target])
-                return len(route)
-            for next_xy in self.possible_moves(xy, slippery_slopes_okay):
-                if next_xy not in route:
-                    next_route = route + [xy]
-                    f_score = len(next_route) - manhattan_distance(xy, next_xy)
-                    heappush(to_visit, (f_score, (next_xy, next_route)))
+            _, (node, route, total_distance) = heappop(to_visit)
+            if node == self.target:
+                return total_distance + 1
+            for next_node, edge_length in self.edges[node]:
+                if next_node in route:
+                    continue
+                g_score = total_distance + edge_length
+                h_score = 0  # (max_time - next_time) * next_flow
+                f_score = -g_score + h_score
+                heappush(to_visit, (f_score, (next_node, route + [node], g_score)))
         raise RuntimeError("Never got to target")
 
+    def brutal_path(self):
+        max_distance = 0
+        to_visit = {(self.start, (), 0)}
+        while to_visit:
+            node, route, total_distance = to_visit.pop()
+            if node == self.target:
+                max_distance = max(max_distance, total_distance + 1)
+                continue
+            for next_node, edge_length in self.edges[node]:
+                if next_node not in route:
+                    new_distance = total_distance + edge_length
+                    to_visit.add((next_node, tuple((*route, node)), new_distance))
+        return max_distance
 
-def solve(inputs: str):
-    hike = Hike(inputs)
-    print(f"Part 1: {hike.find_scenic_path()}")
 
-    # print(f"Part 2: {hike.find_scenic_path(slippery_slopes_okay=True)}\n")
+@print_time_taken
+def solve(inputs: str, answer1, answer2):
+    grid = list(inputs.splitlines())
+    print(f"Part 1: {Hike(grid).find_scenic_path()}   ({answer1})")
+
+    grid = [re.sub(r">|<|v|\^", ".", line) for line in grid]
+    print(f"Part 2: {Hike(grid).find_scenic_path()}   ({answer2})\n")
     # 4714 too low
 
 
-solve(sample_input)
-# solve(actual_input)
+solve(sample_input, 94, 154)
+solve(actual_input, 2370, 6546)
