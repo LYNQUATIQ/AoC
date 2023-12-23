@@ -50,7 +50,7 @@ class Hike:
                 self.grid[(x, y)] = c
         self.start, self.target = (1, 0), (x - 1, y)
         self.grid[self.start] = FOREST
-        self.edges = self.collate_nodes_and_edges()
+        self.edge_lengths = self.collate_edges()
 
     def next_steps(self, start_xy: tuple[int, int]):
         for direction in ((1, 0), (0, 1), (-1, 0), (0, -1)):
@@ -60,9 +60,9 @@ class Hike:
                 continue
             yield xy
 
-    def collate_nodes_and_edges(self) -> dict[Node, set[tuple[Node, int]]]:
-        edges = defaultdict(set)
-        to_visit: set[tuple[Node, tuple[Node, ...]]] = {(self.start, ((1, 2),))}
+    def collate_edges(self) -> dict[Node, set[tuple[Node, int]]]:
+        edge_lengths = defaultdict(dict)
+        to_visit: set[tuple[Node, tuple[Node, ...]]] = {(self.start, ((1, 1),))}
         while to_visit:
             this_node, next_nodes = to_visit.pop()
             if this_node == self.target:
@@ -80,23 +80,23 @@ class Hike:
                 if not branches:  # Reached a dead end (or a slope we can't climb)
                     if next_node != self.target:  # ...unless we're at the target
                         continue
-                if (next_node, distance) not in edges[this_node]:
-                    edges[this_node].add((next_node, distance))
+                if next_node not in edge_lengths[this_node]:
+                    edge_lengths[this_node][next_node] = distance
                     to_visit.add((next_node, tuple(branches)))
 
-        return edges
+        return edge_lengths
 
     def scenic_path(self) -> int:
         to_visit = [(0, (self.start, [], 0))]
         while to_visit:
             _, (node, route, total_distance) = heappop(to_visit)
             if node == self.target:
-                return total_distance
-            for next_node, edge_length in self.edges[node]:
+                return total_distance + 1
+            for next_node, edge_length in self.edge_lengths[node].items():
                 if next_node in route:
                     continue
                 g_score = total_distance + edge_length
-                h_score = sum(d for n, d in self.edges[node])  # if n != node)
+                h_score = sum(self.edge_lengths[node].values())
                 f_score = -g_score - h_score
                 heappush(to_visit, (f_score, (next_node, route + [node], g_score)))
         raise RuntimeError("Never got to target")
@@ -109,22 +109,22 @@ class Hike:
             if node == self.target:
                 max_distance = max(max_distance, total_distance)
                 continue
-            for next_node, edge_length in self.edges[node]:
+            for next_node, edge_length in self.edge_lengths[node].items():
                 if next_node not in route:
                     new_distance = total_distance + edge_length
                     to_visit.add((next_node, tuple((*route, node)), new_distance))
-        return max_distance
+        return max_distance + 1
 
 
 @print_time_taken
 def solve(inputs: str):
-    print(f"Part 1: {Hike(inputs).brutal_path()}   (Brute Force)")
-    print(f"Part 1: {Hike(inputs).scenic_path()}\n")
+    print(f"Part 1: {Hike(inputs).scenic_path()}", end="")
+    print(f"  vs {Hike(inputs).brutal_path()} (Brute Force)")
 
     non_slippery_inputs = re.sub(r">|<|v|\^", ".", inputs)
-    print(f"Part 2: {Hike(non_slippery_inputs).brutal_path()}   (Brute Force)")
-    print(f"Part 2: {Hike(non_slippery_inputs).scenic_path()}\n")
+    print(f"Part 2: {Hike(non_slippery_inputs).scenic_path()}", end="")
+    print(f"  vs {Hike(non_slippery_inputs).brutal_path()} (Brute Force)\n")
 
 
 solve(sample_input)
-# solve(actual_input)
+solve(actual_input)
