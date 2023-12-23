@@ -3,7 +3,6 @@ import os
 import re
 
 from collections import defaultdict
-from heapq import heappop, heappush
 
 from utils import print_time_taken
 
@@ -86,44 +85,31 @@ class Hike:
 
         return edge_lengths
 
-    def scenic_path(self) -> int:
-        to_visit = [(0, (self.start, [], 0))]
-        while to_visit:
-            _, (node, route, total_distance) = heappop(to_visit)
-            if node == self.target:
-                return total_distance + 1
-            for next_node, edge_length in self.edge_lengths[node].items():
-                if next_node in route:
-                    continue
-                g_score = total_distance + edge_length
-                h_score = sum(self.edge_lengths[node].values())
-                f_score = -g_score - h_score
-                heappush(to_visit, (f_score, (next_node, route + [node], g_score)))
-        raise RuntimeError("Never got to target")
-
     def brutal_path(self) -> int:
         max_distance = 0
         to_visit = {(self.start, (), 0)}
         while to_visit:
-            node, route, total_distance = to_visit.pop()
-            if node == self.target:
+            this_node, route, total_distance = to_visit.pop()
+            if this_node == self.target:
                 max_distance = max(max_distance, total_distance)
                 continue
-            for next_node, edge_length in self.edge_lengths[node].items():
+            next_nodes = self.edge_lengths[this_node]
+            for next_node, edge_length in next_nodes.items():
+                # Don't bother with this branch if one of the other edges goes to target
+                if self.target in next_nodes and next_node != self.target:
+                    continue
                 if next_node not in route:
                     new_distance = total_distance + edge_length
-                    to_visit.add((next_node, tuple((*route, node)), new_distance))
+                    to_visit.add((next_node, tuple((*route, this_node)), new_distance))
         return max_distance + 1
 
 
 @print_time_taken
 def solve(inputs: str):
-    print(f"Part 1: {Hike(inputs).scenic_path()}", end="")
-    print(f"  vs {Hike(inputs).brutal_path()} (Brute Force)")
+    print(f"\nPart 1: {Hike(inputs).brutal_path()}")
 
     non_slippery_inputs = re.sub(r">|<|v|\^", ".", inputs)
-    print(f"Part 2: {Hike(non_slippery_inputs).scenic_path()}", end="")
-    print(f"  vs {Hike(non_slippery_inputs).brutal_path()} (Brute Force)\n")
+    print(f"Part2: {Hike(non_slippery_inputs).brutal_path()}\n")
 
 
 solve(sample_input)
