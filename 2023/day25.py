@@ -23,18 +23,16 @@ frs: qnr lhk lsr"""
 
 
 def solve(inputs: str):
-    graph = defaultdict(set)
-    edges = set()
+    node_edges = defaultdict(set)
     for line in inputs.splitlines():
         this_node, connected_nodes = line.split(": ")
         for connected_node in connected_nodes.split():
-            graph[this_node].add(connected_node)
-            graph[connected_node].add(this_node)
-            edges.add(tuple(sorted((this_node, connected_node))))
+            node_edges[this_node].add(connected_node)
+            node_edges[connected_node].add(this_node)
 
-    # BFS to count how many times each edge is traversed when travelling between nodes
+    # Calculate how many times each edge is traversed when travelling between all nodes
     traversal_count = defaultdict(int)
-    for node in graph:
+    for node in node_edges:
         visited = set([node])
         to_visit = deque([(node, [])])
         while to_visit:
@@ -42,29 +40,29 @@ def solve(inputs: str):
                 this_node, path = to_visit.popleft()
                 for edge in path:
                     traversal_count[edge] += 1
-                for next_node in graph[this_node]:
+                for next_node in node_edges[this_node]:
                     if next_node not in visited:
                         visited.add(next_node)
                         edge = tuple(sorted((next_node, this_node)))
                         to_visit.append((next_node, path + [edge]))
 
-    # Remove the three most frequently traversed edges
+    # Remove three most frequently traversed edges
     most_traversed = sorted(traversal_count, key=traversal_count.get, reverse=True)
     for left, right in most_traversed[:3]:
-        graph[left].remove(right)
-        graph[right].remove(left)
+        node_edges[left].remove(right)
+        node_edges[right].remove(left)
 
-    # Find size of any one cluster
+    # Find size of any one of the clusters
     visited = set([node])
     to_visit = [node]
     while to_visit:
         this_node = to_visit.pop()
-        for next_node in graph[this_node]:
+        for next_node in node_edges[this_node]:
             if next_node not in visited:
                 visited.add(next_node)
                 to_visit.append(next_node)
 
-    print(f"Answer: {len(visited) * (len(graph)-len(visited)) }\n")
+    print(f"Answer: {len(visited) * (len(node_edges)-len(visited)) }\n")
 
 
 solve(sample_input)
