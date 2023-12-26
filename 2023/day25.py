@@ -61,11 +61,11 @@ def solve(inputs: str):
             node_edges[connected_node].add(this_node)
 
     while True:
-        min_cut, left_cluster, right_cluster = karger_min_cut(node_edges)
+        min_cut, left_size, right_size = karger_min_cut(node_edges)
         if min_cut == 3:
             break
 
-    print(f"Answer: {left_cluster* right_cluster }\n")
+    print(f"Answer: {left_size * right_size }\n")
 
 
 solve(sample_input)
