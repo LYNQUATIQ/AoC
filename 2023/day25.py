@@ -1,7 +1,8 @@
 """https://adventofcode.com/2023/day/25"""
 import os
+import random
 
-from collections import defaultdict, deque
+from collections import defaultdict
 
 with open(os.path.join(os.path.dirname(__file__), "inputs/day25_input.txt")) as f:
     actual_input = f.read()
@@ -22,6 +23,37 @@ rzs: qnr cmg lsr rsh
 frs: qnr lhk lsr"""
 
 
+def apply_karger(node_edges: dict[str, set[tuple[str, str]]]) -> tuple[int, int, int]:
+    # Take a copy of the graoh and counbters to keep track of nodes/edges merged
+    graph, node_count, edge_count = {}, defaultdict(int), defaultdict(int)
+    for node, edges in node_edges.items():
+        graph[node] = set(edges)
+        node_count[node] = 1
+        for edge in edges:
+            edge_count[tuple(sorted([node, edge]))] = 1
+
+    while len(graph) > 2:
+        node1 = random.choice(list(graph))
+        node2 = random.choice(list(graph[node1]))
+        node_count[node1] += node_count[node2]
+        graph[node1].remove(node2)
+        graph[node2].remove(node1)
+        for other_node in graph[node2]:
+            graph[other_node].remove(node2)
+            graph[other_node].add(node1)
+            graph[node1].add(other_node)
+            old_edge = tuple(sorted([node2, other_node]))
+            new_edge = tuple(sorted([node1, other_node]))
+            edge_count[new_edge] += edge_count[old_edge]
+            del edge_count[old_edge]
+        del graph[node2]
+        del node_count[node2]
+
+    cluster1, cluster2 = graph.keys()
+    edge = tuple(sorted([cluster1, cluster2]))
+    return edge_count[edge], node_count[cluster1], node_count[cluster2]
+
+
 def solve(inputs: str):
     node_edges = defaultdict(set)
     for line in inputs.splitlines():
@@ -30,39 +62,12 @@ def solve(inputs: str):
             node_edges[this_node].add(connected_node)
             node_edges[connected_node].add(this_node)
 
-    # Calculate how many times each edge is traversed when travelling between all nodes
-    traversal_count = defaultdict(int)
-    for node in node_edges:
-        visited = set([node])
-        to_visit = deque([(node, [])])
-        while to_visit:
-            for _ in range(len(to_visit)):
-                this_node, path = to_visit.popleft()
-                for edge in path:
-                    traversal_count[edge] += 1
-                for next_node in node_edges[this_node]:
-                    if next_node not in visited:
-                        visited.add(next_node)
-                        edge = tuple(sorted((next_node, this_node)))
-                        to_visit.append((next_node, path + [edge]))
+    while True:
+        min_cut, cluster1_size, cluster2_size = apply_karger(node_edges)
+        if min_cut == 3:
+            break
 
-    # Remove three most frequently traversed edges
-    most_traversed = sorted(traversal_count, key=traversal_count.get, reverse=True)
-    for left, right in most_traversed[:3]:
-        node_edges[left].remove(right)
-        node_edges[right].remove(left)
-
-    # Find size of any one of the clusters
-    visited = set([node])
-    to_visit = [node]
-    while to_visit:
-        this_node = to_visit.pop()
-        for next_node in node_edges[this_node]:
-            if next_node not in visited:
-                visited.add(next_node)
-                to_visit.append(next_node)
-
-    print(f"Answer: {len(visited) * (len(node_edges)-len(visited)) }\n")
+    print(f"Answer: {cluster1_size* cluster2_size }\n")
 
 
 solve(sample_input)
