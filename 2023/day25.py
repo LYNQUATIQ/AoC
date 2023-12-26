@@ -24,7 +24,7 @@ frs: qnr lhk lsr"""
 
 
 def karger_min_cut(node_edges: dict[str, set[tuple[str, str]]]) -> tuple[int, int, int]:
-    # Take a copy of the graoh and create counbters to keep track of nmerged nodes/edges
+    # Take a copy of the graoh and create counbters to track nmerged nodes/edges
     graph, node_count, edge_count = {}, defaultdict(int), defaultdict(int)
     for node, connected_nodes in node_edges.items():
         graph[node] = set(connected_nodes)
@@ -32,12 +32,13 @@ def karger_min_cut(node_edges: dict[str, set[tuple[str, str]]]) -> tuple[int, in
         for connected_node in connected_nodes:
             edge_count[frozenset([node, connected_node])] = 1
 
+    # Keep reducing the graph by recursively merging randon pairs of connected nodes
+    # until you're left with a pair of ndoes - their connections are a candidate min cut
     while len(graph) > 2:
         target_node = random.choice(list(graph))
         node_to_merge = random.choice(list(graph[target_node]))
         node_count[target_node] += node_count[node_to_merge]
         graph[target_node].remove(node_to_merge)
-        graph[node_to_merge].remove(target_node)
         for connected_node in (n for n in graph[node_to_merge] if n != target_node):
             graph[connected_node].remove(node_to_merge)
             graph[connected_node].add(target_node)
@@ -61,11 +62,10 @@ def solve(inputs: str):
             node_edges[connected_node].add(this_node)
 
     while True:
-        min_cut, left_size, right_size = karger_min_cut(node_edges)
-        if min_cut == 3:
+        candidate_min_cut, left_size, right_size = karger_min_cut(node_edges)
+        if candidate_min_cut == 3:
+            print(f"Answer: {left_size * right_size }\n")
             break
-
-    print(f"Answer: {left_size * right_size }\n")
 
 
 solve(sample_input)
