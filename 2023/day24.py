@@ -40,22 +40,22 @@ def solve(inputs: str, min_bound, max_bound):
         intersections += 1
     print(f"Part 1: {intersections}")
 
-    # Assume rock is at position xyz_rock with velocity vel_rock
+    # Assume rock is at position xyz with velocity vel
     # Each hailstone is at position xyz_i and vel_i (where i is the hailstone index)
     #
-    # We know that the rock and hailstone i will intersect at some time time_i
-    #    xyz_rock + time_i * vel_rock = xyz_i + time_i * vel_i
-    #    (xyx_rock - xyz_i) = time_i * (vel_i - vel_rock)
+    # We know that the rock and hailstone i will intersect at some time, time_i
+    #    xyz + time_i * vel = xyz_i + time_i * vel_i
+    #    (xyx_rock - xyz_i) = time_i * (vel_i - vel)
     #
-    # Take the product of both sides with (vel_rock - vel_i) => 0 on the RHS
-    #    (xyx_rock - xyz_i) * (vel_rock - vel_i) = 0
+    # Multiply both sides by (vel - vel_i) => 0 on the RHS, and we cancel out time_i
+    #    (xyx_rock - xyz_i) * (vel - vel_i) = 0
     #
     # We can now take *any* three rocks (a, b , and c) and use the above equation to
-    # get 9 equations with 6 unknowns (the three dimensions of xyz_rock and vel_rock).
-    # We can rearrange them into 6 equations by taking the differences between each
-    # pair of hailstones.
+    # get nine linear equations with six unknowns (the three dimensions of xyz and vel).
     #
-    # We can then use numpy to solve these six equantions for xyz_rock and vel_rock
+    # We can rearrange them into six linear equations by taking the differences between
+    # each pair of hailstones, and then can solve these equantions (using numpy) to get
+    # the rock's xyz and vel.
 
     (x0, y0, z0), (vx0, vy0, vz0) = hailstones[0]
     (x1, y1, z1), (vx1, vy1, vz1) = hailstones[1]
@@ -71,19 +71,17 @@ def solve(inputs: str, min_bound, max_bound):
             [0, vz2 - vz0, vy0 - vy2, 0, z0 - z2, y2 - y0],
         ]
     )
-
-    x = [
-        (y0 * vx0 - y1 * vx1) - (x0 * vy0 - x1 * vy1),
-        (y0 * vx0 - y2 * vx2) - (x0 * vy0 - x2 * vy2),
-        (z0 * vx0 - z1 * vx1) - (x0 * vz0 - x1 * vz1),
-        (z0 * vx0 - z2 * vx2) - (x0 * vz0 - x2 * vz2),
-        (z0 * vy0 - z1 * vy1) - (y0 * vz0 - y1 * vz1),
-        (z0 * vy0 - z2 * vy2) - (y0 * vz0 - y2 * vz2),
+    unknowns = [
+        (y0 * vx0 - y1 * vx1) - (x0 * vy0 - x1 * vy1),  # Rock's x
+        (y0 * vx0 - y2 * vx2) - (x0 * vy0 - x2 * vy2),  # Rock's y
+        (z0 * vx0 - z1 * vx1) - (x0 * vz0 - x1 * vz1),  # Rock's z
+        (z0 * vx0 - z2 * vx2) - (x0 * vz0 - x2 * vz2),  # Rock's vel_x
+        (z0 * vy0 - z1 * vy1) - (y0 * vz0 - y1 * vz1),  # Rock's vel_y
+        (z0 * vy0 - z2 * vy2) - (y0 * vz0 - y2 * vz2),  # Rock's vel_z
     ]
+    rock_xyz_vel = np.linalg.solve(coefficients, unknowns)
 
-    xyz_rock = tuple(int(i) for i in np.linalg.solve(coefficients, x)[:3])
-
-    print(f"Part 2: {sum(xyz_rock)}\n")
+    print(f"Part 2: {sum([int(i) for i in rock_xyz_vel][:3])}\n")
 
 
 solve(sample_input, 7, 27)
