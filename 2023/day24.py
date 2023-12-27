@@ -40,18 +40,18 @@ def solve(inputs: str, min_bound, max_bound):
         intersections += 1
     print(f"Part 1: {intersections}")
 
-    # Assume rock is at position xyz with velocity vel
+    # Assume rock is at position xyz_R with velocity vel_R
     # Each hailstone is at position xyz_i and vel_i (where i is the hailstone index)
     #
-    # We know that the rock and hailstone i will intersect at some time, time_i
-    #    xyz + time_i * vel = xyz_i + time_i * vel_i
+    # We know that the rock and hailstone 'i' will intersect at some time, time_i:
+    #    xyz_R + time_i * vel_R = xyz_i + time_i * vel_i
     #    (xyx_rock - xyz_i) = time_i * (vel_i - vel)
     #
-    # Multiply both sides by (vel - vel_i) => 0 on the RHS, and we cancel out time_i
+    # Multiply both sides by (vel - vel_i) => 0 on the RHS (we cancel out time_i):
     #    (xyx_rock - xyz_i) * (vel - vel_i) = 0
     #
     # We can now take *any* three rocks (a, b , and c) and use the above equation to
-    # get nine linear equations with six unknowns (the three dimensions of xyz and vel).
+    # get nine linear equations with six unknowns (the 3 dimensions of xyz_R and vel_R).
     #
     # We can rearrange them into six linear equations by taking the differences between
     # each pair of hailstones, and then can solve these equantions (using numpy) to get
