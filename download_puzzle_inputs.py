@@ -1,7 +1,7 @@
 import os
 import requests
 
-SESSION_COOKIE = "53616c7465645f5f0a132f175f35083af2327bc61a534cc232e88b9ab5fb1c24f64a8ecd232481bb63613b680a11d252eb2e6d110cddf5ad1689a4e4e696bd53"
+SESSION_COOKIE = "<PUT YOUR SESSION COOKIE HERE - DON'T COMMIT IT TO GIT!>"
 
 
 def fetch_input_data(year, day):
