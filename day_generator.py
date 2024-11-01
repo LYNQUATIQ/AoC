@@ -4,14 +4,18 @@ import os
 
 YYYY = 2024
 
+YYYY_DIRECTORY = os.path.join(os.path.dirname(__file__), YYYY)
+INPUTS_DIRECTORY = os.path.join(YYYY_DIRECTORY, "inputs")
+if not os.path.exists(INPUTS_DIRECTORY):
+    os.makedirs(INPUTS_DIRECTORY)
 
 for i in range(1, 26):
     with open(
-        os.path.join(os.path.dirname(__file__), f"inputs/day{i:02d}_input.txt"), "w"
+        os.path.join(INPUTS_DIRECTORY f"day{i:02d}_input.txt"), "w"
     ):
         pass
 
-    with open(os.path.join(os.path.dirname(__file__), f"day{i:02d}.py"), "w") as f:
+    with open(os.path.join(YYYY_DIRECTORY, f"day{i:02d}.py"), "w") as f:
         f.write(f'"""https://adventofcode.com/{YYYY}/day/{i}"""\n')
         f.write("import os\n\n")
         f.write(
