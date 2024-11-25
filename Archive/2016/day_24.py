@@ -10,7 +10,9 @@ script_name = os.path.splitext(os.path.basename(__file__))[0]
 
 log_file = os.path.join(script_dir, f"logs/{script_name}.log")
 logging.basicConfig(
-    level=logging.DEBUG, filename=log_file, filemode="w",
+    level=logging.DEBUG,
+    filename=log_file,
+    filemode="w",
 )
 
 input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
@@ -72,4 +74,3 @@ class Hvac(ConnectedGrid):
 hvac = Hvac(lines)
 print(f"Part 1 : {len(hvac.best_route())}")
 print(f"Part 2 : {len(hvac.best_route(return_to_0=True))}")
-

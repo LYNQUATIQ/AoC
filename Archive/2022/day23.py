@@ -1,4 +1,5 @@
 """https://adventofcode.com/2022/day/23"""
+
 import os
 
 from itertools import cycle

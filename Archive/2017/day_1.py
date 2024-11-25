@@ -3,7 +3,7 @@ digits = "3294199471327195994824832197564859876682638188889768298894243832665654
 total = 0
 for i, d in enumerate(digits):
     try:
-        next_d = digits[i+1]
+        next_d = digits[i + 1]
     except IndexError:
         next_d = digits[0]
     if d == next_d:
@@ -14,7 +14,7 @@ print(f"Part 1: {total}")
 total = 0
 delta = len(digits) // 2
 for i, d in enumerate(digits):
-    if d == digits[ (i + delta) % len(digits)]:
+    if d == digits[(i + delta) % len(digits)]:
         total += int(d)
 
 print(f"Part 2: {total}")

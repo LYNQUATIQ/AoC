@@ -1,4 +1,5 @@
 """https://adventofcode.com/2018/day/22"""
+
 import os
 import re
 

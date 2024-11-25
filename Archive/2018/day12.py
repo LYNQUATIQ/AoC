@@ -1,4 +1,5 @@
 """https://adventofcode.com/2018/day/12"""
+
 import os
 
 from utils import print_time_taken

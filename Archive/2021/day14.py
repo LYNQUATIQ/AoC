@@ -1,4 +1,5 @@
 """https://adventofcode.com/2021/day/14"""
+
 from collections import Counter
 import os
 

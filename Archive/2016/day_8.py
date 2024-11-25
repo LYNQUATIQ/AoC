@@ -10,12 +10,18 @@ script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
 
 log_file = os.path.join(script_dir, f"logs/{script_name}.log")
-logging.basicConfig(level=logging.WARNING, filename=log_file, filemode='w',)
+logging.basicConfig(
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
+)
 
 input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
-lines = [line.rstrip('\n') for line in open(input_file)]
+lines = [line.rstrip("\n") for line in open(input_file)]
 
-regex = re.compile(r"^(?P<operation>rotate column|rect|rotate row) (?:[xy]=)*(?P<a>\d+)(?:x| by )(?P<b>\d+)$")
+regex = re.compile(
+    r"^(?P<operation>rotate column|rect|rotate row) (?:[xy]=)*(?P<a>\d+)(?:x| by )(?P<b>\d+)$"
+)
 
 screen = defaultdict(int)
 width = 50
@@ -39,12 +45,12 @@ for line in lines:
         shift = int(instruction["b"])
         column = [screen[(x, y)] for y in range(height)]
         for y in range(height):
-            screen[(x, y)] = column[(y - shift) % height]       
+            screen[(x, y)] = column[(y - shift) % height]
 
 print(f"Part 1: {sum(screen.values())}")
 print(f"Part 2:")
 for y in range(height):
     for x in range(width):
-        print({1:u"\u2588", 0:" "}[screen[(x, y)]], end="")
+        print({1: "\u2588", 0: " "}[screen[(x, y)]], end="")
     print()
 print()

@@ -1,4 +1,5 @@
 """https://adventofcode.com/2023/day/24"""
+
 import os
 import re
 

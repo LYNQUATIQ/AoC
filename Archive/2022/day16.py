@@ -1,4 +1,5 @@
 """https://adventofcode.com/2022/day/16"""
+
 import os
 import re
 from collections import deque

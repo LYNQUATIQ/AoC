@@ -10,7 +10,9 @@ from grid_system import XY, ConnectedGrid
 script_dir = os.path.dirname(__file__)
 file_path = os.path.join(script_dir, "logs/day_20_log")
 logging.basicConfig(
-    level=logging.DEBUG, filename=file_path, filemode="w",
+    level=logging.DEBUG,
+    filename=file_path,
+    filemode="w",
 )
 
 

@@ -4,7 +4,11 @@ import os
 
 script_dir = os.path.dirname(__file__)
 log_file = os.path.join(script_dir, "logs/2017_day_6.log")
-logging.basicConfig(level=logging.WARNING, filename=log_file, filemode='w',)
+logging.basicConfig(
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
+)
 
 puzzle_input = "0	5	10	0	11	14	13	4	11	8	8	7	1	4	12	11"
 # puzzle_input = "0	2	7	0"

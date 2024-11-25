@@ -11,10 +11,14 @@ script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
 
 log_file = os.path.join(script_dir, f"logs/{script_name}.log")
-logging.basicConfig(level=logging.WARNING, filename=log_file, filemode='w',)
+logging.basicConfig(
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
+)
 
 input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
-lines = [line.rstrip('\n') for line in open(input_file)]
+lines = [line.rstrip("\n") for line in open(input_file)]
 
 
 class Room:
@@ -47,7 +51,9 @@ class Room:
         raise NotImplementedError
 
 
-regex = re.compile(r"^(?P<encrypted_name>[a-z\-]+)-(?P<sector_id>\d+)\[(?P<checksum>[a-z]{5})\]$")
+regex = re.compile(
+    r"^(?P<encrypted_name>[a-z\-]+)-(?P<sector_id>\d+)\[(?P<checksum>[a-z]{5})\]$"
+)
 
 rooms = {}
 for line in lines:
@@ -58,7 +64,7 @@ sector_id_sum = 0
 for room in rooms.values():
     if room.is_valid():
         sector_id_sum += room.sector_id
-        
+
 print(f"Part 1: {sector_id_sum}")
 
 for room in rooms.values():

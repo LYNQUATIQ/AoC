@@ -1,4 +1,5 @@
 """https://adventofcode.com/2023/day/16"""
+
 import os
 from collections.abc import Generator
 from multiprocessing import Pool

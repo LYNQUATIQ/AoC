@@ -7,7 +7,9 @@ from collections import defaultdict
 script_dir = os.path.dirname(__file__)
 log_file = os.path.join(script_dir, "logs/2018_day_23.log")
 logging.basicConfig(
-    level=logging.WARNING, filename=log_file, filemode="w",
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
 )
 
 input_file = os.path.join(script_dir, "inputs/2017_day_23_input.txt")

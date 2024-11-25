@@ -7,7 +7,9 @@ from collections import defaultdict, deque
 script_dir = os.path.dirname(__file__)
 log_file = os.path.join(script_dir, "logs/2018_day_18.log")
 logging.basicConfig(
-    level=logging.WARNING, filename=log_file, filemode="w",
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
 )
 
 input_file = os.path.join(script_dir, "inputs/2017_day_18_input.txt")
@@ -96,4 +98,3 @@ while True:
     if program0.is_terminated() or program1.is_terminated() or not program1.send_queue:
         break
 print(f"Part 2: {program1.send_counter}")
-

@@ -1,4 +1,5 @@
 """https://adventofcode.com/2018/day/20"""
+
 import os
 
 from collections import deque

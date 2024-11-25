@@ -4,7 +4,11 @@ import time
 
 script_dir = os.path.dirname(__file__)
 log_file = os.path.join(script_dir, "logs/2017_day_15.log")
-logging.basicConfig(level=logging.WARNING, filename=log_file, filemode='w',)
+logging.basicConfig(
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
+)
 
 
 class Generator:
@@ -12,7 +16,7 @@ class Generator:
 
     def __init__(self, initial, factor, multiple_check=1):
         self.value = initial
-        self.factor = factor 
+        self.factor = factor
         self.multiple_check = multiple_check
 
     def __iter__(self):
@@ -32,7 +36,7 @@ generator_b = Generator(b, 48271)
 matches = 0
 t = time.time()
 for _ in range(40000000):
-    if next(generator_a) & 0xffff == next(generator_b) & 0xffff:
+    if next(generator_a) & 0xFFFF == next(generator_b) & 0xFFFF:
         matches += 1
 print(f"Part 1: {matches}   ({time.time()-t}s)")
 
@@ -41,6 +45,6 @@ generator_b = Generator(b, 48271, 8)
 matches = 0
 t = time.time()
 for _ in range(5000000):
-    if next(generator_a) & 0xffff == next(generator_b) & 0xffff:
+    if next(generator_a) & 0xFFFF == next(generator_b) & 0xFFFF:
         matches += 1
 print(f"Part 2: {matches}   ({time.time()-t}s)")

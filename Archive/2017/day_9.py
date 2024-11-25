@@ -6,7 +6,11 @@ from collections import defaultdict
 
 script_dir = os.path.dirname(__file__)
 log_file = os.path.join(script_dir, "logs/2017_day_9.log")
-logging.basicConfig(level=logging.WARNING, filename=log_file, filemode='w',)
+logging.basicConfig(
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
+)
 
 input_file = os.path.join(script_dir, "inputs/2017_day_9_input.txt")
 
@@ -21,9 +25,11 @@ with open(input_file) as f:
 # stream = [c for c in "{{},{}}"]
 # stream = [c for c in "{{<!!>},{<!!>},{<!!>},{<!!>}}"]
 
+
 class Group:
     def __init__(self, parent):
         self.parent = parent
+
 
 current_depth = 0
 groups = {}

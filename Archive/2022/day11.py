@@ -1,4 +1,5 @@
 """https://adventofcode.com/2022/day/11"""
+
 from __future__ import annotations
 import os
 import math

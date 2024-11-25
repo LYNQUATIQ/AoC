@@ -8,10 +8,15 @@ script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
 
 log_file = os.path.join(script_dir, f"logs/{script_name}.log")
-logging.basicConfig(level=logging.WARNING, filename=log_file, filemode='w',)
+logging.basicConfig(
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
+)
 
 input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
-lines = [line.rstrip('\n') for line in open(input_file)]
+lines = [line.rstrip("\n") for line in open(input_file)]
+
 
 class Bot:
     def __init__(self, number):
@@ -36,6 +41,7 @@ rules = {}
 bots = {}
 outputs = {}
 
+
 def get_bot(number):
     try:
         bot = bots[number]
@@ -44,13 +50,17 @@ def get_bot(number):
         bots[bot.number] = bot
     return bot
 
+
 for line in lines:
     tokens = line.split(" ")
     if tokens[0] == "value":
         bot = get_bot(int(tokens[5]))
         bot.receive_chip(int(tokens[1]))
     else:
-        rules[int(tokens[1])] = ((tokens[5],int(tokens[6])), (tokens[10],int(tokens[11])))
+        rules[int(tokens[1])] = (
+            (tokens[5], int(tokens[6])),
+            (tokens[10], int(tokens[11])),
+        )
 
 while True:
     bot = None
@@ -58,7 +68,7 @@ while True:
         if b.is_running():
             bot = b
             break
-    
+
     if bot is None:
         break
 
@@ -67,14 +77,15 @@ while True:
 
     lower, upper = bot.give_chips()
     lower_destination, upper_destination = rules[bot.number]
-    for value, destination in zip([lower, upper], [lower_destination, upper_destination]):
+    for value, destination in zip(
+        [lower, upper], [lower_destination, upper_destination]
+    ):
         dest, number = destination
         if dest == "output":
             outputs[number] = value
         else:
             bot = get_bot(number)
             bots[number].receive_chip(value)
-        
+
 print(f"Part 1: {part_1}")
 print(f"Part 2: {outputs[0] * outputs[1] * outputs[2]}")
-

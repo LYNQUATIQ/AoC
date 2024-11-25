@@ -7,7 +7,11 @@ script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
 
 log_file = os.path.join(script_dir, f"logs/{script_name}.log")
-logging.basicConfig(level=logging.WARNING, filename=log_file, filemode='w',)
+logging.basicConfig(
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
+)
 
 door_id = "ojvtpuvg"
 
@@ -36,7 +40,7 @@ while True:
     if hex_output[0:5] == "00000" and hex_output[5] in "01234567":
         position = int(hex_output[5])
         if door_code[position] == "-":
-            door_code = door_code[:position] + hex_output[6] + door_code[position + 1:]
+            door_code = door_code[:position] + hex_output[6] + door_code[position + 1 :]
             print(f"{integer:>10} - door code: [{door_code}]")
             if not "-" in door_code:
                 break

@@ -1,4 +1,5 @@
 """https://adventofcode.com/2023/day/17"""
+
 import os
 
 from collections.abc import Generator

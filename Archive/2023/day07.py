@@ -1,4 +1,5 @@
 """https://adventofcode.com/2023/day/7"""
+
 import os
 from collections import Counter
 

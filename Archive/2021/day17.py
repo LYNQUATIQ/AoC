@@ -1,4 +1,5 @@
 """https://adventofcode.com/2021/day/17"""
+
 import re
 from itertools import product
 

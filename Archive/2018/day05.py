@@ -1,4 +1,5 @@
 """https://adventofcode.com/2018/day/5"""
+
 import os
 import re
 import string

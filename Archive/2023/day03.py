@@ -1,4 +1,5 @@
 """https://adventofcode.com/2023/day/3"""
+
 import os
 from functools import cache
 

@@ -12,7 +12,9 @@ script_name = os.path.splitext(os.path.basename(__file__))[0]
 
 log_file = os.path.join(script_dir, f"logs/{script_name}.log")
 logging.basicConfig(
-    level=logging.DEBUG, filename=log_file, filemode="w",
+    level=logging.DEBUG,
+    filename=log_file,
+    filemode="w",
 )
 
 boss_hp = 71
@@ -126,4 +128,3 @@ def minimum_spend(hp_loss=0):
 
 print(f"Part 1: {minimum_spend()}")
 print(f"Part 2: {minimum_spend(1)}")
-

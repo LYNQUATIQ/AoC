@@ -10,16 +10,21 @@ script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
 
 log_file = os.path.join(script_dir, f"logs/{script_name}.log")
-logging.basicConfig(level=logging.WARNING, filename=log_file, filemode='w',)
+logging.basicConfig(
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
+)
 
 passcode = "rrrbmfta"
 
 directions = {
-    "U" : XY(0, -1),
-    "D" : XY(0, +1),
-    "L" : XY(-1, 0),
-    "R" : XY(+1, 0),
+    "U": XY(0, -1),
+    "D": XY(0, +1),
+    "L": XY(-1, 0),
+    "R": XY(+1, 0),
 }
+
 
 def connected_nodes(node, path_to_here):
     connected_nodes = {}
@@ -30,6 +35,7 @@ def connected_nodes(node, path_to_here):
             if n.x in range(4) and n.y in range(4):
                 connected_nodes[d] = n
     return connected_nodes
+
 
 def bfs_path(start=XY(0, 0), goal=XY(3, 3), find_shortest=True):
     path_to_goal = None
@@ -46,7 +52,8 @@ def bfs_path(start=XY(0, 0), goal=XY(3, 3), find_shortest=True):
                 to_visit.append((next_node, path_so_far + d))
     return path_to_goal
 
-start=XY(0, 0)
-goal=XY(3, 3)
+
+start = XY(0, 0)
+goal = XY(3, 3)
 print(f"Part 1: {bfs_path(start, goal)}")
 print(f"Part 2: {len(bfs_path(start, goal, False))}")

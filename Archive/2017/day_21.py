@@ -7,7 +7,9 @@ from collections import Counter
 script_dir = os.path.dirname(__file__)
 log_file = os.path.join(script_dir, "logs/2018_day_21.log")
 logging.basicConfig(
-    level=logging.WARNING, filename=log_file, filemode="w",
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
 )
 
 input_file = os.path.join(script_dir, "inputs/2017_day_21_input.txt")
@@ -37,9 +39,33 @@ three_by_three_rotate = {
 }
 three_by_three_flips = [
     # abc/def/ghi ==> cba/fed/ihg
-    {0: 2, 1: 1, 2: 0, 3: 3, 4: 6, 5: 5, 6: 4, 7: 7, 8: 10, 9: 9, 10: 8,},
+    {
+        0: 2,
+        1: 1,
+        2: 0,
+        3: 3,
+        4: 6,
+        5: 5,
+        6: 4,
+        7: 7,
+        8: 10,
+        9: 9,
+        10: 8,
+    },
     # abc/def/ghi ==> ghi/def/abc
-    {0: 8, 1: 9, 2: 10, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 0, 9: 1, 10: 2,},
+    {
+        0: 8,
+        1: 9,
+        2: 10,
+        3: 3,
+        4: 4,
+        5: 5,
+        6: 6,
+        7: 7,
+        8: 0,
+        9: 1,
+        10: 2,
+    },
 ]
 
 transforms = {
@@ -146,4 +172,3 @@ for _ in range(13):
     image.process()
 
 print(f"Part 2: {Counter(image.image)['#']}")
-

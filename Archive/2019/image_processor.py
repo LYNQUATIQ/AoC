@@ -10,7 +10,7 @@ TRANSPARENCY = "2"
 
 pixel_map = {
     WHITE: " ",
-    BLACK: u"\u2588",
+    BLACK: "\u2588",
     TRANSPARENCY: ".",
 }
 

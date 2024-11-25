@@ -6,7 +6,9 @@ import re
 script_dir = os.path.dirname(__file__)
 file_path = os.path.join(script_dir, "logs/day_22.log")
 logging.basicConfig(
-    level=logging.DEBUG, filename=file_path, filemode="w",
+    level=logging.DEBUG,
+    filename=file_path,
+    filemode="w",
 )
 
 file_path = os.path.join(script_dir, "inputs/day_22_input.txt")
@@ -55,4 +57,3 @@ increment = pow(increment, NUMBER_OF_SHUFFLES, NUMBER_OF_CARDS)
 
 
 print((2020 * increment + (1 - increment) * offset) % NUMBER_OF_CARDS)
-

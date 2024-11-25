@@ -7,7 +7,9 @@ script_name = os.path.splitext(os.path.basename(__file__))[0]
 
 log_file = os.path.join(script_dir, f"logs/{script_name}.log")
 logging.basicConfig(
-    level=logging.DEBUG, filename=log_file, filemode="w",
+    level=logging.DEBUG,
+    filename=log_file,
+    filemode="w",
 )
 
 puzzle_input = 29000000
@@ -15,7 +17,7 @@ puzzle_input = 29000000
 
 def get_divisors(n):
     divisors = set()
-    for i in range(1, int(n ** 0.5) + 1):
+    for i in range(1, int(n**0.5) + 1):
         if n % i == 0:
             divisors.add(i)
             divisors.add(n / i)

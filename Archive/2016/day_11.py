@@ -8,7 +8,11 @@ script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
 
 log_file = os.path.join(script_dir, f"logs/{script_name}.log")
-logging.basicConfig(level=logging.WARNING, filename=log_file, filemode='w',)
+logging.basicConfig(
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
+)
 
 
 class Item(NamedTuple("Item", [("item_type", str), ("name", str)])):
@@ -48,7 +52,9 @@ class Floor:
     @property
     def first_pair(self):
         if self.generators:
-            return [(g, g.partner) for g in self.generators if g.partner in self.microchips][0]
+            return [
+                (g, g.partner) for g in self.generators if g.partner in self.microchips
+            ][0]
         return tuple(self.microchips[0:2])
 
 
@@ -62,7 +68,7 @@ class RadiationContainment:
         for level, items in floors.items():
             generators = set([Item(Item.GENERATOR, g) for g in items[0]])
             microchips = set([Item(Item.MICROCHIP, g) for g in items[1]])
-            floor = Floor(generators|microchips)
+            floor = Floor(generators | microchips)
             self.floors[level] = floor
             for item in floor.items:
                 self.item_levels[item] = level
@@ -81,7 +87,9 @@ class RadiationContainment:
             elevator = "   "
             if self.current_level == l:
                 elevator = "[E]"
-            print(f"Floor#{l} {elevator} {item_list(f.generators, True)} {item_list(f.microchips, False)}")
+            print(
+                f"Floor#{l} {elevator} {item_list(f.generators, True)} {item_list(f.microchips, False)}"
+            )
         print()
 
     def move_items_up(self, items):
@@ -119,13 +127,16 @@ class RadiationContainment:
             steps += 1
 
         return steps
-                
+
 
 floors = {
     4: ([], []),
     3: ([], []),
     2: ([], ["polonium", "promethium"]),
-    1: (["polonium", "thulium", "promethium", "ruthenium", "cobalt"], ["thulium", "ruthenium", "cobalt"]),
+    1: (
+        ["polonium", "thulium", "promethium", "ruthenium", "cobalt"],
+        ["thulium", "ruthenium", "cobalt"],
+    ),
 }
 print(f"Part 1: {RadiationContainment(floors).steps()}")
 
@@ -133,7 +144,17 @@ floors = {
     4: ([], []),
     3: ([], []),
     2: ([], ["polonium", "promethium"]),
-    1: (["polonium", "thulium", "promethium", "ruthenium", "cobalt", "elerium", "dilithium"], ["thulium", "ruthenium", "cobalt", "elerium", "dilithium"]),
+    1: (
+        [
+            "polonium",
+            "thulium",
+            "promethium",
+            "ruthenium",
+            "cobalt",
+            "elerium",
+            "dilithium",
+        ],
+        ["thulium", "ruthenium", "cobalt", "elerium", "dilithium"],
+    ),
 }
 print(f"Part 2: {RadiationContainment(floors).steps()}")
-

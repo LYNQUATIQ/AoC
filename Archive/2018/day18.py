@@ -1,4 +1,5 @@
 """https://adventofcode.com/2018/day/18"""
+
 import os
 
 from itertools import chain, product

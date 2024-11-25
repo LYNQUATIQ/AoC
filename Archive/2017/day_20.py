@@ -8,7 +8,9 @@ from collections import Counter
 script_dir = os.path.dirname(__file__)
 log_file = os.path.join(script_dir, "logs/2018_day_20.log")
 logging.basicConfig(
-    level=logging.WARNING, filename=log_file, filemode="w",
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
 )
 
 input_file = os.path.join(script_dir, "inputs/2017_day_20_input.txt")
@@ -107,4 +109,3 @@ while iterations < 1000:
         particles_in_play.remove(p)
 
 print(f"Part 2: {len(particles_in_play)}")
-

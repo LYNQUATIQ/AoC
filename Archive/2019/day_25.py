@@ -9,7 +9,9 @@ from intcode_computer import IntCodeComputer
 script_dir = os.path.dirname(__file__)
 file_path = os.path.join(script_dir, "logs/day_25.log")
 logging.basicConfig(
-    level=logging.DEBUG, filename=file_path, filemode="w",
+    level=logging.DEBUG,
+    filename=file_path,
+    filemode="w",
 )
 
 file_path = os.path.join(script_dir, "inputs/day_25_input.txt")

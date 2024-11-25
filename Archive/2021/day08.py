@@ -1,4 +1,5 @@
 """https://adventofcode.com/2021/day/8"""
+
 import os
 from itertools import chain
 

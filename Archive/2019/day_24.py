@@ -163,7 +163,7 @@ class Eris:
         return universe
 
     def biodiversity(self):
-        return sum(2 ** cell for cell, _ in self.bugs)
+        return sum(2**cell for cell, _ in self.bugs)
 
     def process_round(self, recursion=True):
         new_bugs = set()

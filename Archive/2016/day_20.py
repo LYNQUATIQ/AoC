@@ -8,12 +8,16 @@ script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
 
 log_file = os.path.join(script_dir, f"logs/{script_name}.log")
-logging.basicConfig(level=logging.DEBUG, filename=log_file, filemode='w',)
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename=log_file,
+    filemode="w",
+)
 
 input_file = os.path.join(script_dir, f"inputs/{script_name}_input.txt")
-lines = [line.rstrip('\n') for line in open(input_file)]
+lines = [line.rstrip("\n") for line in open(input_file)]
 
-blacklists= []
+blacklists = []
 for line in lines:
     a, b = (int(ip) for ip in line.split("-"))
     blacklists.append((a, b))

@@ -6,10 +6,15 @@ from collections import Counter
 
 script_dir = os.path.dirname(__file__)
 log_file = os.path.join(script_dir, "logs/2017_day_7.log")
-logging.basicConfig(level=logging.WARNING, filename=log_file, filemode='w',)
+logging.basicConfig(
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
+)
 
 input_file = os.path.join(script_dir, "inputs/2017_day_7_input.txt")
-lines = [line.rstrip('\n') for line in open(input_file)]
+lines = [line.rstrip("\n") for line in open(input_file)]
+
 
 class Program:
     def __init__(self, name):
@@ -31,7 +36,9 @@ class Program:
     @property
     def childrens_weights(self):
         if self._childrens_weights is None:
-            self._childrens_weights = [programs[c].total_weight() for c in self.children]
+            self._childrens_weights = [
+                programs[c].total_weight() for c in self.children
+            ]
         return self._childrens_weights
 
     def total_weight(self):
@@ -40,10 +47,13 @@ class Program:
     def balanced(self):
         return len(set(self.childrens_weights)) == 1
 
+
 programs = {}
 
 for line in lines:
-    pattern = re.compile(r"^(?P<name>[a-z]+) \((?P<weight>\d+)\)( -> (?P<children>[a-z, ]*))?$")
+    pattern = re.compile(
+        r"^(?P<name>[a-z]+) \((?P<weight>\d+)\)( -> (?P<children>[a-z, ]*))?$"
+    )
     for line in lines:
         params = pattern.match(line).groupdict()
         name = params["name"]
@@ -82,7 +92,7 @@ while True:
     print()
 
     weight_counts = Counter(program.childrens_weights)
-    if(len(weight_counts) == 1):
+    if len(weight_counts) == 1:
         break
     if incorrect_delta is None:
         correct = None

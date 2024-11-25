@@ -1,4 +1,5 @@
 """https://adventofcode.com/2021/day/4"""
+
 import os
 from collections.abc import Iterable, Sequence
 from itertools import chain

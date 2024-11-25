@@ -1,4 +1,5 @@
 """https://adventofcode.com/2018/day/7"""
+
 from collections import defaultdict
 import os
 import re

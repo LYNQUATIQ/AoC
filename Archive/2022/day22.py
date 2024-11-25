@@ -1,4 +1,5 @@
 """https://adventofcode.com/2022/day/22"""
+
 import os
 
 from itertools import product

@@ -1,4 +1,5 @@
 """https://adventofcode.com/2021/day/16"""
+
 import os
 
 from packet_decoder import BitStream, Packet

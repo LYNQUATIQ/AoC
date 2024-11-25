@@ -6,12 +6,16 @@ from grid_system import ConnectedGrid, XY
 
 script_dir = os.path.dirname(__file__)
 log_file = os.path.join(script_dir, "logs/day_1.log")
-logging.basicConfig(level=logging.WARNING, filename=log_file, filemode='w',)
+logging.basicConfig(
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
+)
 
 input_file = os.path.join(script_dir, "inputs/day_1_input.txt")
-lines = [line.rstrip('\n') for line in open(input_file)]
+lines = [line.rstrip("\n") for line in open(input_file)]
 
-assert (len(lines) == 1)
+assert len(lines) == 1
 
 directions = ((d[0], int(d[1:])) for d in lines[0].split(", "))
 

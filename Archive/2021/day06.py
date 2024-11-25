@@ -1,4 +1,5 @@
 """https://adventofcode.com/2021/day/6"""
+
 import os
 from collections import Counter, deque
 

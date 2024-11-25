@@ -1,4 +1,5 @@
 """https://adventofcode.com/2022/day/19"""
+
 from math import ceil, prod
 import os
 import re

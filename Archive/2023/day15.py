@@ -1,4 +1,5 @@
 """https://adventofcode.com/2023/day/15"""
+
 import os
 from collections import defaultdict
 from functools import reduce

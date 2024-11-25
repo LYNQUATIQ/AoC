@@ -7,7 +7,9 @@ from collections import deque
 script_dir = os.path.dirname(__file__)
 log_file = os.path.join(script_dir, "logs/2017_day_15.log")
 logging.basicConfig(
-    level=logging.WARNING, filename=log_file, filemode="w",
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
 )
 
 step_size = 328

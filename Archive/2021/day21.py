@@ -1,4 +1,5 @@
 """https://adventofcode.com/2021/day/21"""
+
 from itertools import product
 from functools import cache
 

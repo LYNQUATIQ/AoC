@@ -8,12 +8,16 @@ from grid_system import ConnectedGrid, XY
 
 script_dir = os.path.dirname(__file__)
 log_file = os.path.join(script_dir, "logs/2017_day_14.log")
-logging.basicConfig(level=logging.WARNING, filename=log_file, filemode='w',)
+logging.basicConfig(
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
+)
 
 
 def get_hash_list(lengths, iterations=64):
     list_length = 256
-    hash_list = {i:i for i in range(list_length)}
+    hash_list = {i: i for i in range(list_length)}
     current_position = 0
     skip_size = 0
     for _ in range(iterations):
@@ -46,6 +50,7 @@ def hex_to_bitstream(hex_value):
     num_of_bits = int(len(hex_value) * log2(16))
     return bin(int(hex_value, 16))[2:].zfill(num_of_bits)
 
+
 input_txt = "wenycdww"
 # input_txt = "flqrgnkx"
 
@@ -57,7 +62,7 @@ for y in range(128):
     for x, c in enumerate(bitstream):
         if c == "1":
             blocks += 1
-        disk.grid[XY(x, y)] = { "1": "#", "0": "."}[c]
+        disk.grid[XY(x, y)] = {"1": "#", "0": "."}[c]
 
 print(f"Part 1: {blocks}")
 
@@ -68,7 +73,7 @@ regions = {}
 region_counter = 1
 for y in range(128):
     for x in range(128):
-        block = XY(x,y)
+        block = XY(x, y)
         if disk.grid[block] == ".":
             continue
         try:

@@ -1,4 +1,5 @@
 """https://adventofcode.com/2023/day/6"""
+
 import os
 import re
 import math

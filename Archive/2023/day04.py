@@ -1,4 +1,5 @@
 """https://adventofcode.com/2023/day/4"""
+
 import os
 
 with open(os.path.join(os.path.dirname(__file__), "inputs/day04_input.txt")) as f:

@@ -1,4 +1,5 @@
 """https://adventofcode.com/2021/day/10"""
+
 import os
 from functools import reduce
 from statistics import median

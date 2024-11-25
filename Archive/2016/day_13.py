@@ -8,7 +8,11 @@ script_dir = os.path.dirname(__file__)
 script_name = os.path.splitext(os.path.basename(__file__))[0]
 
 log_file = os.path.join(script_dir, f"logs/{script_name}.log")
-logging.basicConfig(level=logging.WARNING, filename=log_file, filemode='w',)
+logging.basicConfig(
+    level=logging.WARNING,
+    filename=log_file,
+    filemode="w",
+)
 
 
 class Building(ConnectedGrid):
@@ -29,8 +33,15 @@ class Building(ConnectedGrid):
             return self.grid[xy]
         except KeyError:
             x, y = xy
-            n_bits_odd = Counter(bin(x * x + 3 * x + 2 * x * y + y + y * y + self.favourite_number)[2:]).get("1", 0) % 2
-            self.grid[xy] = {0: self.OPEN_SPACE, 1: self.WALL }[n_bits_odd]
+            n_bits_odd = (
+                Counter(
+                    bin(x * x + 3 * x + 2 * x * y + y + y * y + self.favourite_number)[
+                        2:
+                    ]
+                ).get("1", 0)
+                % 2
+            )
+            self.grid[xy] = {0: self.OPEN_SPACE, 1: self.WALL}[n_bits_odd]
         return self.grid[xy]
 
     def connected_nodes(self, node, blockages=None):

@@ -1,4 +1,5 @@
 """https://adventofcode.com/2021/day/24"""
+
 import os
 from functools import lru_cache
 
