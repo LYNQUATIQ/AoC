@@ -1,6 +1,6 @@
 <h1> My Advent of Code Journey </h1>
 
-![](https://img.shields.io/badge/40%20stars-2015-black?logo=adventofcode&style=for-the-badge)
+![](https://img.shields.io/badge/50%20stars-2015-black?logo=adventofcode&style=for-the-badge)
 ![](https://img.shields.io/badge/50%20stars-2016-black?logo=adventofcode&style=for-the-badge)
 ![](https://img.shields.io/badge/50%20stars-2017-black?logo=adventofcode&style=for-the-badge)
 ![](https://img.shields.io/badge/50%20stars-2018-black?logo=adventofcode&style=for-the-badge)
