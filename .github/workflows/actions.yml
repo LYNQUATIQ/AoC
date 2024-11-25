@@ -18,70 +18,70 @@ jobs:
           userid: ${{ secrets.AOC_USER_ID }} # your user id, see setup on how to obtain
           session: ${{ secrets.AOC_SESSION }} # secret containing session code, see setup on how to obtain
           year: 2015 # The year for which stats should be retrieved
-          starsRegex: '(?<=https:\/\/img\.shields\.io\/badge\/Stars%202015%20⭐-)[0-9]+(?=-yellow)' # Regular expression that finds the content of the stars badge in your file.
+          starsRegex: '(?<=img\.shields\.io\/badge\/)[0-9]+(?=%20stars-2015-black)' # Regular expression that finds the content of the stars badge in your file.
 
       - uses: J0B10/aoc-badges-action@v3.0.0
         with:
           userid: ${{ secrets.AOC_USER_ID }} # your user id, see setup on how to obtain
           session: ${{ secrets.AOC_SESSION }} # secret containing session code, see setup on how to obtain
           year: 2016 # The year for which stats should be retrieved
-          starsRegex: '(?<=https:\/\/img\.shields\.io\/badge\/Stars%202016%20⭐-)[0-9]+(?=-yellow)' # Regular expression that finds the content of the stars badge in your file.
+          starsRegex: '(?<=img\.shields\.io\/badge\/)[0-9]+(?=%20stars-2016-black)' # Regular expression that finds the content of the stars badge in your file.
 
       - uses: J0B10/aoc-badges-action@v3.0.0
         with:
           userid: ${{ secrets.AOC_USER_ID }} # your user id, see setup on how to obtain
           session: ${{ secrets.AOC_SESSION }} # secret containing session code, see setup on how to obtain
           year: 2017 # The year for which stats should be retrieved
-          starsRegex: '(?<=https:\/\/img\.shields\.io\/badge\/Stars%202017%20⭐-)[0-9]+(?=-yellow)' # Regular expression that finds the content of the stars badge in your file.
+          starsRegex: '(?<=img\.shields\.io\/badge\/)[0-9]+(?=%20stars-2017-black)' # Regular expression that finds the content of the stars badge in your file.
 
       - uses: J0B10/aoc-badges-action@v3.0.0
         with:
           userid: ${{ secrets.AOC_USER_ID }} # your user id, see setup on how to obtain
           session: ${{ secrets.AOC_SESSION }} # secret containing session code, see setup on how to obtain
           year: 2018 # The year for which stats should be retrieved
-          starsRegex: '(?<=https:\/\/img\.shields\.io\/badge\/Stars%202018%20⭐-)[0-9]+(?=-yellow)' # Regular expression that finds the content of the stars badge in your file.
+          starsRegex: '(?<=img\.shields\.io\/badge\/)[0-9]+(?=%20stars-2018-black)' # Regular expression that finds the content of the stars badge in your file.
 
       - uses: J0B10/aoc-badges-action@v3.0.0
         with:
           userid: ${{ secrets.AOC_USER_ID }} # your user id, see setup on how to obtain
           session: ${{ secrets.AOC_SESSION }} # secret containing session code, see setup on how to obtain
           year: 2019 # The year for which stats should be retrieved
-          starsRegex: '(?<=https:\/\/img\.shields\.io\/badge\/Stars%202019%20⭐-)[0-9]+(?=-yellow)' # Regular expression that finds the content of the stars badge in your file.
+          starsRegex: '(?<=img\.shields\.io\/badge\/)[0-9]+(?=%20stars-2019-black)' # Regular expression that finds the content of the stars badge in your file.
 
       - uses: J0B10/aoc-badges-action@v3.0.0
         with:
           userid: ${{ secrets.AOC_USER_ID }} # your user id, see setup on how to obtain
           session: ${{ secrets.AOC_SESSION }} # secret containing session code, see setup on how to obtain
           year: 2020 # The year for which stats should be retrieved
-          starsRegex: '(?<=https:\/\/img\.shields\.io\/badge\/Stars%202020%20⭐-)[0-9]+(?=-yellow)' # Regular expression that finds the content of the stars badge in your file.
+          starsRegex: '(?<=img\.shields\.io\/badge\/)[0-9]+(?=%20stars-2020-black)' # Regular expression that finds the content of the stars badge in your file.
 
       - uses: J0B10/aoc-badges-action@v3.0.0
         with:
           userid: ${{ secrets.AOC_USER_ID }} # your user id, see setup on how to obtain
           session: ${{ secrets.AOC_SESSION }} # secret containing session code, see setup on how to obtain
           year: 2021 # The year for which stats should be retrieved
-          starsRegex: '(?<=https:\/\/img\.shields\.io\/badge\/Stars%202021%20⭐-)[0-9]+(?=-yellow)' # Regular expression that finds the content of the stars badge in your file.
+          starsRegex: '(?<=img\.shields\.io\/badge\/)[0-9]+(?=%20stars-2021-black)' # Regular expression that finds the content of the stars badge in your file.
 
       - uses: J0B10/aoc-badges-action@v3.0.0
         with:
           userid: ${{ secrets.AOC_USER_ID }} # your user id, see setup on how to obtain
           session: ${{ secrets.AOC_SESSION }} # secret containing session code, see setup on how to obtain
           year: 2022 # The year for which stats should be retrieved
-          starsRegex: '(?<=https:\/\/img\.shields\.io\/badge\/Stars%202022%20⭐-)[0-9]+(?=-yellow)' # Regular expression that finds the content of the stars badge in your file.
+          starsRegex: '(?<=img\.shields\.io\/badge\/)[0-9]+(?=%20stars-2022-black)' # Regular expression that finds the content of the stars badge in your file.
 
       - uses: J0B10/aoc-badges-action@v3.0.0
         with:
           userid: ${{ secrets.AOC_USER_ID }} # your user id, see setup on how to obtain
           session: ${{ secrets.AOC_SESSION }} # secret containing session code, see setup on how to obtain
           year: 2023 # The year for which stats should be retrieved
-          starsRegex: '(?<=https:\/\/img\.shields\.io\/badge\/Stars%202023%20⭐-)[0-9]+(?=-yellow)' # Regular expression that finds the content of the stars badge in your file.
+          starsRegex: '(?<=img\.shields\.io\/badge\/)[0-9]+(?=%20stars-2023-black)' # Regular expression that finds the content of the stars badge in your file.
 
       - uses: J0B10/aoc-badges-action@v3.0.0
         with:
           userid: ${{ secrets.AOC_USER_ID }} # your user id, see setup on how to obtain
           session: ${{ secrets.AOC_SESSION }} # secret containing session code, see setup on how to obtain
           year: 2024 # The year for which stats should be retrieved
-          starsRegex: '(?<=https:\/\/img\.shields\.io\/badge\/Stars%202024%20⭐-)[0-9]+(?=-yellow)' # Regular expression that finds the content of the stars badge in your file.
+          starsRegex: '(?<=img\.shields\.io\/badge\/)[0-9]+(?=%20stars-2024-black)' # Regular expression that finds the content of the stars badge in your file.
 
       - uses: stefanzweifel/git-auto-commit-action@v4 # Step that pushes these local changes back to your github repo
         with:
