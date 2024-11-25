@@ -103,12 +103,17 @@ class Grid:
         character from a series of \n delimited lines. Input characters are converted
         using the convert_input method (which by default just returns the input).
         N.B. XY point (0,0) is top left."""
-        convert_input = convertor or Grid.convert_input
+        convert_input = convertor or Grid._convert_input
         self._grid: dict[XY, Any] = {
             XY(x, y): convert_input(c)
             for y, line in enumerate(inputs.splitlines())
             for x, c in enumerate(line)
         }
+
+    @staticmethod
+    def _convert_input(c: str) -> Any:
+        """Can be optionally overriden convert input characters"""
+        return c
 
     def get(self, xy, default: Any = None):
         return self._grid.get(xy, default)
@@ -121,11 +126,6 @@ class Grid:
 
     def items(self) -> Generator[tuple[XY, Any], None, None]:
         return ((xy, value) for xy, value in self._grid.items())
-
-    @staticmethod
-    def convert_input(c: str) -> Any:
-        """Can be optionally overriden convert input characters"""
-        return c
 
     def get_symbol(self, xy: XY) -> Any:
         """Returns the symbol at point xy"""
