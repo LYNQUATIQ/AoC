@@ -1,10 +1,9 @@
 """https://adventofcode.com/2024/day/1"""
 
-import os
 from collections import Counter
+from aoc.download_aoc_inputs import get_input_data
 
-with open(os.path.join(os.path.dirname(__file__), "inputs/day01_input.txt")) as f:
-    actual_input = f.read()
+actual_input = get_input_data(2024, 1)
 
 
 sample_input = """3   4
