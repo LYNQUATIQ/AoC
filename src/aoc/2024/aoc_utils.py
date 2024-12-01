@@ -14,7 +14,7 @@ def download_input_data(year: int, day: int) -> str:
 def get_input_data(year: int, day: int) -> str:
     """Get inout data for the specified year/day (saving locally if not yet downloaded)"""
     root_dir = os.path.dirname(__file__)
-    filename = f"{root_dir}/{year}/inputs/day{str(day).zfill(2)}_input.txt"
+    filename = f"{root_dir}/inputs/day{str(day).zfill(2)}_input.txt"
     try:
         with open(filename) as file:
             input_data = file.read()
