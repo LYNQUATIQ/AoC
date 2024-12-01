@@ -43,9 +43,9 @@ def generate_stub_files(year: int):
         os.makedirs(inputs_directory)
     with open(os.path.join(year_directory, "__init__.py"), "w") as f:
         pass
-    for day in range(2, 26):
+    for day in range(1, 26):
         with open(os.path.join(year_directory, f"day{day:02d}.py"), "w") as f:
-            f.write(f'"""https://adventofcode.com/{year}/day/{day}"""\n')
+            f.write(f'"""https://adventofcode.com/{year}/day/{day}"""\n\n')
             f.write("from aoc_utils import get_input_data\n\n")
             f.write(f"actual_input = get_input_data({year}, {day})\n\n\n")
             f.write('sample_input = """xxx"""\n\n\n')
@@ -55,6 +55,3 @@ def generate_stub_files(year: int):
             f.write('    print(f"Part 2: {False}\\n")\n\n\n')
             f.write("solve(sample_input)\n")
             f.write("# solve(actual_input)\n")
-
-
-generate_stub_files(2024)
