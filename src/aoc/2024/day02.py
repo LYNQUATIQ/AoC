@@ -1,8 +1,8 @@
 """https://adventofcode.com/2024/day/2"""
-
 from aoc_utils import get_input_data
 
 actual_input = get_input_data(2024, 2)
+
 
 sample_input = """xxx"""
 

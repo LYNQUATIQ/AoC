@@ -1,9 +1,7 @@
 """https://adventofcode.com/2024/day/17"""
+from aoc_utils import get_input_data
 
-import os
-
-with open(os.path.join(os.path.dirname(__file__), "inputs/day17_input.txt")) as f:
-    actual_input = f.read()
+actual_input = get_input_data(2024, 17)
 
 
 sample_input = """xxx"""

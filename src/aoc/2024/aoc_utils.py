@@ -37,20 +37,17 @@ def download_archive_inputs(start_year: int = 2015, end_year: int = 2023):
 
 def generate_stub_files(year: int):
     """Generate stub files for the specified year"""
-    year_directory = os.path.join(os.path.dirname(__file__), str(year))
+    year_directory = os.path.dirname(__file__)
     inputs_directory = os.path.join(year_directory, "inputs")
     if not os.path.exists(inputs_directory):
         os.makedirs(inputs_directory)
     with open(os.path.join(year_directory, "__init__.py"), "w") as f:
         pass
-    for i in range(1, 26):
-        with open(os.path.join(year_directory, f"day{i:02d}.py"), "w") as f:
-            f.write(f'"""https://adventofcode.com/{year}/day/{i}"""\n')
-            f.write("import os\n\n")
-            f.write(
-                f'with open(os.path.join(os.path.dirname(__file__), "inputs/day{i:02d}_input.txt")) as f:\n'
-            )
-            f.write("    actual_input = f.read()\n\n\n")
+    for day in range(2, 26):
+        with open(os.path.join(year_directory, f"day{day:02d}.py"), "w") as f:
+            f.write(f'"""https://adventofcode.com/{year}/day/{day}"""\n')
+            f.write("from aoc_utils import get_input_data\n\n")
+            f.write(f"actual_input = get_input_data({year}, {day})\n\n\n")
             f.write('sample_input = """xxx"""\n\n\n')
             f.write("def solve(inputs: str):\n")
             f.write("    values = tuple(map(int, inputs.splitlines()))\n\n")
@@ -58,3 +55,6 @@ def generate_stub_files(year: int):
             f.write('    print(f"Part 2: {False}\\n")\n\n\n')
             f.write("solve(sample_input)\n")
             f.write("# solve(actual_input)\n")
+
+
+generate_stub_files(2024)
