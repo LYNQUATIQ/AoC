@@ -1,5 +1,7 @@
 *.log
 *.txt
 *.pyc
+*.code-workspace
 .vscode
 .venv
+session_cookie.py

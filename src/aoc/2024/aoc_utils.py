@@ -1,0 +1,60 @@
+import os
+import requests
+
+from session_cookie import SESSION_COOKIE
+
+
+def download_input_data(year: int, day: int) -> str:
+    url = f"https://adventofcode.com/{year}/day/{day}/input"
+    response = requests.get(url, cookies={"session": SESSION_COOKIE})
+    response.raise_for_status()
+    return response.text
+
+
+def get_input_data(year: int, day: int) -> str:
+    """Get inout data for the specified year/day (saving locally if not yet downloaded)"""
+    root_dir = os.path.dirname(__file__)
+    filename = f"{root_dir}/{year}/inputs/day{str(day).zfill(2)}_input.txt"
+    try:
+        with open(filename) as file:
+            input_data = file.read()
+    except FileNotFoundError:
+        input_data = download_input_data(year, day)
+        with open(filename, "w") as file:
+            file.write(input_data)
+    return input_data
+
+
+def download_archive_inputs(start_year: int = 2015, end_year: int = 2023):
+    """Download input data for for the specified years and store in the inputs folder"""
+    for year in range(start_year, end_year):
+        directory = f"{year}/inputs"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        for day in range(1, 26):
+            get_input_data(year, day)
+
+
+def generate_stub_files(year: int):
+    """Generate stub files for the specified year"""
+    year_directory = os.path.join(os.path.dirname(__file__), str(year))
+    inputs_directory = os.path.join(year_directory, "inputs")
+    if not os.path.exists(inputs_directory):
+        os.makedirs(inputs_directory)
+    with open(os.path.join(year_directory, "__init__.py"), "w") as f:
+        pass
+    for i in range(1, 26):
+        with open(os.path.join(year_directory, f"day{i:02d}.py"), "w") as f:
+            f.write(f'"""https://adventofcode.com/{year}/day/{i}"""\n')
+            f.write("import os\n\n")
+            f.write(
+                f'with open(os.path.join(os.path.dirname(__file__), "inputs/day{i:02d}_input.txt")) as f:\n'
+            )
+            f.write("    actual_input = f.read()\n\n\n")
+            f.write('sample_input = """xxx"""\n\n\n')
+            f.write("def solve(inputs: str):\n")
+            f.write("    values = tuple(map(int, inputs.splitlines()))\n\n")
+            f.write('    print(f"Part 1: {False}")\n')
+            f.write('    print(f"Part 2: {False}\\n")\n\n\n')
+            f.write("solve(sample_input)\n")
+            f.write("# solve(actual_input)\n")

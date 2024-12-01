@@ -1,10 +1,9 @@
 """https://adventofcode.com/2024/day/1"""
 
 from collections import Counter
-from aoc.download_aoc_inputs import get_input_data
+from aoc_utils import get_input_data
 
 actual_input = get_input_data(2024, 1)
-
 
 sample_input = """3   4
 4   3
