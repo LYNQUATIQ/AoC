@@ -12,8 +12,8 @@ sample_input = """7 6 4 2 1
 
 
 def test_report(report: list[int]) -> bool:
-    all_increasing = all(a > b for a, b in zip(report[:-1], report[1:]))
-    all_decreasing = all(a < b for a, b in zip(report[:-1], report[1:]))
+    all_increasing = all(a < b for a, b in zip(report[:-1], report[1:]))
+    all_decreasing = all(a > b for a, b in zip(report[:-1], report[1:]))
     in_range = all(1 <= abs(a - b) <= 3 for a, b in zip(report[:-1], report[1:]))
     return (all_increasing or all_decreasing) and in_range
 
