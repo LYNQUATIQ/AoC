@@ -1,12 +1,13 @@
 import os
 import requests
 
-from session_cookie import SESSION_COOKIE
-
 
 def download_input_data(year: int, day: int) -> str:
+    session_cookie = os.environ.get("AOC_SESSION_COOKIE")
+    if not session_cookie:
+        raise ValueError("AOC_SESSION_COOKIE environment variable not set")
     url = f"https://adventofcode.com/{year}/day/{day}/input"
-    response = requests.get(url, cookies={"session": SESSION_COOKIE})
+    response = requests.get(url, cookies={"session": session_cookie})
     response.raise_for_status()
     return response.text
 
