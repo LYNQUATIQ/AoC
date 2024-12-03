@@ -1,7 +1,8 @@
 """https://adventofcode.com/2024/day/3"""
 
-from aoc_utils import get_input_data
 import re
+
+from aoc_utils import get_input_data
 
 actual_input = get_input_data(2024, 3)
 
@@ -21,16 +22,12 @@ def solve(inputs: str):
             if mul_enabled:
                 part2 += a * b
             inputs = inputs[len(m.group()) :]
-            continue
-        if inputs.startswith("do()"):
-            mul_enabled = True
-            inputs = inputs[4:]
-            continue
-        if inputs.startswith("don't()"):
-            mul_enabled = False
-            inputs = inputs[7:]
-            continue
-        inputs = inputs[1:]
+        elif inputs.startswith("do()"):
+            mul_enabled, inputs = True, inputs[4:]
+        elif inputs.startswith("don't()"):
+            mul_enabled, inputs = False, inputs[7:]
+        else:
+            inputs = inputs[1:]
 
     print(f"Part 1: {part1}")
     print(f"Part 2: {part2}\n")
