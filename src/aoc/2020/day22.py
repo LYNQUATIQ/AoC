@@ -8,7 +8,7 @@ from utils import print_time_taken
 with open(os.path.join(os.path.dirname(__file__), "inputs/day22_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """Player 1:
+example_input = """Player 1:
 9
 2
 6
@@ -60,5 +60,5 @@ def solve(inputs):
     print(f"Part 2: {calculate_score(*play_recursive(deck1, deck2))}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

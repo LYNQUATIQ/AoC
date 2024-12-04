@@ -5,7 +5,7 @@ import os
 with open(os.path.join(os.path.dirname(__file__), "inputs/day01_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """199
+example_input = """199
 200
 208
 210
@@ -23,5 +23,5 @@ def solve(inputs):
     print(f"Part 2: {sum(a < b for a, b in zip(values, values[3:]))}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

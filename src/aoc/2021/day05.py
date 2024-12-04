@@ -7,7 +7,7 @@ from collections import defaultdict
 with open(os.path.join(os.path.dirname(__file__), "inputs/day05_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """0,9 -> 5,9
+example_input = """0,9 -> 5,9
 8,0 -> 0,8
 9,4 -> 3,4
 2,2 -> 2,1
@@ -39,5 +39,5 @@ def solve(inputs):
     print(f"Part 2: {sum(c > 1 for c in vents2.values())}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

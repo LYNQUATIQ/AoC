@@ -5,7 +5,7 @@ from collections import Counter
 with open(os.path.join(os.path.dirname(__file__), "inputs/day10_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """16
+example_input = """16
 10
 15
 5
@@ -35,5 +35,5 @@ def solve(inputs, preamble=25):
     print(f"Part 2: {ways_from[SEAT]}\n")
 
 
-solve(sample_input, 5)
+solve(example_input, 5)
 solve(actual_input)

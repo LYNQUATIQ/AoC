@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day17_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>"""
+example_input = """>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>"""
 
 SHAPES = (
     (0b00111100,),  # ━
@@ -79,5 +79,5 @@ def solve(inputs: str) -> None:
     print(f"Part 2: {play_tetris(inputs, 1_000_000_000_000)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

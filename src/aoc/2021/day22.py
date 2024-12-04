@@ -11,7 +11,7 @@ from itertools import chain, product
 with open(os.path.join(os.path.dirname(__file__), "inputs/day22_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """on x=-5..47,y=-31..22,z=-19..33
+example_input = """on x=-5..47,y=-31..22,z=-19..33
 on x=-44..5,y=-27..21,z=-14..35
 on x=-49..-1,y=-11..42,z=-10..38
 on x=-20..34,y=-40..6,z=-44..1
@@ -181,5 +181,5 @@ def solve(inputs):
     print(f"Part 2: {reboot_reactor(instructions)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

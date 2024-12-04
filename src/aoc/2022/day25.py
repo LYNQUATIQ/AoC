@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day25_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """1=-0-2
+example_input = """1=-0-2
 12111
 2=0=
 21
@@ -57,5 +57,5 @@ def solve(inputs: str) -> None:
     print(f"Part 1: {encode(total)}")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

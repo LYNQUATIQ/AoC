@@ -5,7 +5,7 @@ import re
 with open(os.path.join(os.path.dirname(__file__), "inputs/day18_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2"""
+example_input = """((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2"""
 
 BRACKET = re.compile(r"^(?P<left>.*)\((?P<brackets>[\d+*]+)\)(?P<right>.*)$")
 STAR = re.compile(r"^(?P<left>[\d*+]+)(?P<operator>\*)(?P<right>[\d+]+)$")
@@ -38,5 +38,5 @@ def solve(inputs):
     print(f"Part 2: {part2}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

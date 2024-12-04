@@ -10,7 +10,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day05_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """    [D]    
+example_input = """    [D]    
 [N] [C]    
 [Z] [M] [P]
  1   2   3 
@@ -49,5 +49,5 @@ def solve(inputs: str) -> None:
     print(f"Part 2: {move_crates(arrangement, procedures, is_9001=True)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

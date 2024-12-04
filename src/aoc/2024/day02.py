@@ -3,7 +3,7 @@
 from aoc_utils import get_input_data
 
 actual_input = get_input_data(2024, 2)
-sample_input = """7 6 4 2 1
+example_input = """7 6 4 2 1
 1 2 7 8 9
 9 7 6 2 1
 1 3 2 4 5
@@ -39,5 +39,5 @@ def solve(inputs: str):
     print(f"Part 2: {safe}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

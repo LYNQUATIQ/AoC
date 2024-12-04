@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day04_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
+example_input = """Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
 Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
 Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
 Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
@@ -34,5 +34,5 @@ def solve(inputs: str):
     print(f"Part 2: {sum(scratchcards)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

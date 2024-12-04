@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day14_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """498,4 -> 498,6 -> 496,6
+example_input = """498,4 -> 498,6 -> 496,6
 503,4 -> 502,4 -> 502,9 -> 494,9"""
 
 SAND_SOURCE = (500, 0)
@@ -48,5 +48,5 @@ def solve(inputs: str) -> None:
     print(f"Part 2: {len(blocked) - number_of_rocks}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

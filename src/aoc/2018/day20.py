@@ -11,7 +11,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day20_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$"""
+example_input = """^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$"""
 
 
 class XY(NamedTuple("Pt", [("x", int), ("y", int)])):
@@ -103,5 +103,5 @@ def solve(inputs):
     print(f"Part 2: {paths_1000_plus}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

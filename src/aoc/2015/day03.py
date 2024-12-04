@@ -5,7 +5,7 @@ from grid_system import XY
 with open(os.path.join(os.path.dirname(__file__), "inputs/day03_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """^v^v^v^v^v"""
+example_input = """^v^v^v^v^v"""
 
 
 def deliver_presents(inputs, use_robo_santa=False):
@@ -29,5 +29,5 @@ def solve(inputs):
     print(f"Part 2: {deliver_presents(inputs, use_robo_santa=True)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

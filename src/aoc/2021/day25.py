@@ -5,7 +5,7 @@ import os
 with open(os.path.join(os.path.dirname(__file__), "inputs/day25_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """v...>>.vv>
+example_input = """v...>>.vv>
 .vv>>.vv..
 >>.>v>...v
 >>v>>.>.v.
@@ -52,5 +52,5 @@ def solve(inputs):
     print(f"Part 1: {steps}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

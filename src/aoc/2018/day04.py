@@ -8,7 +8,7 @@ from collections import defaultdict, deque
 with open(os.path.join(os.path.dirname(__file__), "inputs/day04_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """[1518-11-01 00:00] Guard #10 begins shift
+example_input = """[1518-11-01 00:00] Guard #10 begins shift
 [1518-11-01 00:05] falls asleep
 [1518-11-01 00:25] wakes up
 [1518-11-01 00:30] falls asleep
@@ -57,5 +57,5 @@ def solve(inputs):
     print(f"Part 2: {guard * max(guards[guard], key=guards[guard].get)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

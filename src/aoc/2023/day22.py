@@ -10,7 +10,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day22_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """1,0,1~1,2,1
+example_input = """1,0,1~1,2,1
 0,0,2~2,0,2
 0,2,3~2,2,3
 0,0,4~0,2,4
@@ -79,5 +79,5 @@ def solve(inputs: str):
     print(f"Part 2: {sum(chain_reaction.values())}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

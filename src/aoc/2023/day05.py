@@ -9,7 +9,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day05_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """seeds: 79 14 55 13
+example_input = """seeds: 79 14 55 13
 
 seed-to-soil map:
 50 98 2
@@ -103,5 +103,5 @@ def solve(inputs: str):
     print(f"Part 2: {min(get_seed_locations(seed_ranges, item_maps))}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

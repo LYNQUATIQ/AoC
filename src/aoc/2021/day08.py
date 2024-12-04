@@ -6,7 +6,7 @@ from itertools import chain
 with open(os.path.join(os.path.dirname(__file__), "inputs/day08_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
+example_input = """be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
 edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc
 fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg
 fbegcd cbd adcefb dageb afcb bc aefdc ecdab fgdeca fcdbega | efabcd cedba gadfec cb
@@ -60,5 +60,5 @@ def solve(inputs):
     print(f"Part 2: {sum(decode(p, v) for p, v in zip(patterns, values))}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

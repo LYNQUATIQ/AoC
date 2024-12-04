@@ -7,7 +7,7 @@ from aoc_utils import get_input_data
 actual_input = get_input_data(2024, 4)
 
 
-sample_input = """MMMSXXMASM
+example_input = """MMMSXXMASM
 MSAMXMSMSA
 AMXSXMAAMM
 MSAMASMSMX
@@ -55,5 +55,5 @@ def solve(inputs: str):
     print(f"Part 2: {mas_count}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

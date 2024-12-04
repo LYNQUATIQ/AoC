@@ -6,7 +6,7 @@ from collections import defaultdict
 with open(os.path.join(os.path.dirname(__file__), "inputs/day06_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """
+example_input = """
 abc
 
 a
@@ -42,5 +42,5 @@ def solve(inputs, questions=string.ascii_lowercase):
     print(f"Part 2: {part2}\n")
 
 
-solve(sample_input, "abc")
+solve(example_input, "abc")
 solve(actual_input)

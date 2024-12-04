@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day06_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """mjqjpqmgbljsphdztnvjfqwrcgsmlb"""
+example_input = """mjqjpqmgbljsphdztnvjfqwrcgsmlb"""
 
 
 def find_marker(datastream: str, length: int) -> int:
@@ -21,5 +21,5 @@ def solve(datastream: str) -> None:
     print(f"Part 2: {find_marker(datastream, 14)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

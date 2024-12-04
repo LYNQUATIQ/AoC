@@ -8,7 +8,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day22_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """        ...#
+example_input = """        ...#
         .#..
         #...
         ....
@@ -176,5 +176,5 @@ def solve(inputs: str) -> None:
     print(f"Part 2: {board.navigate_path(instructions, as_cube=True)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

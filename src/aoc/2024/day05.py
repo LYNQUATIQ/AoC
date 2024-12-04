@@ -1,10 +1,11 @@
 """https://adventofcode.com/2024/day/5"""
+
 from aoc_utils import get_input_data
 
 actual_input = get_input_data(2024, 5)
 
 
-sample_input = """xxx"""
+example_input = """xxx"""
 
 
 def solve(inputs: str):
@@ -14,5 +15,5 @@ def solve(inputs: str):
     print(f"Part 2: {False}\n")
 
 
-solve(sample_input)
+solve(example_input)
 # solve(actual_input)

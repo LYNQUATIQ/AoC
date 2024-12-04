@@ -12,7 +12,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day15_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """#########   
+example_input = """#########   
 #G......#
 #.E.#...#
 #..##..G#
@@ -164,5 +164,5 @@ def solve(inputs):
     print(f"Part 2: {outcome}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

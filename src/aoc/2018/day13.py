@@ -9,7 +9,7 @@ from utils import print_time_taken
 with open(os.path.join(os.path.dirname(__file__), "inputs/day13_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = r"""/>-<\  
+example_input = r"""/>-<\  
 |   |  
 | /<+-\
 | | | v
@@ -92,5 +92,5 @@ def solve(inputs):
     print(f"Part 2: {','.join(str(p) for p in trains.pop().xy)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

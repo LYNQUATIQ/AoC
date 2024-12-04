@@ -1,7 +1,7 @@
 import math
 from utils import print_time_taken
 
-sample_input = """389125467"""
+example_input = """389125467"""
 actual_input = """135468729"""
 
 
@@ -58,5 +58,5 @@ def solve(inputs):
     print(f"Part 2: {math.prod(cup_game.cups_after_one(2))}")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

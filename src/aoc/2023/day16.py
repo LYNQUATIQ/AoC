@@ -9,7 +9,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day16_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = r""".|...\....
+example_input = r""".|...\....
 |.-.\.....
 .....|-...
 ........|.
@@ -92,5 +92,5 @@ def solve(inputs: str):
 
 
 if __name__ == "__main__":
-    solve(sample_input)
+    solve(example_input)
     solve(actual_input)

@@ -9,7 +9,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day16_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """Before: [3, 2, 1, 1]
+example_input = """Before: [3, 2, 1, 1]
 9 2 1 2
 After:  [3, 2, 2, 1]
 
@@ -77,5 +77,5 @@ def solve(inputs):
     print(f"Part 2: {registers[0]}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

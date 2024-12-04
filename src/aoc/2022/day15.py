@@ -11,7 +11,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day15_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """Sensor at x=2, y=18: closest beacon is at x=-2, y=15
+example_input = """Sensor at x=2, y=18: closest beacon is at x=-2, y=15
 Sensor at x=9, y=16: closest beacon is at x=10, y=16
 Sensor at x=13, y=2: closest beacon is at x=15, y=3
 Sensor at x=12, y=14: closest beacon is at x=10, y=16
@@ -71,5 +71,5 @@ def solve(inputs: str, y_row: int) -> None:
     print(f"Part 2: {x * 4_000_000 + y}\n")
 
 
-solve(sample_input, 10)
+solve(example_input, 10)
 solve(actual_input, 2_000_000)

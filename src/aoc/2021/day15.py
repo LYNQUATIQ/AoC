@@ -9,7 +9,7 @@ from itertools import product
 with open(os.path.join(os.path.dirname(__file__), "inputs/day15_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """1163751742
+example_input = """1163751742
 1381373672
 2136511328
 3694931569
@@ -58,5 +58,5 @@ def solve(inputs):
     print(f"Part 2: {find_shortest_path(big_grid)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

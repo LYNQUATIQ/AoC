@@ -5,7 +5,7 @@ import os
 with open(os.path.join(os.path.dirname(__file__), "inputs/day02_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """forward 5
+example_input = """forward 5
 down 5
 forward 8
 up 3
@@ -29,5 +29,5 @@ def solve(input_txt):
     print(f"Part 2: {position * depth}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

@@ -6,7 +6,7 @@ from itertools import permutations
 with open(os.path.join(os.path.dirname(__file__), "inputs/day13_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """Alice would gain 54 happiness units by sitting next to Bob.
+example_input = """Alice would gain 54 happiness units by sitting next to Bob.
 Alice would lose 79 happiness units by sitting next to Carol.
 Alice would lose 2 happiness units by sitting next to David.
 Bob would gain 83 happiness units by sitting next to Alice.
@@ -58,5 +58,5 @@ def solve(inputs):
     print(f"Part 2: {total_happiness('me', participants, deltas)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

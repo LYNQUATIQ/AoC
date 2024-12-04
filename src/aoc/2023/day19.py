@@ -9,7 +9,7 @@ from typing import Sequence
 with open(os.path.join(os.path.dirname(__file__), "inputs/day19_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """px{a<2006:qkq,m>2090:A,rfg}
+example_input = """px{a<2006:qkq,m>2090:A,rfg}
 pv{a>1716:R,A}
 lnx{m>1548:A,A}
 rfg{s<537:gd,x>2440:R,A}
@@ -106,5 +106,5 @@ def solve(inputs: str):
     print(f"Part 2: {sum(combo_volume(r) for r in combos_to[ACCEPTED])}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

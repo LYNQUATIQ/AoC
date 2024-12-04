@@ -7,7 +7,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day12_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """dc-end
+example_input = """dc-end
 HN-start
 start-kj
 dc-start
@@ -49,5 +49,5 @@ def solve(inputs):
     print(f"Part 2: {find_paths(edges, True)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

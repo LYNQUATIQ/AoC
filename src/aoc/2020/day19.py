@@ -8,7 +8,7 @@ from utils import flatten, print_time_taken
 with open(os.path.join(os.path.dirname(__file__), "inputs/day19_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """42: 9 14 | 10 1
+example_input = """42: 9 14 | 10 1
 9: 14 27 | 1 26
 10: 23 14 | 28 1
 1: "a"
@@ -102,5 +102,5 @@ def solve(inputs):
     print(f"Part 2: {part2}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

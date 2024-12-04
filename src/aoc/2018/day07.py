@@ -8,7 +8,7 @@ import re
 with open(os.path.join(os.path.dirname(__file__), "inputs/day07_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """Step C must be finished before step A can begin.
+example_input = """Step C must be finished before step A can begin.
 Step C must be finished before step F can begin.
 Step A must be finished before step B can begin.
 Step A must be finished before step D can begin.
@@ -58,5 +58,5 @@ def solve(inputs, num_workers=2, step_duration=0):
     print(f"Part 2: {elapsed_time-1}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input, 5, 60)

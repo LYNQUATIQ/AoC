@@ -5,7 +5,7 @@ from itertools import combinations
 with open(os.path.join(os.path.dirname(__file__), "inputs/day01_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """1721
+example_input = """1721
 979
 366
 299
@@ -27,5 +27,5 @@ def solve(inputs):
             break
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

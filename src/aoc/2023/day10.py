@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day10_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """..F7.
+example_input = """..F7.
 .FJ|.
 SJ.L7
 |F--J
@@ -80,5 +80,5 @@ def solve(inputs: str):
     print(f"Part 2: {enclosed}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

@@ -11,7 +11,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day23_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """#.#####################
+example_input = """#.#####################
 #.......#########...###
 #######.#########.#.###
 ###.....#.>.>.###.#.###
@@ -113,5 +113,5 @@ def solve(inputs: str):
     print(f"Part2: {Hike(non_slippery_inputs).brutal_path()}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

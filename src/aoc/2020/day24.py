@@ -8,7 +8,7 @@ from utils import print_time_taken
 with open(os.path.join(os.path.dirname(__file__), "inputs/day24_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """sesenwnenenewseeswwswswwnenewsewsw
+example_input = """sesenwnenenewseeswwswswwnenewsewsw
 neeenesenwnwwswnenewnwwsewnenwseswesw
 seswneswswsenwwnwse
 nwnwneseeswswnenewneswwnewseswneseene
@@ -72,5 +72,5 @@ def solve(inputs):
     print(f"Part 2: {floor.iterate(100)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

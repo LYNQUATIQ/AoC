@@ -6,7 +6,7 @@ from collections import Counter, deque
 with open(os.path.join(os.path.dirname(__file__), "inputs/day06_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """3,4,3,1,2"""
+example_input = """3,4,3,1,2"""
 
 
 def solve(inputs):
@@ -21,5 +21,5 @@ def solve(inputs):
     print(f"Part 2: {sum(fish)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

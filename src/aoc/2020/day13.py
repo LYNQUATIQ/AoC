@@ -4,7 +4,7 @@ from utils import print_time_taken
 with open(os.path.join(os.path.dirname(__file__), "inputs/day13_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """939
+example_input = """939
 7,13,x,x,59,x,31,19"""
 
 
@@ -28,5 +28,5 @@ def solve(inputs):
     print(f"Part 2: {solution}")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

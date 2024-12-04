@@ -7,7 +7,7 @@ from utils import print_time_taken
 with open(os.path.join(os.path.dirname(__file__), "inputs/day21_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
+example_input = """mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
 trh fvjkl sbzzf mxmxvkd (contains dairy)
 sqjhc fvjkl (contains soy)
 sqjhc mxmxvkd sbzzf (contains fish)"""
@@ -52,5 +52,5 @@ def solve(inputs):
     print(f"Part 2: {','.join(allergen_map[a] for a in sorted(allergen_map))}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

@@ -5,7 +5,7 @@ import os
 with open(os.path.join(os.path.dirname(__file__), "inputs/day07_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """16,1,2,0,4,2,7,1,2,14"""
+example_input = """16,1,2,0,4,2,7,1,2,14"""
 
 
 def solve(inputs):
@@ -20,7 +20,7 @@ def solve(inputs):
     print(f"Part 2: {min(part2)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)
 
 from intcode_computer import IntCodeComputer

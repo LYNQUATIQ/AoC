@@ -6,7 +6,7 @@ from functools import cache
 from utils import print_time_taken
 
 
-sample_input = (4, 8)
+example_input = (4, 8)
 actual_input = (3, 5)
 
 BOARD_SIZE = 10
@@ -85,5 +85,5 @@ def solve(p1_start, p2_start):
     print(f"Part 2: {max(player1_wins, player2_wins)}\n")
 
 
-solve(*sample_input)
+solve(*example_input)
 solve(*actual_input)

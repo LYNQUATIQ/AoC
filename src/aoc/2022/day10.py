@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day10_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """addx 15
+example_input = """addx 15
 addx -11
 addx 6
 addx -3
@@ -180,5 +180,5 @@ def solve(inputs: str) -> None:
         print(raster[i : i + 40])
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

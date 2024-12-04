@@ -11,7 +11,7 @@ from collections import deque
 with open(os.path.join(os.path.dirname(__file__), "inputs/day05_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """dabAcCaCBAcCcaDA"""
+example_input = """dabAcCaCBAcCcaDA"""
 
 
 def reduce_polymer(polymer):
@@ -43,5 +43,5 @@ def solve(inputs):
     print(f"Part 2: {best_reduction}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

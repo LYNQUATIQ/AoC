@@ -10,7 +10,7 @@ from itertools import product
 with open(os.path.join(os.path.dirname(__file__), "inputs/day06_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """1, 1
+example_input = """1, 1
 1, 6
 8, 3
 3, 4
@@ -50,5 +50,5 @@ def solve(inputs, d_range):
     print(f"Part 2: {sum(sum(v.values()) < d_range for v in distances.values())}\n")
 
 
-solve(sample_input, 32)
+solve(example_input, 32)
 solve(actual_input, 10000)

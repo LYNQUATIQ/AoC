@@ -5,7 +5,7 @@ import os
 with open(os.path.join(os.path.dirname(__file__), "inputs/day13_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """6,10
+example_input = """6,10
 0,14
 9,10
 0,3
@@ -50,5 +50,5 @@ def solve(inputs):
         print("".join("\u2588" if (x, y) in dots else " " for x in range(columns)))
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

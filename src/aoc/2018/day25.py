@@ -8,7 +8,7 @@ from utils import print_time_taken
 with open(os.path.join(os.path.dirname(__file__), "inputs/day25_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """1,-1,-1,-2
+example_input = """1,-1,-1,-2
 -2,-2,0,1
 0,2,1,3
 -2,3,-2,1
@@ -40,5 +40,5 @@ def solve(inputs):
     print(f"Part 1: {len(set(constellations.values()))}")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

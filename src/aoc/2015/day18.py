@@ -5,7 +5,7 @@ from grid_system import XY
 with open(os.path.join(os.path.dirname(__file__), "inputs/day18_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """.#.#.#
+example_input = """.#.#.#
 ...##.
 #....#
 ..#...
@@ -54,5 +54,5 @@ def solve(inputs, iterations=100):
     print(f"Part 2: {LightGrid(inputs, corners_on=True).iterate(iterations)}\n")
 
 
-solve(sample_input, 5)
+solve(example_input, 5)
 solve(actual_input)

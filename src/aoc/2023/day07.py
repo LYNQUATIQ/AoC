@@ -7,7 +7,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day07_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """32T3K 765
+example_input = """32T3K 765
 T55J5 684
 KK677 28
 KTJJT 220
@@ -62,5 +62,5 @@ def solve(inputs: str):
     print(f"Part 2: {winnings}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

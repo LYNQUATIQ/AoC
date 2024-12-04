@@ -5,7 +5,7 @@ import os
 with open(os.path.join(os.path.dirname(__file__), "inputs/day11_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """5483143223
+example_input = """5483143223
 2745854711
 5264556173
 6141336146
@@ -54,5 +54,5 @@ def solve(inputs):
             break
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

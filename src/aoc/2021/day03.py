@@ -5,7 +5,7 @@ import os
 with open(os.path.join(os.path.dirname(__file__), "inputs/day03_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """00100
+example_input = """00100
 11110
 10110
 10111
@@ -47,5 +47,5 @@ def solve(inputs):
     print(f"Part 2: {get_rating(True) * get_rating(False)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

@@ -9,7 +9,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day08_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """LLR
+example_input = """LLR
 
 AAA = (BBB, BBB)
 BBB = (AAA, ZZZ)
@@ -58,5 +58,5 @@ def solve(inputs, inputs2):
     print(f"Part 2: {math.lcm(*steps)}\n")
 
 
-solve(sample_input, sample_input2)
+solve(example_input, sample_input2)
 solve(actual_input, actual_input)

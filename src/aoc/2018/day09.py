@@ -10,7 +10,7 @@ from utils import print_time_taken
 with open(os.path.join(os.path.dirname(__file__), "inputs/day09_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """10 players; last marble is worth 1618 points"""
+example_input = """10 players; last marble is worth 1618 points"""
 
 
 class Marble:
@@ -57,5 +57,5 @@ def solve(inputs):
     print(f"Part 2: {play_game(num_players, last_marble*100)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

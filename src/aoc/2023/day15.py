@@ -8,7 +8,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day15_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7"""
+example_input = """rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7"""
 
 
 def hash_value(token: str) -> int:
@@ -36,5 +36,5 @@ def solve(inputs: str):
     print(f"Part 2: {focusing_power}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

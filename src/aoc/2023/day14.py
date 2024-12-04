@@ -8,7 +8,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day14_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """O....#....
+example_input = """O....#....
 O.OO#....#
 .....##...
 OO.#O....O
@@ -70,5 +70,5 @@ def solve(inputs: str):
     print(f"Part 2: {calculate_load(rows)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

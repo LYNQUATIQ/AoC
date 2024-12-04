@@ -5,7 +5,7 @@ import itertools as it
 with open(os.path.join(os.path.dirname(__file__), "inputs/day09_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """35
+example_input = """35
 20
 15
 25
@@ -52,5 +52,5 @@ def solve(inputs, preamble=25):
     print(f"Part 2: {part2}\n")
 
 
-solve(sample_input, 5)
+solve(example_input, 5)
 solve(actual_input)

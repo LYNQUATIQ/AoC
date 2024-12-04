@@ -5,7 +5,7 @@ import os
 with open(os.path.join(os.path.dirname(__file__), "inputs/day02_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """A Y
+example_input = """A Y
 B X
 C Z
 """
@@ -47,5 +47,5 @@ def solve(inputs: str) -> None:
     print(f"Part 2: {total_score}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

@@ -4,7 +4,7 @@ import re
 with open(os.path.join(os.path.dirname(__file__), "inputs/day02_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """1-3 a: abcde
+example_input = """1-3 a: abcde
 1-3 b: cdefg
 2-9 c: ccccccccc"""
 
@@ -21,5 +21,5 @@ def solve(inputs):
     print(f"Part 2: {part2}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

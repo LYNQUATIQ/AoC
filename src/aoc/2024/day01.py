@@ -5,7 +5,7 @@ from aoc_utils import get_input_data
 
 actual_input = get_input_data(2024, 1)
 
-sample_input = """3   4
+example_input = """3   4
 4   3
 2   5
 1   3
@@ -31,5 +31,5 @@ def solve(inputs: str):
     print(f"Part 2: {similarity}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

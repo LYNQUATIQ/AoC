@@ -6,7 +6,7 @@ from grid import Point
 with open(os.path.join(os.path.dirname(__file__), "inputs/day17_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """.#.
+example_input = """.#.
 ..#
 ###"""
 
@@ -42,5 +42,5 @@ def solve(inputs):
     print(f"Part 2: {ConwayCubes(inputs, dimensions=4).boot_up()}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

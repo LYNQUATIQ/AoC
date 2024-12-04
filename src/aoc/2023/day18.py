@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day18_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """R 6 (#70c710)
+example_input = """R 6 (#70c710)
 D 5 (#0dc571)
 L 2 (#5713f0)
 D 2 (#d2c081)
@@ -91,5 +91,5 @@ def solve(inputs: str):
     print(f"Part 2: {shoelace_area(get_vertices_part_2(inputs))}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

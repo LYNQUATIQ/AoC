@@ -9,7 +9,7 @@ from itertools import combinations, permutations, product
 with open(os.path.join(os.path.dirname(__file__), "inputs/day19_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """--- scanner 0 ---
+example_input = """--- scanner 0 ---
 404,-588,-901
 528,-643,409
 -838,591,734
@@ -215,5 +215,5 @@ def solve(inputs):
     print(f"Part 2: {max_distance}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

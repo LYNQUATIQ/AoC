@@ -6,7 +6,7 @@ from collections import defaultdict
 with open(os.path.join(os.path.dirname(__file__), "inputs/day07_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """light red bags contain 1 bright white bag, 2 muted yellow bags.
+example_input = """light red bags contain 1 bright white bag, 2 muted yellow bags.
 dark orange bags contain 3 bright white bags, 4 muted yellow bags.
 bright white bags contain 1 shiny gold bag.
 muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.
@@ -44,5 +44,5 @@ def solve(inputs):
     print(f"Part 2: {inner_bag_count(MY_BAG)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

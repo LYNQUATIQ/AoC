@@ -14,7 +14,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day24_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """#.######
+example_input = """#.######
 #>>.<^<#
 #.<..<<#
 #>v.><>#
@@ -136,5 +136,5 @@ def solve(inputs: str) -> None:
     print(f"Part 2: {travel_time + time_to_go_back + time_to_return}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

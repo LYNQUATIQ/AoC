@@ -14,7 +14,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day11_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """Monkey 0:
+example_input = """Monkey 0:
   Starting items: 79, 98
   Operation: new = old * 19
   Test: divisible by 23
@@ -104,5 +104,5 @@ def solve(inputs: str) -> None:
     print(f"Part 2: {do_monkey_business(inputs, 10_000, reduce_worry=False)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

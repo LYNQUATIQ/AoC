@@ -7,7 +7,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day03_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """467..114..
+example_input = """467..114..
 ...*......
 ..35..633.
 ......#...
@@ -69,5 +69,5 @@ def solve(inputs: str):
     print(f"Part 2: {total_gear_ratio}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

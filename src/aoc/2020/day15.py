@@ -1,6 +1,6 @@
 from utils import print_time_taken
 
-sample_input = [0, 3, 6]
+example_input = [0, 3, 6]
 actual_input = [18, 11, 9, 0, 5, 1]
 
 
@@ -20,5 +20,5 @@ def solve(inputs):
     print(f"Part 2: {play_game(inputs, 30_000_000)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

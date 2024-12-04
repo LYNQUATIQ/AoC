@@ -8,7 +8,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day11_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """...#......
+example_input = """...#......
 .......#..
 #.........
 ..........
@@ -55,5 +55,5 @@ def solve(inputs: str, expansion: int):
     print(f"Part 2: {sum(distances)}\n")
 
 
-solve(sample_input, 10)
+solve(example_input, 10)
 solve(actual_input, 1_000_000)

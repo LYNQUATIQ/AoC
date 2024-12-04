@@ -6,7 +6,7 @@ import os
 with open(os.path.join(os.path.dirname(__file__), "inputs/day09_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """2199943210
+example_input = """2199943210
 3987894921
 9856789892
 8767896789
@@ -41,5 +41,5 @@ def solve(inputs):
     print(f"Part 2: {math.prod(sorted(basin_sizes)[-3:])}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

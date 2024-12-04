@@ -8,7 +8,7 @@ from utils import print_time_taken
 with open(os.path.join(os.path.dirname(__file__), "inputs/day10_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """position=< 9,  1> velocity=< 0,  2>
+example_input = """position=< 9,  1> velocity=< 0,  2>
 position=< 7,  0> velocity=<-1,  0>
 position=< 3, -2> velocity=<-1,  1>
 position=< 6, 10> velocity=<-2, -1>
@@ -65,5 +65,5 @@ def solve(stars, letter_height):
     print(f"Part 2: {elapsed_time}\n")
 
 
-solve(sample_input, 7)
+solve(example_input, 7)
 solve(actual_input, 10)

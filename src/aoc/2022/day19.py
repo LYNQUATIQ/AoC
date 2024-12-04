@@ -12,7 +12,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day19_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
+example_input = """Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
 Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian."""
 
 
@@ -153,5 +153,5 @@ def solve(inputs: str, sample: bool = False) -> None:
     print(f"Part 2: {prod(find_max_geodes(plan, 32) for plan in first_3_blueprints)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

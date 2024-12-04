@@ -7,7 +7,7 @@ from aoc_utils import get_input_data
 actual_input = get_input_data(2024, 3)
 
 
-sample_input = (
+example_input = (
     "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
 )
 
@@ -33,5 +33,5 @@ def solve(inputs: str):
     print(f"Part 2: {part2}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

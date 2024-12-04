@@ -12,7 +12,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day23_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """pos=<0,0,0>, r=4
+example_input = """pos=<0,0,0>, r=4
 pos=<1,0,0>, r=1
 pos=<4,0,0>, r=3
 pos=<0,2,0>, r=1
@@ -127,5 +127,5 @@ def solve(inputs):
     print(f"Part 2: {cloud.brute_force(xyz, 8).manhattan_distance()}")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

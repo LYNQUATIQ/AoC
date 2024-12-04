@@ -9,7 +9,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day20_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """1
+example_input = """1
 2
 -3
 3
@@ -111,5 +111,5 @@ def solve(inputs: str) -> None:
     print(f"Part 2: {mix_coordinates(inputs,DECRYPTION_KEY, 10)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

@@ -3,7 +3,7 @@ import os
 with open(os.path.join(os.path.dirname(__file__), "inputs/day05_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """FBFBBFFRLR"""
+example_input = """FBFBBFFRLR"""
 
 
 def solve(inputs):
@@ -18,5 +18,5 @@ def solve(inputs):
     print()
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

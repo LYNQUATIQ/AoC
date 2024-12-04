@@ -13,7 +13,7 @@ from utils import print_time_taken
 with open(os.path.join(os.path.dirname(__file__), "inputs/day17_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """x=495, y=2..7
+example_input = """x=495, y=2..7
 y=7, x=495..501
 x=501, y=3..7
 x=498, y=2..4
@@ -135,5 +135,5 @@ def solve(inputs):
     print(f"Part 2: {sum(v == reservoir.STANDING for v in reservoir.grid.values()) }\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

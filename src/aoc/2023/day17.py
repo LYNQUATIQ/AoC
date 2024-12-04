@@ -11,7 +11,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day17_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """2413432311323
+example_input = """2413432311323
 3215453535623
 3255245654254
 3446585845452
@@ -91,5 +91,5 @@ def solve(inputs: str):
     print(f"Part 2: {best_path(grid, min_steps=4, max_steps=10)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

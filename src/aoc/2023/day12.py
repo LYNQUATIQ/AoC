@@ -9,7 +9,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day12_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """???.### 1,1,3
+example_input = """???.### 1,1,3
 .??..??...?##. 1,1,3
 ?#?#?#?#?#?#?#? 1,3,1,6
 ????.#...#... 4,1,1
@@ -60,5 +60,5 @@ def solve(inputs: str):
     print(f"Part 2: {options}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

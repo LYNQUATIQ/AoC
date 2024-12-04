@@ -13,7 +13,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day23_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """#############
+example_input = """#############
 #...........#
 ###B#C#B#D###
   #A#D#C#A#
@@ -136,5 +136,5 @@ def solve(inputs):
     print(f"Part 2: {organise_amphipods( (first_row, *EXTRA_ROWS, last_row))}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

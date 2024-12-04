@@ -8,7 +8,7 @@ from itertools import combinations_with_replacement, permutations
 with open(os.path.join(os.path.dirname(__file__), "inputs/day15_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """Butterscotch: capacity -1, durability -2, flavor 6, texture 3, calories 8
+example_input = """Butterscotch: capacity -1, durability -2, flavor 6, texture 3, calories 8
 Cinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3
 """
 
@@ -56,5 +56,5 @@ def solve(inputs):
     print(f"Part 2: {max_score(calorie_count=500)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

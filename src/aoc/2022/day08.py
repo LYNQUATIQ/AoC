@@ -10,7 +10,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day08_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """30373
+example_input = """30373
 25512
 65332
 33549
@@ -34,5 +34,5 @@ def solve(inputs: str) -> None:
     print(f"Part 2: {max(scores)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

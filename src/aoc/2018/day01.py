@@ -7,7 +7,7 @@ from itertools import cycle
 with open(os.path.join(os.path.dirname(__file__), "inputs/day01_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """+1
+example_input = """+1
 -2
 +3
 +1"""
@@ -27,5 +27,5 @@ def solve(inputs):
     print(f"Part 2: {frequency}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

@@ -8,7 +8,7 @@ from utils import print_time_taken
 with open(os.path.join(os.path.dirname(__file__), "inputs/day24_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """Immune System:
+example_input = """Immune System:
 17 units each with 5390 hit points (weak to radiation, bludgeoning) with an attack that does 4507 fire damage at initiative 2
 989 units each with 1274 hit points (immune to fire; weak to bludgeoning, slashing) with an attack that does 25 slashing damage at initiative 3
 
@@ -113,5 +113,5 @@ def solve(inputs):
     print(f"Part 2: {immune_win}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

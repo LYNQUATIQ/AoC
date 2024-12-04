@@ -4,7 +4,7 @@ import re
 with open(os.path.join(os.path.dirname(__file__), "inputs/day04_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """
+example_input = """
 ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
 byr:1937 iyr:2017 cid:147 hgt:183cm
 
@@ -18,7 +18,7 @@ hgt:179cm
 
 hcl:#cfa07d eyr:2025 pid:166559648
 iyr:2011 ecl:brn hgt:59in"""
-sample_input = sample_input
+example_input = example_input
 
 
 class Passport:
@@ -70,5 +70,5 @@ def solve(inputs):
     print(f"Part 2: {part2}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

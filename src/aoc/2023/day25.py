@@ -9,7 +9,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day25_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """jqt: rhn xhk nvd
+example_input = """jqt: rhn xhk nvd
 rsh: frs pzl lsr
 xhk: hfx
 cmg: qnr nvd lhk bvb
@@ -69,5 +69,5 @@ def solve(inputs: str):
             break
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

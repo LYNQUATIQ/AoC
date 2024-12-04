@@ -11,7 +11,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day16_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
+example_input = """Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
 Valve BB has flow rate=13; tunnels lead to valves CC, AA
 Valve CC has flow rate=2; tunnels lead to valves DD, BB
 Valve DD has flow rate=20; tunnels lead to valves CC, AA, EE
@@ -143,5 +143,5 @@ def solve(inputs: str) -> None:
     print(f"Part 2: {maximum_release}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

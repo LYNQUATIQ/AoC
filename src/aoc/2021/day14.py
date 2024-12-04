@@ -6,7 +6,7 @@ import os
 with open(os.path.join(os.path.dirname(__file__), "inputs/day14_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """NNCB
+example_input = """NNCB
 
 CH -> B
 HH -> N
@@ -46,5 +46,5 @@ def solve(inputs):
     print(f"Part 2: {max(elements.values()) - min(elements.values())}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

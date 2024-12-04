@@ -8,7 +8,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day06_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """Time:      7  15   30
+example_input = """Time:      7  15   30
 Distance:  9  40  200"""
 
 
@@ -32,5 +32,5 @@ def solve(inputs: str):
     print(f"Part 2: {ways_to_win(time, distance)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

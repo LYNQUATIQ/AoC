@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day21_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """...........
+example_input = """...........
 .....###.#.
 .###.##..#.
 ..#.#...#..
@@ -64,5 +64,5 @@ def solve(inputs: str, steps_to_take: int):
     print(f"Part 2: {reachable}")
 
 
-solve(sample_input, 6)
+solve(example_input, 6)
 solve(actual_input, 64)

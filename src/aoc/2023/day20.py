@@ -7,7 +7,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day20_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """broadcaster -> a
+example_input = """broadcaster -> a
 %a -> inv, con
 &inv -> b
 %b -> con
@@ -106,5 +106,5 @@ def solve(inputs: str, analyse_inputs: bool = False):
     print(f"\nPart 2: {math.lcm(*[sum(BIT_ORDER[m].values()) for m in BIT_ORDER])}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input, analyse_inputs=True)

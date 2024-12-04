@@ -13,7 +13,7 @@ with open(os.path.join(os.path.dirname(__file__), "inputs/day22_input.txt")) as 
     actual_input = f.read()
 
 
-sample_input = """depth: 510
+example_input = """depth: 510
 target: 10,10"""
 
 
@@ -145,5 +145,5 @@ def solve(inputs):
     print(f"Part 2: {caves.best_route()}")
 
 
-solve(sample_input)
+solve(example_input)
 # solve(actual_input)

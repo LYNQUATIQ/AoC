@@ -3,7 +3,7 @@
 import re
 from itertools import product
 
-sample_input = """target area: x=20..30, y=-10..-5"""
+example_input = """target area: x=20..30, y=-10..-5"""
 actual_input = """target area: x=96..125, y=-144..-98"""
 
 
@@ -30,5 +30,5 @@ def solve(inputs):
     print(f"Part 2: {valid_velocities}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

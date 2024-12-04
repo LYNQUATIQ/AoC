@@ -7,7 +7,7 @@ from utils import print_time_taken
 with open(os.path.join(os.path.dirname(__file__), "inputs/day12_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """initial state: #..#.#..##......###...###
+example_input = """initial state: #..#.#..##......###...###
 
 ...## => #
 ..#.. => #
@@ -61,5 +61,5 @@ def solve(inputs):
     print(f"Part 2: {sum(i for i, c in enumerate(state, base_index) if c == PLANT)}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

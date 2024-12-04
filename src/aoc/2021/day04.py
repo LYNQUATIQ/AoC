@@ -7,7 +7,7 @@ from itertools import chain
 with open(os.path.join(os.path.dirname(__file__), "inputs/day04_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
+example_input = """7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
 22 13 17 11  0
  8  2 23  4 24
@@ -62,5 +62,5 @@ def solve(inputs):
     print(f"Part 2: {final_scores[-1]}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)

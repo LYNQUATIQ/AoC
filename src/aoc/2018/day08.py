@@ -5,7 +5,7 @@ import os
 with open(os.path.join(os.path.dirname(__file__), "inputs/day08_input.txt")) as f:
     actual_input = f.read()
 
-sample_input = """2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2"""
+example_input = """2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2"""
 
 
 class DataStream:
@@ -46,5 +46,5 @@ def solve(inputs):
     print(f"Part 2: {root_node.value}\n")
 
 
-solve(sample_input)
+solve(example_input)
 solve(actual_input)
