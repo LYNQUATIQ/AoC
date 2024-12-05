@@ -49,7 +49,7 @@ def solve(inputs: str):
 
     correct_middle_values, corrected_middle_values = 0, 0
     for update in updates:
-        # Track each page's position as well as the position of the page after it
+        # Track each page's position (as well as the position of the page after it)
         page_positions = {value: (pos, pos + 1) for pos, value in enumerate(update)}
 
         breached_rule = find_breached_rule(page_positions)
@@ -58,12 +58,12 @@ def solve(inputs: str):
             continue
 
         while breached_rule is not None:
-            # Move the second page to be after the first (halfway to the next page)
+            # Move second page after first placing it halfway between first and next
             a, b = breached_rule
-            a_position, page_after_a_position = page_positions[a]
-            new_b_position = a_position + (page_after_a_position - a_position) / 2
+            a_position, position_after_a = page_positions[a]
+            new_b_position = a_position + (position_after_a - a_position) / 2
             page_positions[a] = (a_position, new_b_position)
-            page_positions[b] = (new_b_position, page_after_a_position)
+            page_positions[b] = (new_b_position, position_after_a)
             breached_rule = find_breached_rule(page_positions)
 
         update = list(dict(sorted(page_positions.items(), key=lambda x: x[1])))
