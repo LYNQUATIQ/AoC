@@ -43,18 +43,18 @@ def solve(inputs: str):
         list(map(int, update.split(","))) for update in updates_inputs.splitlines()
     ]
 
-    def incorrect_pages(positions):
+    def incorrect_pages(page_positions):
         for a, b in rules:
-            if a in positions and b in positions:
-                if positions[a][0] > positions[b][0]:
+            if a in page_positions and b in page_positions:
+                if page_positions[a] > page_positions[b]:
                     return (a, b)
         return None
 
     middle_values = 0
     incorrect_updates = []
     for update in updates:
-        positions = {value: [pos] for pos, value in enumerate(update)}
-        if incorrect_pages(positions) is None:
+        page_positions = {value: pos for pos, value in enumerate(update)}
+        if incorrect_pages(page_positions) is None:
             middle_values += update[len(update) // 2]
         else:
             incorrect_updates.append(update)
@@ -63,22 +63,18 @@ def solve(inputs: str):
 
     middle_values = 0
     for update in incorrect_updates:
-        positions = {value: [pos, pos + 1] for pos, value in enumerate(update)}
-        while pages_to_swap := incorrect_pages(positions):
+        page_positions = {value: (pos, pos + 1) for pos, value in enumerate(update)}
+        while pages_to_swap := incorrect_pages(page_positions):
             a, b = pages_to_swap
-            for a, b in rules:
-                if a in positions and b in positions:
-                    pos_a, a_next = positions[a]
-                    pos_b, _ = positions[b]
-                    if pos_a > pos_b:
-                        a_gap = a_next - pos_a
-                        new_pos_b = pos_a + a_gap / 2
-                        positions[a] = [pos_a, new_pos_b]
-                        positions[b] = [new_pos_b, a_next]
-                        break
-        # Sort positions by the first item in the value list
-        positions = dict(sorted(positions.items(), key=lambda x: x[1][0]))
-        corrected_update = list(positions.keys())
+            pos_a, a_next = page_positions[a]
+            pos_b, _ = page_positions[b]
+            new_pos_b = pos_a + (a_next - pos_a) / 2
+            page_positions[a] = (pos_a, new_pos_b)
+            page_positions[b] = (new_pos_b, a_next)
+
+        corrected_update = list(
+            dict(sorted(page_positions.items(), key=lambda x: x[1][0]))
+        )
         middle_values += corrected_update[len(corrected_update) // 2]
 
     print(f"Part 2: {middle_values}\n")
