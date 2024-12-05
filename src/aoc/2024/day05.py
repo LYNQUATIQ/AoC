@@ -47,24 +47,29 @@ def solve(inputs: str):
                     return rule
         return None
 
-    middle_values, corrected_middle_values = 0, 0
+    correct_middle_values, corrected_middle_values = 0, 0
     for update in updates:
         # Track each page's position as well as the position of the page after it
         page_positions = {value: (pos, pos + 1) for pos, value in enumerate(update)}
-        if find_breached_rule(page_positions) is None:
-            middle_values += update[len(update) // 2]
-        else:
-            while breached_rule := find_breached_rule(page_positions):
-                # Move the second page to be after the first (halfway to the next page)
-                a, b = breached_rule
-                a_position, page_after_a_position = page_positions[a]
-                new_b_position = a_position + (page_after_a_position - a_position) / 2
-                page_positions[a] = (a_position, new_b_position)
-                page_positions[b] = (new_b_position, page_after_a_position)
-            update = list(dict(sorted(page_positions.items(), key=lambda x: x[1])))
-            corrected_middle_values += update[len(update) // 2]
 
-    print(f"Part 1: {middle_values}")
+        breached_rule = find_breached_rule(page_positions)
+        if breached_rule is None:
+            correct_middle_values += update[len(update) // 2]
+            continue
+
+        while breached_rule is not None:
+            # Move the second page to be after the first (halfway to the next page)
+            a, b = breached_rule
+            a_position, page_after_a_position = page_positions[a]
+            new_b_position = a_position + (page_after_a_position - a_position) / 2
+            page_positions[a] = (a_position, new_b_position)
+            page_positions[b] = (new_b_position, page_after_a_position)
+            breached_rule = find_breached_rule(page_positions)
+
+        update = list(dict(sorted(page_positions.items(), key=lambda x: x[1])))
+        corrected_middle_values += update[len(update) // 2]
+
+    print(f"Part 1: {correct_middle_values}")
     print(f"Part 2: {corrected_middle_values}\n")
 
 
