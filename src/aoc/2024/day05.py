@@ -3,8 +3,6 @@
 from aoc_utils import get_input_data
 
 actual_input = get_input_data(2024, 5)
-
-
 example_input = """47|53
 97|13
 97|61
@@ -36,13 +34,13 @@ example_input = """47|53
 
 
 def solve(inputs: str):
-    rules_input, updates_inputs = inputs.split("\n\n")
-    rules = [tuple(map(int, rule.split("|"))) for rule in rules_input.splitlines()]
-    updates = [
-        list(map(int, update.split(","))) for update in updates_inputs.splitlines()
-    ]
+    input1, input2 = inputs.split("\n\n")
+    rules = [tuple(map(int, rule.split("|"))) for rule in input1.splitlines()]
+    updates = [list(map(int, update.split(","))) for update in input2.splitlines()]
 
-    def find_breached_rule(page_positions):
+    def find_breached_rule(
+        page_positions: dict[int, tuple[float, float]]
+    ) -> tuple[int, int] | None:
         for rule in rules:
             if rule[0] in page_positions and rule[1] in page_positions:
                 if page_positions[rule[0]] > page_positions[rule[1]]:
@@ -51,21 +49,20 @@ def solve(inputs: str):
 
     middle_values, corrected_middle_values = 0, 0
     for update in updates:
+        # Track each page's position as well as the position of the page after it
         page_positions = {value: (pos, pos + 1) for pos, value in enumerate(update)}
         if find_breached_rule(page_positions) is None:
             middle_values += update[len(update) // 2]
         else:
             while breached_rule := find_breached_rule(page_positions):
-                # Move the second page in the rule to be after the first
-                first, second = breached_rule
-                a_position, position_after_a = page_positions[first]
-                new_b_position = a_position + (position_after_a - a_position) / 2
-                page_positions[first] = (a_position, new_b_position)
-                page_positions[second] = (new_b_position, position_after_a)
-            corrected_update = list(
-                dict(sorted(page_positions.items(), key=lambda x: x[1][0]))
-            )
-            corrected_middle_values += corrected_update[len(corrected_update) // 2]
+                # Move the second page to be after the first (halfway to the next page)
+                a, b = breached_rule
+                a_position, page_after_a_position = page_positions[a]
+                new_b_position = a_position + (page_after_a_position - a_position) / 2
+                page_positions[a] = (a_position, new_b_position)
+                page_positions[b] = (new_b_position, page_after_a_position)
+            update = list(dict(sorted(page_positions.items(), key=lambda x: x[1])))
+            corrected_middle_values += update[len(update) // 2]
 
     print(f"Part 1: {middle_values}")
     print(f"Part 2: {corrected_middle_values}\n")
