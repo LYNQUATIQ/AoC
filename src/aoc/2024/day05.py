@@ -37,7 +37,6 @@ example_input = """47|53
 
 def solve(inputs: str):
     rules_input, updates_inputs = inputs.split("\n\n")
-
     rules = [tuple(map(int, rule.split("|"))) for rule in rules_input.splitlines()]
     updates = [
         list(map(int, update.split(","))) for update in updates_inputs.splitlines()
