@@ -43,41 +43,33 @@ def solve(inputs: str):
         list(map(int, update.split(","))) for update in updates_inputs.splitlines()
     ]
 
-    def incorrect_pages(page_positions):
-        for a, b in rules:
-            if a in page_positions and b in page_positions:
-                if page_positions[a] > page_positions[b]:
-                    return (a, b)
+    def find_breached_rule(page_positions):
+        for rule in rules:
+            if rule[0] in page_positions and rule[1] in page_positions:
+                if page_positions[rule[0]] > page_positions[rule[1]]:
+                    return rule
         return None
 
-    middle_values = 0
-    incorrect_updates = []
+    middle_values, corrected_middle_values = 0, 0
     for update in updates:
-        page_positions = {value: pos for pos, value in enumerate(update)}
-        if incorrect_pages(page_positions) is None:
+        page_positions = {value: (pos, pos + 1) for pos, value in enumerate(update)}
+        if find_breached_rule(page_positions) is None:
             middle_values += update[len(update) // 2]
         else:
-            incorrect_updates.append(update)
+            while breached_rule := find_breached_rule(page_positions):
+                # Move the second page in the rule to be after the first
+                first, second = breached_rule
+                a_position, position_after_a = page_positions[first]
+                new_b_position = a_position + (position_after_a - a_position) / 2
+                page_positions[first] = (a_position, new_b_position)
+                page_positions[second] = (new_b_position, position_after_a)
+            corrected_update = list(
+                dict(sorted(page_positions.items(), key=lambda x: x[1][0]))
+            )
+            corrected_middle_values += corrected_update[len(corrected_update) // 2]
 
     print(f"Part 1: {middle_values}")
-
-    middle_values = 0
-    for update in incorrect_updates:
-        page_positions = {value: (pos, pos + 1) for pos, value in enumerate(update)}
-        while pages_to_swap := incorrect_pages(page_positions):
-            a, b = pages_to_swap
-            pos_a, a_next = page_positions[a]
-            pos_b, _ = page_positions[b]
-            new_pos_b = pos_a + (a_next - pos_a) / 2
-            page_positions[a] = (pos_a, new_pos_b)
-            page_positions[b] = (new_pos_b, a_next)
-
-        corrected_update = list(
-            dict(sorted(page_positions.items(), key=lambda x: x[1][0]))
-        )
-        middle_values += corrected_update[len(corrected_update) // 2]
-
-    print(f"Part 2: {middle_values}\n")
+    print(f"Part 2: {corrected_middle_values}\n")
 
 
 solve(example_input)
