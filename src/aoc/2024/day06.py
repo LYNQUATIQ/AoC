@@ -23,6 +23,7 @@ SOUTH = (0, 1)
 EAST = (1, 0)
 WEST = (-1, 0)
 RIGHT_TURN = {NORTH: EAST, EAST: SOUTH, SOUTH: WEST, WEST: NORTH}
+LEFT_TURN = {NORTH: WEST, WEST: SOUTH, SOUTH: EAST, EAST: NORTH}
 
 
 def solve(inputs: str):
@@ -38,47 +39,57 @@ def solve(inputs: str):
             guard_xy = (x, y)
     assert guard_xy is not None
 
-    guard_xys = {guard_xy}
+    # Keep track of the places the guard has visited
+    guard_path = []
     direction = NORTH
-    obstacles_hit = []
-    potential_loop_candidate = None
-    loop_candidates = set()
     while True:
-        next_step = (guard_xy[0] + direction[0], guard_xy[1] + direction[1])
-        if next_step in obstacles:
-            obstacles_hit.append(next_step)
+        assert (guard_xy, direction) not in guard_path
+        guard_path.append((guard_xy, direction))
+        next_xy = (guard_xy[0] + direction[0], guard_xy[1] + direction[1])
+        if next_xy in obstacles:
             direction = RIGHT_TURN[direction]
-            if len(obstacles_hit) >= 3:
-                loop_far_corner = obstacles_hit[-3]
-                if direction == NORTH:
-                    x, y = guard_xy[0], loop_far_corner[1] - 1
-                    if y >= 0:
-                        potential_loop_candidate = (x, y)
-                elif direction == EAST:
-                    x, y = loop_far_corner[0] + 1, guard_xy[1]
-                    if x < width:
-                        potential_loop_candidate = (x, y)
-                elif direction == SOUTH:
-                    x, y = guard_xy[0], loop_far_corner[1] + 1
-                    if y < height:
-                        potential_loop_candidate = (x, y)
-                elif direction == WEST:
-                    x, y = loop_far_corner[0] - 1, guard_xy[1]
-                    if x >= 0:
-                        potential_loop_candidate = (x, y)
             continue
-        if not (0 <= next_step[0] < height and 0 <= next_step[1] < width):
+        if not (0 <= next_xy[0] < height and 0 <= next_xy[1] < width):
             break
+        guard_xy = next_xy
 
-        guard_xy = next_step
-        if guard_xy == potential_loop_candidate:
-            loop_candidates.add(potential_loop_candidate)
-            potential_loop_candidate = None
-        guard_xys.add(guard_xy)
+    print(f"Part 1: {len({xy for xy,_ in guard_path})}")
 
-    print(f"Part 1: {len(guard_xys)}")
-    print(f"Part 2: {len(loop_candidates)}\n")
-    print(loop_candidates)
+    # Track the places the guard visited (including the path to the start)
+    visited = set()
+    xy, _ = guard_path[0]
+    direction, reverse = NORTH, SOUTH
+    while True:
+        assert (xy, direction) not in visited
+        visited.add((xy, direction))
+        reverse_step = (xy[0] + reverse[0], xy[1] + reverse[1])
+        if reverse_step in obstacles:
+            direction = LEFT_TURN[reverse]
+            continue
+        if not (0 <= reverse_step[0] < height and 0 <= reverse_step[1] < width):
+            break
+        xy = reverse_step
+
+    obstacle_candidates = set()
+    for guard_xy, direction in guard_path:
+        print(
+            guard_xy,
+            "heading",
+            {NORTH: "North", SOUTH: "South", EAST: "East", WEST: "West"}[direction],
+        )
+        next_xy = (guard_xy[0] + direction[0], guard_xy[1] + direction[1])
+        if next_xy in obstacles:
+            continue
+        if (xy, RIGHT_TURN[direction]) in visited:
+            obstacle_xy = (xy[0] + direction[0], xy[1] + direction[1])
+            if 0 <= obstacle_xy[0] < height and 0 <= obstacle_xy[1] < width:
+                print(f"  {obstacle_xy} is a candidate")
+                obstacle_candidates.add(obstacle_xy)
+        visited.add((guard_xy, direction))
+
+    print(f"Part 2: {len(obstacle_candidates)}\n")
+
+    print(sorted([(3, 6), (6, 7), (7, 7), (1, 8), (3, 8), (7, 9)]))
 
 
 solve(example_input)
