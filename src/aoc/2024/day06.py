@@ -29,17 +29,16 @@ REVERSE = {NORTH: SOUTH, SOUTH: NORTH, EAST: WEST, WEST: EAST}
 
 
 def solve(inputs: str):
-    grid = inputs.splitlines()
-    width, height = len(grid[0]), len(grid)
 
     guard_start_xy = None
     obstacles = set()
-    for x, y in product(range(width), range(height)):
-        if grid[y][x] == "#":
-            obstacles.add((x, y))
-        elif grid[y][x] == "^":
-            guard_start_xy = (x, y)
-    assert guard_start_xy is not None
+    for y, row in enumerate(inputs.splitlines()):
+        for x, c in enumerate(row):
+            if c == "#":
+                obstacles.add((x, y))
+            elif c == "^":
+                guard_start_xy = (x, y)
+    height, width = y + 1, x + 1
 
     guard_path = []
     guard_xy = guard_start_xy
@@ -69,12 +68,12 @@ def solve(inputs: str):
         # )
         next_xy = (guard_xy[0] + direction[0], guard_xy[1] + direction[1])
 
-        # If we hit an obstacle then reverse back and add the *full* path to visited
+        # If we hit an obstacle then reverse back and add the *full* path to here
         if next_xy in obstacles:
-            path_to_here = []
+            path_to_here = set()
             xy, reverse = guard_xy, REVERSE[direction]
             while (xy, REVERSE[reverse]) not in path_to_here:
-                path_to_here.append((xy, REVERSE[reverse]))
+                path_to_here.add((xy, REVERSE[reverse]))
                 reverse_step = (xy[0] + reverse[0], xy[1] + reverse[1])
                 if not (0 <= reverse_step[0] < width and 0 <= reverse_step[1] < height):
                     break
@@ -83,16 +82,19 @@ def solve(inputs: str):
                     continue
                 xy = reverse_step
             visited.update(path_to_here)
+            continue
 
+        # If we haven't hit an obstacle then check if turning here would create a loop
         if (guard_xy, RIGHT_TURN[direction]) in visited:
-            if 0 <= next_xy[0] < width and 0 <= next_xy[1] < height:
-                # print(f"  {next_xy} is a candidate")
-                obstacle_candidates.add(next_xy)
+            # print(f"  {next_xy} is a candidate")
+            obstacle_candidates.add(next_xy)
 
     assert guard_start_xy not in obstacle_candidates
     print(f"Part 2: {len(obstacle_candidates)}\n")
 
+    # print("Obstacle candidates:", obstacle_candidates)
+
 
 solve(example_input)
 solve(actual_input)
-# 444 too low
+# 853 too low, 811 wrong
