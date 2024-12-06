@@ -1,6 +1,7 @@
 """https://adventofcode.com/2024/day/6"""
 
 from itertools import product
+from os import path
 
 from aoc_utils import get_input_data
 
@@ -24,6 +25,7 @@ EAST = (1, 0)
 WEST = (-1, 0)
 RIGHT_TURN = {NORTH: EAST, EAST: SOUTH, SOUTH: WEST, WEST: NORTH}
 LEFT_TURN = {NORTH: WEST, WEST: SOUTH, SOUTH: EAST, EAST: NORTH}
+REVERSE = {NORTH: SOUTH, SOUTH: NORTH, EAST: WEST, WEST: EAST}
 
 
 def solve(inputs: str):
@@ -39,7 +41,6 @@ def solve(inputs: str):
             guard_xy = (x, y)
     assert guard_xy is not None
 
-    # Keep track of the places the guard has visited
     guard_path = []
     direction = NORTH
     while True:
@@ -55,42 +56,41 @@ def solve(inputs: str):
 
     print(f"Part 1: {len({xy for xy,_ in guard_path})}")
 
-    # Track the places the guard visited (including the path to the start)
-    visited = set()
-    xy, _ = guard_path[0]
-    direction, reverse = NORTH, SOUTH
-    while True:
-        assert (xy, direction) not in visited
-        visited.add((xy, direction))
-        reverse_step = (xy[0] + reverse[0], xy[1] + reverse[1])
-        if reverse_step in obstacles:
-            direction = LEFT_TURN[reverse]
-            continue
-        if not (0 <= reverse_step[0] < height and 0 <= reverse_step[1] < width):
-            break
-        xy = reverse_step
-
+    # Walk the path again, this time keeping track of the places the guard has visited
     obstacle_candidates = set()
+    visited = set()
     for guard_xy, direction in guard_path:
-        print(
-            guard_xy,
-            "heading",
-            {NORTH: "North", SOUTH: "South", EAST: "East", WEST: "West"}[direction],
-        )
-        next_xy = (guard_xy[0] + direction[0], guard_xy[1] + direction[1])
-        if next_xy in obstacles:
-            continue
-        if (xy, RIGHT_TURN[direction]) in visited:
-            obstacle_xy = (xy[0] + direction[0], xy[1] + direction[1])
-            if 0 <= obstacle_xy[0] < height and 0 <= obstacle_xy[1] < width:
-                print(f"  {obstacle_xy} is a candidate")
-                obstacle_candidates.add(obstacle_xy)
         visited.add((guard_xy, direction))
+        # print(
+        #     guard_xy,
+        #     "heading",
+        #     {NORTH: "North", SOUTH: "South", EAST: "East", WEST: "West"}[direction],
+        # )
+        next_xy = (guard_xy[0] + direction[0], guard_xy[1] + direction[1])
+
+        # If we hit an obstacle then reverse back and add the *full* path to visited
+        if next_xy in obstacles:
+            path_to_here = []
+            xy, reverse = guard_xy, REVERSE[direction]
+            while (xy, direction) not in path_to_here:
+                path_to_here.append((xy, direction))
+                reverse_step = (xy[0] + reverse[0], xy[1] + reverse[1])
+                if reverse_step in obstacles:
+                    direction = LEFT_TURN[reverse]
+                    continue
+                if not (0 <= reverse_step[0] < width and 0 <= reverse_step[1] < height):
+                    break
+                xy = reverse_step
+            visited.update(path_to_here)
+
+        if (guard_xy, RIGHT_TURN[direction]) in visited:
+            if 0 <= next_xy[0] < width and 0 <= next_xy[1] < height:
+                # print(f"  {next_xy} is a candidate")
+                obstacle_candidates.add(next_xy)
 
     print(f"Part 2: {len(obstacle_candidates)}\n")
 
-    print(sorted([(3, 6), (6, 7), (7, 7), (1, 8), (3, 8), (7, 9)]))
-
 
 solve(example_input)
-# solve(actual_input)
+solve(actual_input)
+# 444 too low
