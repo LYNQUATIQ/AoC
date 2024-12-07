@@ -22,9 +22,9 @@ THREE_OPERATIONS = (lambda a, b: a + b, lambda a, b: a * b, lambda a, b: int(f"{
 def compute_test_values(values: list[int], target: int, operations) -> list[int]:
     lhs_values, rhs = values[:-1], values[-1]
     if not lhs_values:
-        if rhs <= target:
-            return [rhs]
-        return []
+        if rhs > target:
+            return []
+        return [rhs]
 
     lhs_test_values = compute_test_values(lhs_values, target, operations)
     return [operation(lhs, rhs) for operation in operations for lhs in lhs_test_values]
