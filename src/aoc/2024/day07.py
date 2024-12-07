@@ -1,9 +1,8 @@
 """https://adventofcode.com/2024/day/7"""
 
 import re
-from itertools import product
 
-from aoc_utils import get_input_data
+from aoc_utils import get_input_data, print_time_taken
 
 actual_input = get_input_data(2024, 7)
 example_input = """190: 10 19
@@ -16,23 +15,30 @@ example_input = """190: 10 19
 21037: 9 7 18 13
 292: 11 6 16 20"""
 
-TWO_OPERATIONS = [lambda a, b: a + b, lambda a, b: a * b]
-THREE_OPERATIONS = [lambda a, b: a + b, lambda a, b: a * b, lambda a, b: int(f"{a}{b}")]
+TWO_OPERATIONS = (lambda a, b: a + b, lambda a, b: a * b)
+THREE_OPERATIONS = (lambda a, b: a + b, lambda a, b: a * b, lambda a, b: int(f"{a}{b}"))
+
+
+def compute_test_values(values: list[int], target: int, operations) -> list[int]:
+    lhs_values, rhs = values[:-1], values[-1]
+    if not lhs_values:
+        if rhs <= target:
+            return [rhs]
+        return []
+
+    lhs_test_values = compute_test_values(lhs_values, target, operations)
+    return [operation(lhs, rhs) for operation in operations for lhs in lhs_test_values]
 
 
 def total_calibrations(equations, operations_list) -> int:
     total_calibration = 0
     for target, values in equations:
-        for operators in product(operations_list, repeat=len(values) - 1):
-            equation_sum = values[0]
-            for operation, value in zip(operators, values[1:]):
-                equation_sum = operation(equation_sum, value)
-            if equation_sum == target:
-                total_calibration += target
-                break
+        if target in compute_test_values(values, target, operations_list):
+            total_calibration += target
     return total_calibration
 
 
+@print_time_taken
 def solve(inputs: str):
     equations = [
         (target, values)
