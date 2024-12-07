@@ -30,7 +30,7 @@ def compute_test_values(values: list[int], target: int, operations) -> list[int]
     return [operation(lhs, rhs) for operation in operations for lhs in lhs_test_values]
 
 
-def total_calibrations(equations, operations_list) -> int:
+def total_calibration(equations, operations_list) -> int:
     total_calibration = 0
     for target, values in equations:
         if target in compute_test_values(values, target, operations_list):
@@ -46,8 +46,8 @@ def solve(inputs: str):
             map(int, re.findall(r"-?\d+", line)) for line in inputs.splitlines()
         )
     ]
-    print(f"Part 1: {total_calibrations(equations, TWO_OPERATIONS)}")
-    print(f"Part 2: {total_calibrations(equations, THREE_OPERATIONS)}\n")
+    print(f"Part 1: {total_calibration(equations, TWO_OPERATIONS)}")
+    print(f"Part 2: {total_calibration(equations, THREE_OPERATIONS)}\n")
 
 
 solve(example_input)
