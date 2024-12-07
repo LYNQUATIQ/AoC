@@ -1,12 +1,8 @@
 """https://adventofcode.com/2024/day/6"""
 
-from functools import cache
-
-from aoc_utils import get_input_data
+from aoc_utils import get_input_data, print_time_taken
 
 actual_input = get_input_data(2024, 6)
-
-
 example_input = """....#.....
 .........#
 ..........
@@ -18,58 +14,56 @@ example_input = """....#.....
 #.........
 ......#..."""
 
-NORTH = (0, -1)
-SOUTH = (0, 1)
-EAST = (1, 0)
-WEST = (-1, 0)
+NORTH = -1j
+SOUTH = +1j
+EAST = +1
+WEST = -1
 RIGHT_TURN = {NORTH: EAST, EAST: SOUTH, SOUTH: WEST, WEST: NORTH}
 
 
+@print_time_taken
 def solve(inputs: str):
 
     start_xy = None
     obstacles = set()
     for y, row in enumerate(inputs.splitlines()):
         for x, c in enumerate(row):
+            xy = complex(x, y)
             if c == "#":
-                obstacles.add((x, y))
+                obstacles.add(xy)
             elif c == "^":
-                start_xy = (x, y)
+                start_xy = xy
     height, width = y + 1, x + 1
 
-    @cache
-    def path_from_here(xy, heading, extra_obstacle=None):
-        path_from_here = set()
+    def path_out(extra_obstacle=None):
+        path_out = set()
+        xy, heading = start_xy, NORTH
         while True:
-            if (xy, heading) in path_from_here:
+            if (xy, heading) in path_out:
                 return None
-            next_xy = (xy[0] + heading[0], xy[1] + heading[1])
-            if not (0 <= xy[0] < width and 0 <= xy[1] < height):
-                return path_from_here
-            path_from_here.add((xy, heading))
+            next_xy = xy + heading
+            if not (0 <= xy.real < width and 0 <= xy.imag < height):
+                return path_out
+            path_out.add((xy, heading))
             if (next_xy in obstacles) or (next_xy == extra_obstacle):
                 heading = RIGHT_TURN[heading]
                 continue
             xy = next_xy
 
-    guard_path = path_from_here(start_xy, NORTH)
+    guard_path = path_out()
     print(f"Part 1: {len({p for p,_ in guard_path})}")
 
     obstacle_candidates = set()
     for xy, heading in guard_path:
         # If we were to add a hypothetical obstacle ahead of us would we still leave?
-        obstacle = (xy[0] + heading[0], xy[1] + heading[1])
-        if obstacle in obstacles or obstacle == start_xy:
+        new_obstacle = xy + heading
+        if new_obstacle in obstacles or new_obstacle == start_xy:
             continue
-        if path_from_here(start_xy, NORTH, obstacle) is None:
-            # print("  Found obstacle candidate", obstacle)
-            obstacle_candidates.add(obstacle)
+        if path_out(new_obstacle) is None:
+            obstacle_candidates.add(new_obstacle)
 
     print(f"Part 2: {len(obstacle_candidates)}\n")
-
-    # print("Obstacle candidates:", sorted(obstacle_candidates))
 
 
 solve(example_input)
 solve(actual_input)
-# 853 too low, 1253 wrong, 1819 wrong

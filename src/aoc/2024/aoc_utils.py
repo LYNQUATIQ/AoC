@@ -1,5 +1,7 @@
+import functools
 import os
 import requests
+import time
 
 
 def download_input_data(year: int, day: int) -> str:
@@ -56,3 +58,23 @@ def generate_stub_files(year: int):
             f.write('    print(f"Part 2: {False}\\n")\n\n\n')
             f.write("solve(example_input)\n")
             f.write("# solve(actual_input)\n")
+
+
+def print_time_taken(func):
+    @functools.wraps(func)
+    def _wrapped_func(*args, **kwargs):
+        start_time = time.time()
+        retval = func(*args, **kwargs)
+        time_taken = time.time() - start_time
+        if time_taken > 1.0:
+            time_str = f"{time_taken:.2f}s"
+        elif time_taken > 0.001:
+            time_str = f"{time_taken*1_000:.2f}ms"
+        elif time_taken > 0.000_001:
+            time_str = f"{time_taken*1_000_000:.2f}µs"
+        else:
+            time_str = f"{time_taken*1_000_000_000:.2f}ns"
+        print(f"Time taken: {time_str}\n")
+        return retval
+
+    return _wrapped_func
