@@ -23,41 +23,32 @@ example_input = """............
 
 
 def solve(inputs: str):
-    ants = defaultdict(lambda: list)
-    ants = {}
+    antennas = defaultdict(list)
     for y, row in enumerate(inputs.splitlines()):
         for x, c in enumerate(row):
             xy = complex(x, y)
             if c != ".":
-                try:
-                    ants[c].append(xy)
-                except KeyError:
-                    ants[c] = [xy]
+                antennas[c].append(xy)
     height, width = y + 1, x + 1
 
-    antinodes = set()
-    for positions in ants.values():
+    antinodes_part1, antinodes_part2 = set(), set()
+    for positions in antennas.values():
         for a, b in combinations(positions, 2):
-            in_range = True
-            i = 0
             dxy = b - a
-            antinodes.add(a)
-            antinodes.add(b)
-            while in_range:
-                a0 = a - (dxy * i)
-                i += 1
-                in_range = False
-                if 0 <= a0.real < width and 0 <= a0.imag < height:
-                    antinodes.add(a0)
-                    in_range = True
+            for ant_xy, dxy in ((a, a - b), (b, b - a)):
+                i, in_range = 0, True
+                while in_range:
+                    antinode_xy = ant_xy + (dxy * i)
+                    in_range = False
+                    if 0 <= antinode_xy.real < width and 0 <= antinode_xy.imag < height:
+                        antinodes_part2.add(antinode_xy)
+                        if i == 1:
+                            antinodes_part1.add(antinode_xy)
+                        in_range = True
+                    i += 1
 
-                a0 = b + (dxy * i)
-                if 0 <= a0.real < width and 0 <= a0.imag < height:
-                    antinodes.add(a0)
-                    in_range = True
-
-    print(f"Part 1: {len(antinodes)}")
-    print(f"Part 2: {False}\n")
+    print(f"Part 1: {len(antinodes_part1)}")
+    print(f"Part 2: {len(antinodes_part2)}\n")
 
 
 solve(example_input)
