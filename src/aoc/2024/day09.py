@@ -15,6 +15,7 @@ def solve(inputs: str):
     files = {}
     free_space = {}
 
+    disk = ""
     while True:
         files[file_id] = int(inputs[i])
         pointer += files[file_id]
@@ -33,24 +34,31 @@ def solve(inputs: str):
 
     end_index, start_index = len(disk) - 1, 0
     sorted_disk = ""
+    check_sum = 0
+    file_id = 0
     while True:
+        # Find next file character from the end
         while disk[end_index] == ".":
             end_index -= 1
-            if end_index < start_index:
-                break
+        # Find next space character from the start
         while disk[start_index] != ".":
-            sorted_disk += disk[start_index]
-            start_index += 1
-            if end_index < start_index:
+            if start_index >= end_index:
                 break
+            sorted_disk += disk[start_index]
+            check_sum += int(disk[start_index]) * start_index
+            start_index += 1
+
+        if end_index < start_index:
+            break
         sorted_disk += disk[end_index]
         start_index += 1
+        check_sum += int(disk[end_index]) * start_index
         end_index -= 1
-        input(sorted_disk)
 
-    print(f"Part 1: {disk}")
-    print(f"Part 2: {sorted_disk}\n")
+    print(f"Part 1: {check_sum}")
+    print(f"Part 2: {False}\n")
 
 
 solve(example_input)
-# solve(actual_input)
+solve(actual_input)
+# 91411296588 is too low
