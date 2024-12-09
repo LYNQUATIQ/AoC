@@ -40,6 +40,21 @@ def solve(inputs: str):
                 start_xy = xy
     height, width = y + 1, x + 1
 
+    # Walk the guard path for part 1 and remember the positions visited
+    guard_positions = set()
+    xy, heading = start_xy, NORTH
+    while True:
+        next_xy = xy + heading
+        if not (0 <= xy.real < width and 0 <= xy.imag < height):
+            break
+        guard_positions.add((xy, heading))
+        if next_xy in obstacles:
+            heading = RIGHT_TURN[heading]
+            continue
+        xy = next_xy
+
+    print(f"Part 1: {len({p for p,_ in guard_positions})}")
+
     def get_edge_end(origin_xy, heading):
         xy = origin_xy
         while True:
@@ -59,21 +74,6 @@ def solve(inputs: str):
             heading = REVERSE[neighbour_direction]
             heading = RIGHT_TURN[heading]
             edges[heading][neighour_xy] = get_edge_end(neighour_xy, heading)
-
-    # Walk the guard path for part 1 and remember the positions visited
-    guard_positions = set()
-    xy, heading = start_xy, NORTH
-    while True:
-        next_xy = xy + heading
-        if not (0 <= xy.real < width and 0 <= xy.imag < height):
-            break
-        guard_positions.add((xy, heading))
-        if next_xy in obstacles:
-            heading = RIGHT_TURN[heading]
-            continue
-        xy = next_xy
-
-    print(f"Part 1: {len({p for p,_ in guard_positions})}")
 
     def is_loop(overrides):
         xy, heading = start_xy, NORTH
