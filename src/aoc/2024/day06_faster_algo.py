@@ -41,13 +41,13 @@ def solve(inputs: str):
     height, width = y + 1, x + 1
 
     # Walk the guard path for part 1 and remember the positions visited
-    guard_positions = set()
+    guard_positions = []
     xy, heading = start_xy, NORTH
     while True:
         next_xy = xy + heading
         if not (0 <= xy.real < width and 0 <= xy.imag < height):
             break
-        guard_positions.add((xy, heading))
+        guard_positions.append((xy, heading))
         if next_xy in obstacles:
             heading = RIGHT_TURN[heading]
             continue
@@ -55,7 +55,9 @@ def solve(inputs: str):
 
     print(f"Part 1: {len({p for p,_ in guard_positions})}")
 
+    # Precompute all the edges that lead away from the obstacles
     def get_edge_end(origin_xy, heading):
+        """Given a starting point/heading work out endpoint (i.e. obstacle or off map)"""
         xy = origin_xy
         while True:
             next_xy = xy + heading
@@ -65,7 +67,6 @@ def solve(inputs: str):
                 return OFF_MAP
             xy = next_xy
 
-    # Precompute all the edges that lead away from the obstacles
     edges = defaultdict(dict)
     edges[NORTH][start_xy] = get_edge_end(start_xy, NORTH)
     for obstacle in obstacles:
@@ -75,78 +76,53 @@ def solve(inputs: str):
             heading = RIGHT_TURN[heading]
             edges[heading][neighour_xy] = get_edge_end(neighour_xy, heading)
 
-    def is_loop(overrides):
-        xy, heading = start_xy, NORTH
-        visited = set()
-        while True:
-            if (xy, heading) in visited:
-                return True
-            visited.add((xy, heading))
-            try:
-                next_xy = overrides[heading][xy]
-            except KeyError:
-                next_xy = edges[heading][xy]
-            if next_xy is OFF_MAP:
-                return False
-            xy, heading = next_xy, RIGHT_TURN[heading]
-
+    # Loop over the steps in the path and test adding an extra obstacle ahead of us
     obstacle_candidates = set()
     for path_xy, path_heading in guard_positions:
-
-        # If we were to add a hypothetical obstacle ahead of us would we create a loop?
-        new_obstacle = path_xy + path_heading
-        if new_obstacle in obstacles or new_obstacle == start_xy:
+        extra_obstacle = path_xy + path_heading
+        if extra_obstacle in obstacles or extra_obstacle == start_xy:
             continue
-
-        # Find edges that need to be overridden, and add new ones from new obstacle...
-        obstacle_x, obstacle_y = new_obstacle.real, new_obstacle.imag
-        overrides = defaultdict(dict)
-        for heading in (NORTH, SOUTH, EAST, WEST):
-            for start, end in edges[heading].items():
-                start_x, start_y = start.real, start.imag
-                if end is OFF_MAP:
-                    end_x, end_y = {
-                        NORTH: (start_x, -1),
-                        SOUTH: (start_x, height),
-                        EAST: (width, start_y),
-                        WEST: (-1, start_y),
-                    }[heading]
-                else:
-                    end_x, end_y = end.real, end.imag
-                if heading in (NORTH, SOUTH):
-                    if obstacle_x != start_x:
+        # Find edges that need to be overridden, and add extra ones due to new obstacle
+        obstacle_x, obstacle_y = extra_obstacle.real, extra_obstacle.imag
+        extra_edges = defaultdict(dict)
+        for edge_direction in (NORTH, SOUTH, EAST, WEST):
+            for start, end in edges[edge_direction].items():
+                x0, y0 = start.real, start.imag
+                x1, y1 = end.real, end.imag
+                if edge_direction == NORTH:
+                    if (obstacle_x != x0) or not (y0 > obstacle_y >= y1):
                         continue
-                    if heading == NORTH:
-                        if not (start_y > obstacle_y >= end_y):
-                            continue
-                        xy, heading_out = new_obstacle + SOUTH, RIGHT_TURN[heading]
-                        overrides[heading][start] = xy
-                        overrides[heading_out][xy] = get_edge_end(xy, heading_out)
-
-                    elif heading == SOUTH:
-                        if not (start_y < obstacle_y <= end_y):
-                            continue
-                        xy, heading_out = new_obstacle + NORTH, RIGHT_TURN[heading]
-                        overrides[heading][start] = xy
-                        overrides[heading_out][xy] = get_edge_end(xy, heading_out)
-                elif heading in (EAST, WEST):
-                    if obstacle_y != start_y:
+                    xy, heading_out = extra_obstacle + SOUTH, RIGHT_TURN[edge_direction]
+                elif edge_direction == SOUTH:
+                    y1 = height if y1 == -1 else y1
+                    if (obstacle_x != x0) or not (y0 < obstacle_y <= y1):
                         continue
-                    if heading == EAST:
-                        if not (start_x < obstacle_x <= end_x):
-                            continue
-                        xy, heading_out = new_obstacle + WEST, RIGHT_TURN[heading]
-                        overrides[heading][start] = xy
-                        overrides[heading_out][xy] = get_edge_end(xy, heading_out)
-                    elif heading == WEST:
-                        if not (start_x > obstacle_x >= end_x):
-                            continue
-                        xy, heading_out = new_obstacle + EAST, RIGHT_TURN[heading]
-                        overrides[heading][start] = xy
-                        overrides[heading_out][xy] = get_edge_end(xy, heading_out)
+                    xy, heading_out = extra_obstacle + NORTH, RIGHT_TURN[edge_direction]
+                elif edge_direction == EAST:
+                    x1 = width if x1 == -1 else x1
+                    if (obstacle_y != y0) or not (x0 < obstacle_x <= x1):
+                        continue
+                    xy, heading_out = extra_obstacle + WEST, RIGHT_TURN[edge_direction]
+                elif edge_direction == WEST:
+                    if (obstacle_y != y0) or not (x0 > obstacle_x >= x1):
+                        continue
+                    xy, heading_out = extra_obstacle + EAST, RIGHT_TURN[edge_direction]
+                # Found edge hitting the extra obstacle; shorten it and add new one
+                extra_edges[edge_direction][start] = xy
+                extra_edges[heading_out][xy] = get_edge_end(xy, heading_out)
 
-        if is_loop(overrides):
-            obstacle_candidates.add(new_obstacle)
+        # Test if the extra obstacle (i.e. extra edges) causes a loop
+        xy, heading, visited = start_xy, NORTH, set()
+        while xy != OFF_MAP:
+            if (xy, heading) in visited:
+                obstacle_candidates.add(extra_obstacle)  # Found a loop
+                break
+            visited.add((xy, heading))
+            try:
+                xy = extra_edges[heading][xy]
+            except KeyError:
+                xy = edges[heading][xy]
+            heading = RIGHT_TURN[heading]
 
     print(f"Part 2: {len(obstacle_candidates)}\n")
 
