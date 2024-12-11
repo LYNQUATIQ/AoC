@@ -1,9 +1,13 @@
 """https://adventofcode.com/2024/day/11"""
 
+from collections import defaultdict
+from email.policy import default
 from functools import cache
 
 actual_input = "9694820 93 54276 1304 314 664481 0 4"
 example_input = "125 17"
+
+stone_count_cache = defaultdict(dict)
 
 
 @cache
@@ -17,13 +21,20 @@ def process_value(value: int) -> list[int]:
     return [value * 2024]
 
 
-def stone_count(
-    value: int, total_iterations: int, current_iteration: int = 0
-) -> list[int]:
-    if current_iteration == total_iterations:
+def stone_count(stone_value: int, iterations_left: int) -> int:
+    if iterations_left == 0:
         return 1
-    values = process_value(value)
-    return sum(stone_count(v, total_iterations, current_iteration + 1) for v in values)
+    try:
+        return stone_count_cache[stone_value][iterations_left]
+    except KeyError:
+        pass
+
+    total_stones = 0
+    for value in process_value(stone_value):
+        count = stone_count(value, iterations_left - 1)
+        stone_count_cache[value][iterations_left - 1] = count
+        total_stones += count
+    return total_stones
 
 
 def total_stone_count(initial_stones: list[int], total_iterations: int) -> list[int]:
@@ -34,7 +45,7 @@ def solve(inputs: str):
     stones = list(map(int, inputs.split()))
 
     print(f"Part 1: {total_stone_count(stones, 25)}")
-    # print(f"Part 2: {total_stone_count(stones, 75)}\n")
+    print(f"Part 2: {total_stone_count(stones, 75)}\n")
 
 
 solve(example_input)
