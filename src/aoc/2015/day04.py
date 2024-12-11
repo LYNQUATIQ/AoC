@@ -1,7 +1,9 @@
 import hashlib
 
 
-actual_input = "ckczppom"
+from aoc_utils import get_input_data
+
+actual_input = get_input_data(2015, 4)
 
 
 def get_answer(secret_key, num_zeroes):

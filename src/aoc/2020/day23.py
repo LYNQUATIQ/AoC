@@ -1,8 +1,10 @@
 import math
 from utils import print_time_taken
 
+from aoc_utils import get_input_data
+
+actual_input = get_input_data(2020, 23)
 example_input = """389125467"""
-actual_input = """135468729"""
 
 
 class CupGame:

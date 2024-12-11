@@ -1,7 +1,9 @@
 import re
 import string
 
-actual_input = "cqjxjnds"
+from aoc_utils import get_input_data
+
+actual_input = get_input_data(2015, 11)
 
 TWO_PAIRS = re.compile(r"(\w)(\1)\w*(\w)(\3)")
 SEQ = re.compile("|".join((string.ascii_lowercase[i : i + 3] for i in range(24))))

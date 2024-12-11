@@ -2,7 +2,9 @@
 
 from functools import cache
 
-actual_input = "9694820 93 54276 1304 314 664481 0 4"
+from aoc_utils import get_input_data
+
+actual_input = get_input_data(2024, 11)
 example_input = "125 17"
 
 

@@ -3,8 +3,10 @@
 import re
 from itertools import product
 
+from aoc_utils import get_input_data
+
+actual_input = get_input_data(2021, 17)
 example_input = """target area: x=20..30, y=-10..-5"""
-actual_input = """target area: x=96..125, y=-144..-98"""
 
 
 def solve(inputs):

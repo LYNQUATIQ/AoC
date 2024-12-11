@@ -1,6 +1,8 @@
 from itertools import groupby
 
-actual_input = "3113322113"
+from aoc_utils import get_input_data
+
+actual_input = get_input_data(2015, 10)
 
 
 def solve(inputs):
