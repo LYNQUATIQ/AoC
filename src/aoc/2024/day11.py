@@ -10,9 +10,10 @@ def process_value(value: int) -> list[int]:
     if value == 0:
         return [1]
     if len(str(value)) % 2 == 0:
-        lhs = int(str(value)[: len(str(value)) // 2])
-        rhs = int(str(value)[len(str(value)) // 2 :])
-        return [lhs, rhs]
+        return [
+            int(str(value)[: len(str(value)) // 2]),
+            int(str(value)[len(str(value)) // 2 :]),
+        ]
     return [value * 2024]
 
 
@@ -23,14 +24,10 @@ def stone_count(stone_value: int, iterations_left: int) -> int:
     return sum(stone_count(v, iterations_left - 1) for v in process_value(stone_value))
 
 
-def total_stone_count(initial_stones: list[int], total_iterations: int) -> list[int]:
-    return sum(stone_count(stone, total_iterations) for stone in initial_stones)
-
-
 def solve(inputs: str):
     stones = list(map(int, inputs.split()))
-    print(f"Part 1: {total_stone_count(stones, 25)}")
-    print(f"Part 2: {total_stone_count(stones, 75)}\n")
+    print(f"Part 1: {sum(stone_count(stone, 25) for stone in stones)}")
+    print(f"Part 2: {sum(stone_count(stone, 75) for stone in stones)}\n")
 
 
 solve(example_input)
