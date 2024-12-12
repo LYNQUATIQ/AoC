@@ -14,6 +14,15 @@ MIIIIIJJEE
 MIIISIJEEE
 MMMISSJEEE"""
 
+NORTH, EAST, SOUTH, WEST = -1j, 1, 1j, -1
+SIDES = (NORTH, EAST, SOUTH, WEST)
+LEFT_RIGHT = {
+    NORTH: (WEST, EAST),
+    EAST: (NORTH, SOUTH),
+    SOUTH: (EAST, WEST),
+    WEST: (SOUTH, NORTH),
+}
+
 
 def solve(inputs: str):
     grid = {}
@@ -21,68 +30,53 @@ def solve(inputs: str):
         for x, plant in enumerate(row):
             grid[complex(x, y)] = plant
 
-    regions = []
-    plants_to_check = set(grid.keys())
-    while plants_to_check:
-        xy = plants_to_check.pop()
-        plant = grid[xy]
-        region = {xy}
+    regions, regions_to_check = [], set(grid.keys())
+    while regions_to_check:
+        xy = regions_to_check.pop()
+        region, regional_plant = {xy}, grid[xy]
         to_visit = {xy}
         while to_visit:
             xy = to_visit.pop()
-            for neighbour in [xy + d for d in [1, -1, 1j, -1j]]:
-                if neighbour in region or grid.get(neighbour, "") != plant:
+            for neighbour in [xy + d for d in SIDES]:
+                if neighbour in region or grid.get(neighbour, "") != regional_plant:
                     continue
                 region.add(neighbour)
                 to_visit.add(neighbour)
-                plants_to_check.discard(neighbour)
+                regions_to_check.discard(neighbour)
         regions.append(region)
 
-    total_cost = 0
+    total_cost_part_1 = 0
+    total_cost_part_2 = 0
     for region in regions:
-        area, fencing = len(region), 0
-        for plant in region:
-            for neighbour in [plant + d for d in [1, -1, 1j, -1j]]:
-                if neighbour not in region:
-                    fencing += 1
-        total_cost += fencing * area
-    print(f"Part 1: {total_cost}")
+        area, fencing, n_sides = len(region), set(), 0
 
-    total_cost = 0
-    for region in regions:
-        if grid[list(region)[0]] == "M":
-            pass
-        area, sides = len(region), set()
-        for plant in region:
-            for direction in [1, -1, 1j, -1j]:
-                if plant + direction not in region:
-                    sides.add((plant, direction))
-        n_sides, sides_to_check = 0, sides.copy()
-        while sides_to_check:
+        # Find all the fence panels (position and side) in the region
+        for xy in region:
+            for side in SIDES:
+                if xy + side not in region:
+                    fencing.add((xy, side))
+        total_cost_part_1 += len(fencing) * area
+
+        # Count sides by removing fence panels
+        while fencing:
+            xy, side = fencing.pop()
             n_sides += 1
-            xy, side = sides_to_check.pop()
-            left_direction, right_direction = {
-                1: [-1j, 1j],
-                -1: [-1j, 1j],
-                1j: [-1, 1],
-                -1j: [-1, 1],
-            }[side]
-            lhs, rhs = xy + left_direction, xy + right_direction
-            while lhs in region:
-                try:
-                    sides_to_check.remove((lhs, side))
-                except KeyError:
+            left, right = LEFT_RIGHT[side]
+            left_xy, right_xy = xy + left, xy + right
+            while left_xy in region:
+                if (left_xy, side) not in fencing:
                     break
-                lhs += left_direction
-            while rhs in region:
-                try:
-                    sides_to_check.remove((rhs, side))
-                except KeyError:
+                fencing.remove((left_xy, side))
+                left_xy += left
+            while right_xy in region:
+                if (right_xy, side) not in fencing:
                     break
-                rhs += right_direction
-        total_cost += n_sides * area
+                fencing.remove((right_xy, side))
+                right_xy += right
+        total_cost_part_2 += n_sides * area
 
-    print(f"Part 2: {total_cost}\n")
+    print(f"Part 1: {total_cost_part_1}")
+    print(f"Part 2: {total_cost_part_2}\n")
 
 
 solve(example_input)
