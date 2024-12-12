@@ -3,8 +3,6 @@
 from aoc_utils import get_input_data
 
 actual_input = get_input_data(2024, 12)
-
-
 example_input = """RRRRIICCFF
 RRRRIICCCF
 VVRRRCCFFF
@@ -15,10 +13,6 @@ VVIIICJJEE
 MIIIIIJJEE
 MIIISIJEEE
 MMMISSJEEE"""
-# example_input = """AAAA
-# BBCD
-# BBCC
-# EEEC"""
 
 
 def solve(inputs: str):
@@ -26,7 +20,6 @@ def solve(inputs: str):
     for y, row in enumerate(inputs.splitlines()):
         for x, plant in enumerate(row):
             grid[complex(x, y)] = plant
-    width, height = x + 1, y + 1
 
     regions = []
     plants_to_check = set(grid.keys())
