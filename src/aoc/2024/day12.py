@@ -37,12 +37,12 @@ def solve(inputs: str):
         to_visit = {xy}
         while to_visit:
             xy = to_visit.pop()
-            for neighbour in [xy + d for d in SIDES]:
-                if neighbour in region or grid.get(neighbour, "") != regional_plant:
+            for neighbour_xy in [xy + d for d in SIDES]:
+                if neighbour_xy in region or grid.get(neighbour_xy) != regional_plant:
                     continue
-                region.add(neighbour)
-                to_visit.add(neighbour)
-                regions_to_check.discard(neighbour)
+                region.add(neighbour_xy)
+                to_visit.add(neighbour_xy)
+                regions_to_check.discard(neighbour_xy)
         regions.append(region)
 
     total_cost_part_1 = 0
@@ -50,17 +50,17 @@ def solve(inputs: str):
     for region in regions:
         area, fencing, n_sides = len(region), set(), 0
 
-        # Find all the fence panels (position and side) in the region
+        # Find all the fence panels in the region (noting position and side)
         for xy in region:
             for side in SIDES:
                 if xy + side not in region:
                     fencing.add((xy, side))
         total_cost_part_1 += len(fencing) * area
 
-        # Count sides by removing fence panels
+        # Count sides by removing panels that are part of that side (going left/right)
         while fencing:
-            xy, side = fencing.pop()
             n_sides += 1
+            xy, side = fencing.pop()
             left, right = LEFT_RIGHT[side]
             left_xy, right_xy = xy + left, xy + right
             while left_xy in region:
