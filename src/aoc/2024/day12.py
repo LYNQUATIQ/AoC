@@ -15,6 +15,10 @@ VVIIICJJEE
 MIIIIIJJEE
 MIIISIJEEE
 MMMISSJEEE"""
+# example_input = """AAAA
+# BBCD
+# BBCC
+# EEEC"""
 
 
 def solve(inputs: str):
@@ -43,18 +47,49 @@ def solve(inputs: str):
 
     total_cost = 0
     for region in regions:
-        area = len(region)
-        fencing = 4 * area
+        area, fencing = len(region), 0
         for plant in region:
             for neighbour in [plant + d for d in [1, -1, 1j, -1j]]:
-                if neighbour in region:
-                    fencing -= 1
+                if neighbour not in region:
+                    fencing += 1
         total_cost += fencing * area
-        # print(
-        #     f" - A region of {grid[list(region)[0]]} plans with a price of {area} x {fencing} = {fencing * area}"
-        # )
     print(f"Part 1: {total_cost}")
-    print(f"Part 2: {False}\n")
+
+    total_cost = 0
+    for region in regions:
+        if grid[list(region)[0]] == "M":
+            pass
+        area, sides = len(region), set()
+        for plant in region:
+            for direction in [1, -1, 1j, -1j]:
+                if plant + direction not in region:
+                    sides.add((plant, direction))
+        n_sides, sides_to_check = 0, sides.copy()
+        while sides_to_check:
+            n_sides += 1
+            xy, side = sides_to_check.pop()
+            left_direction, right_direction = {
+                1: [-1j, 1j],
+                -1: [-1j, 1j],
+                1j: [-1, 1],
+                -1j: [-1, 1],
+            }[side]
+            lhs, rhs = xy + left_direction, xy + right_direction
+            while lhs in region:
+                try:
+                    sides_to_check.remove((lhs, side))
+                except KeyError:
+                    break
+                lhs += left_direction
+            while rhs in region:
+                try:
+                    sides_to_check.remove((rhs, side))
+                except KeyError:
+                    break
+                rhs += right_direction
+        total_cost += n_sides * area
+
+    print(f"Part 2: {total_cost}\n")
 
 
 solve(example_input)
