@@ -1,5 +1,7 @@
 """https://adventofcode.com/2024/day/12"""
 
+from itertools import product
+
 from aoc_utils import get_input_data
 
 actual_input = get_input_data(2024, 12)
@@ -15,7 +17,7 @@ MIIISIJEEE
 MMMISSJEEE"""
 
 NORTH, EAST, SOUTH, WEST = -1j, 1, 1j, -1
-SIDES = (NORTH, EAST, SOUTH, WEST)
+DIRECTIONS = (NORTH, EAST, SOUTH, WEST)
 LEFT_RIGHT = {
     NORTH: (WEST, EAST),
     EAST: (NORTH, SOUTH),
@@ -25,54 +27,53 @@ LEFT_RIGHT = {
 
 
 def solve(inputs: str):
-    grid = {}
+    plots: dict[complex, str] = {}
     for y, row in enumerate(inputs.splitlines()):
         for x, plant in enumerate(row):
-            grid[complex(x, y)] = plant
+            plots[complex(x, y)] = plant
 
-    regions, regions_to_check = [], set(grid.keys())
-    while regions_to_check:
-        xy = regions_to_check.pop()
-        region, regional_plant = {xy}, grid[xy]
-        to_visit = {xy}
+    regions: list[set[complex]] = []
+    plots_to_check = set(plots.keys())
+    while plots_to_check:
+        plot = plots_to_check.pop()
+        region, regional_plant = {plot}, plots[plot]
+        to_visit = {plot}
         while to_visit:
-            xy = to_visit.pop()
-            for neighbour_xy in [xy + d for d in SIDES]:
-                if neighbour_xy in region or grid.get(neighbour_xy) != regional_plant:
-                    continue
-                region.add(neighbour_xy)
-                to_visit.add(neighbour_xy)
-                regions_to_check.discard(neighbour_xy)
+            plot = to_visit.pop()
+            for neighbour in [plot + d for d in DIRECTIONS]:
+                if neighbour in plots_to_check:
+                    if plots.get(neighbour) == regional_plant:
+                        region.add(neighbour)
+                        plots_to_check.discard(neighbour)
+                        to_visit.add(neighbour)
         regions.append(region)
 
     total_cost_part_1 = 0
     total_cost_part_2 = 0
     for region in regions:
-        area, fencing, n_sides = len(region), set(), 0
+        area = len(region)
 
-        # Find all the fence panels in the region (noting position and side)
-        for xy in region:
-            for side in SIDES:
-                if xy + side not in region:
-                    fencing.add((xy, side))
+        # Find all the fence panels that separate plots in this region from other
+        # regions (noting both the plot position and in which direction the fence is)
+        fencing: set[tuple[complex, complex]] = set()
+        for plot, direction in product(region, DIRECTIONS):
+            if plot + direction not in region:
+                fencing.add((plot, direction))
         total_cost_part_1 += len(fencing) * area
 
-        # Count sides by removing panels that are part of that side (going left/right)
+        # Count sides by taking fence panels and extending them to the left and right,
+        # removing the neighbouring panels as we go
+        n_sides = 0
         while fencing:
+            plot, direction = fencing.pop()
             n_sides += 1
-            xy, side = fencing.pop()
-            left, right = LEFT_RIGHT[side]
-            left_xy, right_xy = xy + left, xy + right
-            while left_xy in region:
-                if (left_xy, side) not in fencing:
-                    break
-                fencing.remove((left_xy, side))
-                left_xy += left
-            while right_xy in region:
-                if (right_xy, side) not in fencing:
-                    break
-                fencing.remove((right_xy, side))
-                right_xy += right
+            for left_right_direction in LEFT_RIGHT[direction]:
+                neighbour = plot + left_right_direction
+                while neighbour in region:
+                    if (neighbour, direction) not in fencing:  # Side has ended
+                        break
+                    fencing.remove((neighbour, direction))
+                    neighbour += left_right_direction
         total_cost_part_2 += n_sides * area
 
     print(f"Part 1: {total_cost_part_1}")
