@@ -47,8 +47,8 @@ def find_total_cost(
         prize_y += extra_distance
 
         lcm = math.lcm(ax, ay)
-        ax, bx, prize_x = ax * (lcm / ax), bx * (lcm / ax), prize_x * (lcm / ax)
-        ay, by, prize_y = ay * (-lcm / ay), by * (-lcm / ay), prize_y * (-lcm / ay)
+        ax, bx, prize_x = lcm / ax * ax, lcm / ax * bx, lcm / ax * prize_x
+        ay, by, prize_y = -lcm / ay * ay, -lcm / ay * by, -lcm / ay * prize_y
 
         b_presses = (prize_x + prize_y) / (bx + by)
         a_presses = (prize_x - b_presses * bx) / ax
