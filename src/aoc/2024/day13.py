@@ -1,5 +1,8 @@
-"""https://adventofcode.com/2024/day/13"""
+"""https://adventofcode.com/2024/day/13
+    https://en.wikipedia.org/wiki/Diophantine_equation
+"""
 
+import math
 import re
 
 from aoc_utils import get_input_data
@@ -24,6 +27,29 @@ Button B: X+27, Y+71
 Prize: X=18641, Y=10279"""
 
 
+def find_total_cost(machines: dict, extra_distance: int = 0):
+    total_cost = 0
+    for machine in machines:
+
+        ax, bx, prize_x = machine["x"]
+        ay, by, prize_y = machine["y"]
+        prize_x += extra_distance
+        prize_y += extra_distance
+
+        # Find the lcm of ax and bx
+        lcm = math.lcm(ax, ay)
+        ax, bx, prize_x = ax * (lcm // ax), bx * (lcm // ax), prize_x * (lcm // ax)
+        ay, by, prize_y = ay * (-lcm // ay), by * (-lcm // ay), prize_y * (-lcm // ay)
+
+        b_presses = (prize_x + prize_y) / (by + bx)
+        a_presses = (prize_x - b_presses * bx) / ax
+        if b_presses != int(b_presses) or a_presses != int(a_presses):
+            continue
+        total_cost += int(a_presses * 3 + b_presses)
+
+    return total_cost
+
+
 def solve(inputs: str):
     machine_inputs = inputs.split("\n\n")
     machines = []
@@ -39,24 +65,8 @@ def solve(inputs: str):
             }
         )
 
-    total_cost = 0
-    for machine in machines:
-        ax, bx, prize_x = machine["x"]
-        ay, by, prize_y = machine["y"]
-
-        max_a = min(min(100, prize_x // ax), min(100, prize_y // ay))
-        max_b = min(min(100, prize_x // bx), min(100, prize_y // by))
-
-        for b in range(max_b, -1, -1):
-            for a in range(max_a + 1):
-                if a * ax + b * bx == prize_x and a * ay + b * by == prize_y:
-                    total_cost += a * 3 + b
-                    break
-            else:
-                continue
-
-    print(f"Part 1: {total_cost}")
-    print(f"Part 2: {False}\n")
+    print(f"Part 1: {find_total_cost(machines)}")
+    print(f"Part 2: {find_total_cost(machines, 10_000_000_000_000)}\n")
 
 
 solve(example_input)
