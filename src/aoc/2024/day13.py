@@ -41,12 +41,23 @@ def solve(inputs: str):
 
     total_cost = 0
     for machine in machines:
+        ax, bx, prize_x = machine["x"]
+        ay, by, prize_y = machine["y"]
 
-        print(machine)
+        max_a = min(min(100, prize_x // ax), min(100, prize_y // ay))
+        max_b = min(min(100, prize_x // bx), min(100, prize_y // by))
+
+        for b in range(max_b, -1, -1):
+            for a in range(max_a + 1):
+                if a * ax + b * bx == prize_x and a * ay + b * by == prize_y:
+                    total_cost += a * 3 + b
+                    break
+            else:
+                continue
 
     print(f"Part 1: {total_cost}")
     print(f"Part 2: {False}\n")
 
 
 solve(example_input)
-# solve(actual_input)
+solve(actual_input)
