@@ -22,47 +22,54 @@ p=2,4 v=2,-3
 p=9,5 v=-3,-3"""
 
 
-ITERATIONS = 100
-
-
 def solve(inputs: str, width: int, height: int):
     robots = [tuple(map(int, re.findall(r"-?\d+", m))) for m in inputs.splitlines()]
 
     positions = []
     for px, py, vx, vy in robots:
-        x = (px + vx * ITERATIONS) % width
-        y = (py + vy * ITERATIONS) % height
+        x = (px + vx * 100) % width
+        y = (py + vy * 100) % height
         positions.append((x, y))
 
     mid_x, mid_y = width // 2, height // 2
     quadrants = defaultdict(int)
-    grid = defaultdict(int)
     for x, y in positions:
         if x == mid_x or y == mid_y:
             continue
         in_top, in_left = y < mid_y, x < mid_x
         quadrants[(in_top, in_left)] += 1
 
-    # Multiply together the values of quadrants
     rating = 1
     for value in quadrants.values():
         rating *= value
-
-    # iteration == 0
-    # while True:
-    # for y in range(height):
-    #     for x in range(width):
-    #         n = grid[(x, y)]
-    #         c = "." if n == 0 else int(n)
-    #         if x == mid_x or y == mid_y:
-    #             c = " "
-    #         print(c, end="")
-    #     print()
-    # input()
-
     print(f"Part 1: {rating}")
-    print(f"Part 2: {False}\n")
+
+
+def find_xmas_tree(inputs: str, width: int, height: int):
+    robots = [tuple(map(int, re.findall(r"-?\d+", m))) for m in inputs.splitlines()]
+    iteration, interesting = 0, False
+    while not interesting:
+        iteration += 1
+        new_robots = []
+        grid = defaultdict(int)
+        rows, columns = defaultdict(int), defaultdict(int)
+        for px, py, vx, vy in robots:
+            x = (px + vx) % width
+            y = (py + vy) % height
+            grid[(x, y)] += 1
+            rows[x] += 1
+            columns[y] += 1
+            new_robots.append((x, y, vx, vy))
+        robots = new_robots
+        interesting = max(rows.values()) > 30 and max(columns.values()) > 30
+
+    for y in range(height):
+        for x in range(width):
+            print(" " if grid[(x, y)] == 0 else "*", end="")
+        print()
+    print(f"Part 2: {iteration}\n")
 
 
 solve(example_input, 11, 7)
 solve(actual_input, 101, 103)
+find_xmas_tree(actual_input, 101, 103)
