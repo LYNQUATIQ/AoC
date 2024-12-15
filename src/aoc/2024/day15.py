@@ -3,8 +3,6 @@
 from aoc_utils import get_input_data
 
 actual_input = get_input_data(2024, 15)
-
-
 example_input = """##########
 #..O..O.O#
 #......O.#
@@ -27,19 +25,8 @@ vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
 ^^>vv<^v^v<vv>^<><v<^v>^^^>>>^^vvv^>vvv<>>>^<^>>>>>^<<^v>^vvv<>^<><<v>
 v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^"""
 
-# example_input = """#######
-# #...#.#
-# #.....#
-# #..OO@#
-# #..O..#
-# #.....#
-# #######
 
-# <vv<<^^<<^^"""
-
-WALL, BOX, ROBOT = "#", "O", "@"
-BOX_LHS, BOX_RHS, BIG_BOX = "[", "]", "[]"
-
+WALL, BOX, ROBOT, BIG_BOX = "#", "O", "@", "[]"
 UP, DOWN, LEFT, RIGHT = -1j, 1j, -1, 1
 INSTRUCTIONS = {"^": UP, ">": RIGHT, "v": DOWN, "<": LEFT, "\n": 0}
 
@@ -100,7 +87,7 @@ def solve(inputs: str):
     #     gps_sum += abs(box.real) + abs(box.imag) * 100
     # print(f"Part 1: {int(gps_sum)}")
 
-    walls, boxes, connected_boxes, boxes_lhs = set(), set(), {}, set()
+    walls, boxes_lhs = set(), set()
     robot_xy = None
     for y, row in enumerate(grid.split("\n")):
         x = 0
@@ -115,58 +102,37 @@ def solve(inputs: str):
                 walls.add(next_xy)
             elif cell == BOX:
                 boxes_lhs.add(xy)
-                boxes.add(xy)
-                boxes.add(next_xy)
-                connected_boxes[xy] = next_xy
-                connected_boxes[next_xy] = xy
-    width, height = x + 1, y + 1
+
     iteration = 0
     for instruction in instructions:
+        connected_boxes = {box: box + RIGHT for box in boxes_lhs}
+        connected_boxes |= {v: k for k, v in connected_boxes.items()}
         iteration += 1
         move = INSTRUCTIONS[instruction]
         xy = robot_xy + move
         hit_wall = False
-        if move in (LEFT, RIGHT):
-            boxes_to_move = set()
-            while xy in boxes:
-                boxes_to_move.add(xy)
-                xy += move
-            if xy in walls:
+        boxes_to_move, front_edge = set(), {xy}
+        hit_wall = False
+        while front_edge:
+            if any(edge in walls for edge in front_edge):
                 hit_wall = True
-                continue
-        elif move in (UP, DOWN):
-            boxes_to_move, front_edge = set(), {xy}
-            hit_wall = False
-            while front_edge:
-                if any(edge in walls for edge in front_edge):
-                    hit_wall = True
-                    break
-                front_edge = {edge for edge in front_edge if edge in boxes}
+                break
+            front_edge = {edge for edge in front_edge if edge in connected_boxes}
+            if move in (UP, DOWN):
                 front_edge |= {connected_boxes[edge] for edge in front_edge}
-                boxes_to_move |= front_edge
-                front_edge = {edge + move for edge in front_edge}
+            boxes_to_move |= front_edge
+            front_edge = {edge + move for edge in front_edge}
 
         if not hit_wall:
             robot_xy += move
-            boxes -= boxes_to_move
-            boxes |= {box + move for box in boxes_to_move}
-            new_connected_boxes = {
-                box + move: connected_boxes[box] + move for box in boxes_to_move
-            }
-            for box in boxes_to_move:
-                connected_boxes.pop(box)
-            connected_boxes |= new_connected_boxes
-            new_lhs = {box + move for box in boxes_to_move if box in boxes_lhs}
+            boxes_to_move &= boxes_lhs
             boxes_lhs -= boxes_to_move
-            boxes_lhs |= new_lhs
+            boxes_lhs |= {box + move for box in boxes_to_move}
 
-        print("Move", instruction)
-        draw_map(robot_xy, walls, boxes, width, height, big_boxes=True)
-        print(iteration)
     gps_sum = 0
     for box in boxes_lhs:
         gps_sum += abs(box.real) + abs(box.imag) * 100
-    print(f"Part 2: {gps_sum}\n")
+    print(f"Part 2: {int(gps_sum)}\n")
 
 
 solve(example_input)

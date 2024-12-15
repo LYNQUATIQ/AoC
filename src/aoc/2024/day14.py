@@ -29,11 +29,11 @@ def find_xmas_tree(
     # Run through the robot positions unitl they cycle again and note the x/y variances
     robots = initial_robots[:]
     x_variances, y_variances = {}, {}
-    for i in range(max(width, height)):
+    for iteration in range(1, max(width, height) + 1):
         robots = move_robots(robots, width, height)
         x, y, _, _ = zip(*robots)
-        x_variances[i] = statistics.stdev(x)
-        y_variances[i] = statistics.stdev(y)
+        x_variances[iteration] = statistics.stdev(x)
+        y_variances[iteration] = statistics.stdev(y)
 
     # Find the iteration with the lowest variance for the x and y positions respectively
     # (the assumption is that the robots will will cluster when they form the xmas tree)
@@ -44,7 +44,7 @@ def find_xmas_tree(
     # iteration where they hit in both the x and y dimension simultaneously
     x_hits = {x_iteration + width * i for i in range(height)}
     y_hits = {y_iteration + height * i for i in range(width)}
-    iterations = (x_hits & y_hits).pop() + 1
+    iterations = (x_hits & y_hits).pop()
 
     # Draw the xmas tree
     robots = initial_robots
