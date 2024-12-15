@@ -26,7 +26,7 @@ vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
 v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^"""
 
 
-WALL, BOX, ROBOT, BIG_BOX = "#", "O", "@", "[]"
+WALL, BOX, ROBOT = "#", "O", "@"
 UP, DOWN, LEFT, RIGHT = -1j, 1j, -1, 1
 INSTRUCTIONS = {"^": UP, ">": RIGHT, "v": DOWN, "<": LEFT, "\n": 0}
 
@@ -40,6 +40,7 @@ def sum_box_gps(inputs: str, big_boxes: bool = False):
         x = 0
         for _, cell in enumerate(row):
             xy = complex(x, y)
+            x += 1
             if cell == ROBOT:
                 robot_xy = xy
             elif cell == WALL:
@@ -50,38 +51,29 @@ def sum_box_gps(inputs: str, big_boxes: bool = False):
                 x += 1
                 if cell == WALL:
                     walls.add(xy + RIGHT)
-            x += 1
 
     for instruction in instructions:
         move = INSTRUCTIONS[instruction]
-        if big_boxes:
-            connected_boxes = {box: box + RIGHT for box in boxes}
-            connected_boxes |= {v: k for k, v in connected_boxes.items()}
+        boxes_rhs = {box + RIGHT for box in boxes} if big_boxes else set()
+        boxes_to_move = set()
+        hit_wall = False
         xy_to_check = {robot_xy + move}
-        boxes_to_move, hit_wall = set(), False
         while xy_to_check:
-            if any(xy in walls for xy in xy_to_check):
+            if xy_to_check & walls:
                 hit_wall = True
                 break
-            if big_boxes:
-                xy_to_check = {xy for xy in xy_to_check if xy in connected_boxes}
-                if move in (UP, DOWN):
-                    xy_to_check |= {connected_boxes[xy] for xy in xy_to_check}
-            else:
-                xy_to_check = {xy for xy in xy_to_check if xy in boxes}
-            boxes_to_move |= xy_to_check
+            xy_to_check = xy_to_check & (boxes | boxes_rhs)
+            if big_boxes and move in (UP, DOWN):
+                xy_to_check |= {xy + RIGHT for xy in xy_to_check & boxes}
+                xy_to_check |= {xy + LEFT for xy in xy_to_check & boxes_rhs}
+            boxes_to_move |= xy_to_check & boxes
             xy_to_check = {xy + move for xy in xy_to_check}
 
         if not hit_wall:
             robot_xy += move
-            boxes_to_move &= boxes
-            boxes -= boxes_to_move
-            boxes |= {box + move for box in boxes_to_move}
+            boxes = (boxes - boxes_to_move) | {box + move for box in boxes_to_move}
 
-    gps_sum = 0
-    for box in boxes:
-        gps_sum += int(abs(box.real) + abs(box.imag) * 100)
-    return gps_sum
+    return sum([int(abs(box.real) + abs(box.imag) * 100) for box in boxes])
 
 
 def solve(inputs: str):
