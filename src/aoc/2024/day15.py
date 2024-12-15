@@ -47,9 +47,9 @@ INSTRUCTIONS = {"^": UP, ">": RIGHT, "v": DOWN, "<": LEFT, "\n": 0}
 def draw_map(robot_xy, walls, boxes, width, height, big_boxes: bool = False):
     for y in range(height):
         x = 0
-        while x < width:
-            x += 1
+        while x < width - 1:
             xy = complex(x, y)
+            x += 1
             if xy == robot_xy:
                 print(ROBOT, end="")
             elif xy in boxes:
@@ -120,7 +120,9 @@ def solve(inputs: str):
                 connected_boxes[xy] = next_xy
                 connected_boxes[next_xy] = xy
     width, height = x + 1, y + 1
+    iteration = 0
     for instruction in instructions:
+        iteration += 1
         move = INSTRUCTIONS[instruction]
         xy = robot_xy + move
         hit_wall = False
@@ -160,7 +162,7 @@ def solve(inputs: str):
 
         print("Move", instruction)
         draw_map(robot_xy, walls, boxes, width, height, big_boxes=True)
-
+        print(iteration)
     gps_sum = 0
     for box in boxes_lhs:
         gps_sum += abs(box.real) + abs(box.imag) * 100
@@ -168,4 +170,4 @@ def solve(inputs: str):
 
 
 solve(example_input)
-# solve(actual_input)
+solve(actual_input)
