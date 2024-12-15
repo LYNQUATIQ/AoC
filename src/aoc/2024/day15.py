@@ -52,28 +52,25 @@ def sum_box_gps(inputs: str, big_boxes: bool = False):
                     walls.add(xy + RIGHT)
             x += 1
 
-    iteration = 0
     for instruction in instructions:
+        move = INSTRUCTIONS[instruction]
         if big_boxes:
             connected_boxes = {box: box + RIGHT for box in boxes}
             connected_boxes |= {v: k for k, v in connected_boxes.items()}
-        else:
-            connected_boxes = boxes
-        iteration += 1
-        move = INSTRUCTIONS[instruction]
-        xy = robot_xy + move
-        hit_wall = False
-        boxes_to_move, front_edge = set(), {xy}
-        hit_wall = False
-        while front_edge:
-            if any(edge in walls for edge in front_edge):
+        xy_to_check = {robot_xy + move}
+        boxes_to_move, hit_wall = set(), False
+        while xy_to_check:
+            if any(xy in walls for xy in xy_to_check):
                 hit_wall = True
                 break
-            front_edge = {edge for edge in front_edge if edge in connected_boxes}
-            if big_boxes and move in (UP, DOWN):
-                front_edge |= {connected_boxes[edge] for edge in front_edge}
-            boxes_to_move |= front_edge
-            front_edge = {edge + move for edge in front_edge}
+            if big_boxes:
+                xy_to_check = {xy for xy in xy_to_check if xy in connected_boxes}
+                if move in (UP, DOWN):
+                    xy_to_check |= {connected_boxes[xy] for xy in xy_to_check}
+            else:
+                xy_to_check = {xy for xy in xy_to_check if xy in boxes}
+            boxes_to_move |= xy_to_check
+            xy_to_check = {xy + move for xy in xy_to_check}
 
         if not hit_wall:
             robot_xy += move
