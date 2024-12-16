@@ -1,10 +1,10 @@
 """https://adventofcode.com/2024/day/16"""
 
-from collections import deque
+from os import path
+import sys
+from collections import defaultdict
 from functools import cache
 from heapq import heappop, heappush
-
-from numpy import short
 
 from aoc_utils import get_input_data
 
@@ -69,32 +69,45 @@ def solve(inputs: str):
             next_steps.append(((next_xy, facing), 1))
         return next_steps
 
-    def shortest_path(start: complex, facing: complex) -> int:
+    def shortest_paths(start: complex, facing: complex) -> int:
+        shortest_distance = None
         visited: set[(complex, complex)] = set()
         distance_to = {(start, facing): 0}
-        to_visit: list[tuple[float, (complex, complex)]] = []
-        heappush(to_visit, (distance_to_end(start, facing), (start, facing)))
+        visited_on_best_paths = set()
+        to_visit: list[tuple[float, (complex, complex), list[complex]]] = []
+        heappush(to_visit, (distance_to_end(start, facing), (start, facing), []))
         while to_visit:
-            _, this_state = heappop(to_visit)
+            _, this_state, path_here = heappop(to_visit)
             xy, facing = this_state
             if xy == end_tile:
-                return distance_to[this_state]
+                if shortest_distance is None:
+                    shortest_distance = distance_to[this_state]
+                visited_on_best_paths |= set(path_here)
             visited.add(this_state)
             for next_state, step_cost in possible_steps(*this_state):
                 distance_to_here = distance_to[this_state] + step_cost
                 prior_distance_to_here = distance_to.get(next_state, 0)
-                if next_state in visited and distance_to_here >= prior_distance_to_here:
+                if next_state in visited and distance_to_here > prior_distance_to_here:
                     continue
-                if distance_to_here < prior_distance_to_here or next_state not in [
+                if (
+                    shortest_distance is not None
+                    and distance_to_here > shortest_distance
+                ):
+                    continue
+                if distance_to_here <= prior_distance_to_here or next_state not in [
                     i[1] for i in to_visit
                 ]:
                     distance_to[next_state] = distance_to_here
                     f_score = distance_to_here + distance_to_end(*next_state)
-                    heappush(to_visit, (f_score, next_state))
-        raise ValueError("No path found")
+                    heappush(
+                        to_visit, (f_score, next_state, path_here + [next_state[0]])
+                    )
+        return shortest_distance, visited_on_best_paths
 
-    print(f"Part 1: {int(shortest_path(start_tile, EAST))}")
-    print(f"Part 2: {False}\n")
+    shortest_distance, visited_on_best_paths = shortest_paths(start_tile, EAST)
+
+    print(f"Part 1: {shortest_distance}")
+    print(f"Part 2: {len(visited_on_best_paths)}\n")
 
 
 solve(example_input)
