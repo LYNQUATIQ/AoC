@@ -1,5 +1,7 @@
 """https://adventofcode.com/2024/day/16"""
 
+import sys
+
 from functools import cache
 from heapq import heappop, heappush
 
@@ -71,7 +73,7 @@ def solve(inputs: str):
         return next_steps
 
     def shortest_paths(start: Xy, heading: Heading) -> int:
-        shortest_distance = None
+        shortest_distance = sys.maxsize
         visited: set[State] = set()
         distance_to = {(start, heading): 0}
         visited_on_best_paths: set[Xy] = set()
@@ -86,10 +88,10 @@ def solve(inputs: str):
             visited.add(this_state)
             for next_state, step_cost in possible_steps(*this_state):
                 distance = distance_to[this_state] + step_cost
+                if distance > shortest_distance:
+                    continue
                 prior_distance = distance_to.get(next_state, 0)
                 if next_state in visited and distance > prior_distance:
-                    continue
-                if shortest_distance and distance > shortest_distance:
                     continue
                 if distance <= prior_distance or next_state not in [
                     i[1] for i in to_visit
