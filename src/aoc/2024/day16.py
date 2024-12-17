@@ -39,13 +39,12 @@ def solve(inputs: str):
     walls = set()
     for y, line in enumerate(inputs.splitlines()):
         for x, c in enumerate(line):
-            xy = (x, y)
             if c == "S":
-                start_tile = xy
+                start_tile = (x, y)
             elif c == "E":
-                end_tile = xy
+                end_tile = (x, y)
             elif c == "#":
-                walls.add(xy)
+                walls.add((x, y))
 
     @cache
     def distance_to_end(xy: Xy, heading: Heading) -> int:
@@ -86,7 +85,7 @@ def solve(inputs: str):
                 shortest_distance = distance_to[this_state]
                 visited_on_best_paths |= set(path_here)
             visited.add(this_state)
-            for next_state, step_cost in possible_steps(*this_state):
+            for next_state, step_cost in possible_steps(xy, heading):
                 distance = distance_to[this_state] + step_cost
                 if distance > shortest_distance:
                     continue
