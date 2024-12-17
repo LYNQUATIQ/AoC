@@ -67,7 +67,6 @@ def solve(inputs: str):
     registers_input, program_input = inputs.split("\n\n")
     program = list(map(int, program_input[8:].split(",")))
     register_a = int(registers_input.splitlines()[0][12:])
-
     print(f"Part 1: {','.join(map(str, run_program(program, register_a)))}")
 
     assert program[-2:] == [3, 0]
