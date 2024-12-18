@@ -108,10 +108,9 @@ def solve(inputs: str, extent: int, initial_delay: int):
         except ValueError:
             bad_delay = next_delay
 
-    bad_block = falling_blocks[bad_delay]
+    bad_block = falling_blocks[bad_delay - 1]
     print(f"Part 2: {bad_block[0]},{bad_block[1]}\n")
 
 
 solve(example_input, 6, 12)
 solve(actual_input, 70, 1024)
-# 250 too low
