@@ -2,7 +2,6 @@
 
 from functools import cache
 from heapq import heappop, heappush
-from multiprocessing import Value
 
 from aoc_utils import get_input_data
 
@@ -56,13 +55,17 @@ def possible_steps(xy: Xy, blocks, extent) -> list[Xy]:
     ]
 
 
-def shortest_path(start, target, block_timings, extent):
-    blocks = tuple(block_timings)
+def draw_map(extent, blocks, path=set()):
     for y in range(extent + 1):
         for x in range(extent + 1):
             c = "#" if (x, y) in blocks else "."
+            c = "O" if (x, y) in path else c
             print(c, end="")
         print()
+
+
+def shortest_path(start, target, block_timings, extent):
+    blocks = tuple(block_timings)
     visited: set[State] = set()
     distance_to = {start: 0}
     path_to = {start: []}
@@ -94,7 +97,7 @@ def solve(inputs: str, extent: int, part_1_wait: int):
         block_timings.append(tuple(map(int, line.split(","))))
 
     start = (0, 0)
-    target = (extent - 1, extent - 1)
+    target = (extent, extent)
 
     print(
         f"Part 1: {shortest_path(start, target, block_timings[:part_1_wait], extent)}"
@@ -104,3 +107,4 @@ def solve(inputs: str, extent: int, part_1_wait: int):
 
 solve(example_input, 6, 12)
 solve(actual_input, 70, 1024)
+# 250 too low
