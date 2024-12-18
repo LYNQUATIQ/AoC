@@ -1,13 +1,10 @@
 """https://adventofcode.com/2024/day/18"""
 
-from functools import cache
 from heapq import heappop, heappush
 
 from aoc_utils import get_input_data
 
 actual_input = get_input_data(2024, 18)
-
-
 example_input = """5,4
 4,2
 4,5
@@ -49,51 +46,34 @@ def solve(inputs: str, extent: int, initial_delay: int):
     target = (extent, extent)
 
     def possible_steps(xy: Xy, blocks: set[Xy]) -> list[Xy]:
-        possible_steps = [(xy[0] + d[0], xy[1] + d[1]) for d in DIRECTIONS]
-        possible_steps = [xy for xy in possible_steps if xy not in blocks]
         return [
-            xy
-            for xy in possible_steps
-            if (0 <= xy[0] <= extent) and (0 <= xy[1] <= extent)
+            (xy[0] + d[0], xy[1] + d[1])
+            for d in DIRECTIONS
+            if (xy not in blocks) and (0 <= xy[0] <= extent) and (0 <= xy[1] <= extent)
         ]
 
-    def draw_map(extent, blocks, path=set()):
-        for y in range(extent + 1):
-            for x in range(extent + 1):
-                c = "#" if (x, y) in blocks else "."
-                c = "O" if (x, y) in path else c
-                print(c, end="")
-            print()
+    def distance_to_target(xy: Xy) -> int:
+        return abs(target[0] - xy[0]) + abs(target[1] - xy[1])
 
     def shortest_path(blocks):
         visited: set[Xy] = set()
         distance_to = {start: 0}
-        path_to = {start: []}
         to_visit: list[tuple[float, Xy, list[Xy]]] = []
-        heappush(to_visit, (extent * 2, start))
+        heappush(to_visit, (distance_to_target(start), start))
         while to_visit:
-            _, this_state = heappop(to_visit)
-            xy = this_state
+            _, xy = heappop(to_visit)
             if xy == target:
-                return distance_to[this_state]
-            visited.add(this_state)
-            for next_state in possible_steps(xy, blocks):
-                distance = distance_to[this_state] + 1
-                prior_distance = distance_to.get(next_state, 0)
-                if next_state in visited and distance >= prior_distance:
+                return distance_to[xy]
+            visited.add(xy)
+            for next_xy in possible_steps(xy, blocks):
+                distance = distance_to[xy] + 1
+                prior_best = distance_to.get(next_xy, 0)
+                if next_xy in visited and distance >= prior_best:
                     continue
-                if distance < prior_distance or next_state not in [
-                    i[1] for i in to_visit
-                ]:
-                    distance_to[next_state] = distance
-                    path_to[next_state] = path_to[this_state] + [next_state]
-                    f_score = (
-                        distance
-                        + abs(target[0] - next_state[0])
-                        + abs(target[1] - next_state[1])
-                    )
-                    heappush(to_visit, (f_score, next_state))
-
+                if distance < prior_best or next_xy not in [i[1] for i in to_visit]:
+                    distance_to[next_xy] = distance
+                    f_score = distance + distance_to_target(next_xy)
+                    heappush(to_visit, (f_score, next_xy))
         raise ValueError("No path found")
 
     print(f"Part 1: {shortest_path(set(falling_blocks[:initial_delay]))}")
