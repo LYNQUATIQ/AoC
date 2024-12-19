@@ -19,24 +19,23 @@ bwurrg
 brgr
 bbrgwb"""
 
-ways_to_make_design: dict[str, set[str]] = {}
+ways_to_make_design: dict[str, int] = {}
+ways_to_make_pattern: dict[str, int] = {}
 
 
-def possible_ways(design: str, ignore_this: bool = False) -> set[str]:
+def possible_ways(design: str, ignore_this: bool = False) -> int:
+    if not design:
+        return 1
     if design in ways_to_make_design and not ignore_this:
         return ways_to_make_design[design]
-
-    new_ways = set()
-    starts = [
-        (p, w) for p, w in ways_to_make_design.items() if design[:-1].startswith(p)
-    ]
-    for start, ways_to_start in starts:
-        rest_of_design = design[len(start) :]
-        ways_to_rest = possible_ways(rest_of_design)
-        for way_to_start, rest_of_way in product(ways_to_start, ways_to_rest):
-            new_ways.add(f"{way_to_start},{rest_of_way}")
-    ways_to_make_design[design] = new_ways
-    return new_ways
+    ways = 0
+    possible_starts = [p for p in ways_to_make_pattern if design.startswith(p)]
+    for start in possible_starts:
+        # ways += ways_to_make_design[start] * possible_ways(design[len(start) :])
+        ways += possible_ways(design[len(start) :])
+    if ways:
+        ways_to_make_design[design] = ways
+    return ways
 
 
 def solve(inputs: str):
@@ -45,19 +44,20 @@ def solve(inputs: str):
     designs = designs_input.splitlines()
 
     for pattern in patterns:
-        ways_to_make_design[pattern] = {pattern}
+        ways_to_make_pattern[pattern] = 1
 
     # Need to add all the possible ways to build known patterns from others
     for pattern in patterns:
-        ways_to_make_design[pattern] |= possible_ways(pattern, ignore_this=True)
+        ways_to_make_pattern[pattern] = possible_ways(pattern, ignore_this=True)
 
     # Now add all the possible ways to build the requested designs
     for design in designs:
         ways_to_make_design[design] = possible_ways(design)
 
-    print(f"Part 1: {sum([bool(ways_to_make_design[design]) for design in designs])}")
-    print(f"Part 2: {sum([len(ways_to_make_design[design]) for design in designs])}\n")
+    print(f"Part 1: {sum([(ways_to_make_design[design]>0) for design in designs])}")
+    print(f"Part 2: {sum([ways_to_make_design[design] for design in designs])}\n")
 
 
 solve(example_input)
 solve(actual_input)
+# 41271664854551032 too high
