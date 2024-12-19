@@ -1,5 +1,7 @@
 """https://adventofcode.com/2024/day/19"""
 
+from collections import defaultdict
+
 from aoc_utils import get_input_data
 
 actual_input = get_input_data(2024, 19)
@@ -19,29 +21,27 @@ bbrgwb"""
 
 def solve(inputs: str):
     patterns_input, designs_input = inputs.split("\n\n")
-    patterns = patterns_input.split(", ")
+
+    ways_to_build_pattern = {pattern: 1 for pattern in patterns_input.split(", ")}
     designs = designs_input.splitlines()
 
-    def is_possible(design: str, patterns_so_far: tuple[str] = ()) -> bool:
-        # print(f"   Checking {design}  (so far: {patterns_so_far})")
-        if design == "":
-            return True
-        for pattern in patterns:
+    def possible_ways(design: str) -> int:
+        if design in ways_to_build_pattern:
+            return ways_to_build_pattern[design]
+        new_ways = 0
+        for pattern, ways in list(ways_to_build_pattern.items()):
             if design.startswith(pattern):
-                if is_possible(design[len(pattern) :], (*patterns_so_far, pattern)):
-                    return True
-        return False
+                new_ways += ways * possible_ways(design[len(pattern) :])
+        ways_to_build_pattern[design] = new_ways
+        return new_ways
 
-    number_possible = 0
+    part_1 = sum([int(possible_ways(design) > 0) for design in designs])
+    print(f"Part 1: {part_1}")
+    part_2 = sum([possible_ways(design) for design in designs])
+    print(f"Part 2: {part_2}\n")
     for design in designs:
-        # print("Testing ", design)
-        x = is_possible(design)
-        # print("      ->", x)
-        number_possible += int(x)
-
-    print(f"Part 1: {number_possible}")
-    print(f"Part 2: {False}\n")
+        print(design, ways_to_build_pattern[design])
 
 
 solve(example_input)
-solve(actual_input)
+# solve(actual_input)
