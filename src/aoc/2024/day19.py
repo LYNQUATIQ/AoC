@@ -1,6 +1,7 @@
 """https://adventofcode.com/2024/day/19"""
 
 from collections import defaultdict
+from itertools import product
 
 from aoc_utils import get_input_data
 
@@ -18,35 +19,45 @@ bwurrg
 brgr
 bbrgwb"""
 
+ways_to_make_design: dict[str, set[str]] = {}
+
+
+def possible_ways(design: str, ignore_this: bool = False) -> set[str]:
+    if design in ways_to_make_design and not ignore_this:
+        return ways_to_make_design[design]
+
+    new_ways = set()
+    starts = [
+        (p, w) for p, w in ways_to_make_design.items() if design[:-1].startswith(p)
+    ]
+    for start, ways_to_start in starts:
+        rest_of_design = design[len(start) :]
+        ways_to_rest = possible_ways(rest_of_design)
+        for way_to_start, rest_of_way in product(ways_to_start, ways_to_rest):
+            new_ways.add(f"{way_to_start},{rest_of_way}")
+    ways_to_make_design[design] = new_ways
+    return new_ways
+
 
 def solve(inputs: str):
     patterns_input, designs_input = inputs.split("\n\n")
-
-    ways_to_build_pattern = {
-        pattern: [[pattern]] for pattern in patterns_input.split(", ")
-    }
+    patterns = patterns_input.split(", ")
     designs = designs_input.splitlines()
-    designs = ["brwr"]
 
-    def possible_ways(design: str) -> list[list[str]]:
-        if design in ways_to_build_pattern:
-            return ways_to_build_pattern[design]
-        new_ways = []
-        for pattern, ways in list(ways_to_build_pattern.items()):
-            if design.startswith(pattern):
-                new_ways += [ways + w for w in possible_ways(design[len(pattern) :])]
-        ways_to_build_pattern[design] = new_ways
-        return new_ways
+    for pattern in patterns:
+        ways_to_make_design[pattern] = {pattern}
 
-    part_1 = sum([int(len(possible_ways(design)) > 0) for design in designs])
-    print(f"Part 1: {part_1}")
-    part_2 = sum([len(possible_ways(design)) for design in designs])
-    print(f"Part 2: {part_2}\n")
-    for design in designs[:1]:
-        ways = ways_to_build_pattern[design]
-        print(ways)
-        print(design, [",".join(way[0]) for way in ways])
+    # Need to add all the possible ways to build known patterns from others
+    for pattern in patterns:
+        ways_to_make_design[pattern] |= possible_ways(pattern, ignore_this=True)
+
+    # Now add all the possible ways to build the requested designs
+    for design in designs:
+        ways_to_make_design[design] = possible_ways(design)
+
+    print(f"Part 1: {sum([bool(ways_to_make_design[design]) for design in designs])}")
+    print(f"Part 2: {sum([len(ways_to_make_design[design]) for design in designs])}\n")
 
 
 solve(example_input)
-# solve(actual_input)
+solve(actual_input)
