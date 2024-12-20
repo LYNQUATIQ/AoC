@@ -24,7 +24,7 @@ example_input = """###############
 
 WALL, START, END = "#", "S", "E"
 NORTH, SOUTH, EAST, WEST = -1j, 1j, 1, -1
-DIRECTIONS = {NORTH, SOUTH, EAST, WEST}
+NSEW = {NORTH, SOUTH, EAST, WEST}
 
 
 def solve(inputs: str):
@@ -46,9 +46,9 @@ def solve(inputs: str):
         xy += heading
         step += 1
         route[xy] = step
-        walls_by_xy = {d for d in DIRECTIONS if xy + d in walls}
+        walls_by_xy = {d for d in NSEW if xy + d in walls}
         try:
-            heading = (DIRECTIONS - set(walls_by_xy) - {heading * -1}).pop()
+            heading = (NSEW - set(walls_by_xy) - {heading * -1}).pop()
         except KeyError:  # Reached a dead end (i.e. the end)
             break
     assert xy == end
@@ -62,9 +62,7 @@ def solve(inputs: str):
                 next_to_visit = set()
                 for xy in to_visit:
                     visited.add(xy)
-                    for next_xy in [xy + d for d in DIRECTIONS if xy + d]:
-                        if next_xy in visited or next_xy in candidate_cheats:
-                            continue
+                    for next_xy in [xy + d for d in NSEW if xy + d not in visited]:
                         next_to_visit.add(next_xy)
                         if next_xy in route:
                             cheat_gain = route[next_xy] - step - (time_taken + 1)
