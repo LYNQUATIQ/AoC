@@ -22,7 +22,7 @@ example_input = """###############
 
 WALL, START, END = "#", "S", "E"
 NORTH, SOUTH, EAST, WEST = -1j, 1j, 1, -1
-NSEW = {NORTH, SOUTH, EAST, WEST}
+NSEW = (NORTH, SOUTH, EAST, WEST)
 
 
 def solve(inputs: str):
@@ -38,12 +38,11 @@ def solve(inputs: str):
                 end = xy
     assert start is not None and end is not None
 
-    xy, possible_headings, step = start, [NORTH], 0
-    route = {start: 0}
+    # Determine the steps on the route and the time taken to get to each step
+    xy, step, route = start, 0, {start: 0}
+    possible_headings = [d for d in NSEW if xy + d not in walls]
     while heading := (possible_headings[0] if possible_headings else None):
-        xy += heading
-        step += 1
-        route[xy] = step
+        route[(xy := xy + heading)] = (step := step + 1)
         possible_headings = [d for d in NSEW if xy + d not in walls and d != -heading]
     assert xy == end
 
