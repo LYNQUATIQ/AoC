@@ -4,8 +4,6 @@ from collections import defaultdict
 from aoc_utils import get_input_data
 
 actual_input = get_input_data(2024, 20)
-
-
 example_input = """###############
 #...#...#.....#
 #.#.#.#.#.###.#
