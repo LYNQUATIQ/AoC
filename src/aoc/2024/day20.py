@@ -38,37 +38,32 @@ def solve(inputs: str):
                 end = xy
     assert start is not None and end is not None
 
-    xy, heading, step = start, NORTH, 0
+    xy, possible_headings, step = start, [NORTH], 0
     route = {start: 0}
-    while True:
+    while heading := (possible_headings[0] if possible_headings else None):
         xy += heading
         step += 1
         route[xy] = step
-        walls_by_xy = {d for d in NSEW if xy + d in walls}
-        try:
-            heading = (NSEW - set(walls_by_xy) - {heading * -1}).pop()
-        except KeyError:  # Reached a dead end (i.e. the end)
-            break
+        possible_headings = [d for d in NSEW if xy + d not in walls and d != -heading]
     assert xy == end
 
     def get_cheat_count(rule_time: int) -> dict[int, int]:
         cheat_count = defaultdict(int)
-        for step_xy, step in route.items():
-            candidate_cheats = {}
-            to_visit, visited = {step_xy}, set()
-            for time_taken in range(rule_time):
+        for route_step, cheat_start_time in route.items():
+            candidate_cheats, visited, to_visit = {}, set(), {route_step}
+            for time_taken in range(1, rule_time + 1):
                 next_to_visit = set()
                 for xy in to_visit:
                     visited.add(xy)
                     for next_xy in [xy + d for d in NSEW if xy + d not in visited]:
                         next_to_visit.add(next_xy)
                         if next_xy in route:
-                            cheat_gain = route[next_xy] - step - (time_taken + 1)
-                            if cheat_gain > 0:
-                                candidate_cheats[next_xy] = cheat_gain
+                            time_saved = route[next_xy] - cheat_start_time - time_taken
+                            if time_saved > 0:
+                                candidate_cheats[next_xy] = time_saved
                 to_visit = next_to_visit
-            for cheat_gain in candidate_cheats.values():
-                cheat_count[cheat_gain] += 1
+            for time_saved in candidate_cheats.values():
+                cheat_count[time_saved] += 1
         return cheat_count
 
     cheat_count = get_cheat_count(rule_time=2)
