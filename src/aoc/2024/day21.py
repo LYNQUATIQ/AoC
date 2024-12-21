@@ -25,7 +25,6 @@ NUMERIC_KEYPAD = {
     "9": {UP: None, RIGHT: None, DOWN: "6", LEFT: "8"},
     "A": {UP: "3", RIGHT: None, DOWN: None, LEFT: "0"},
 }
-
 DIRECTIONAL_KEYPAD = {
     UP: {DOWN: DOWN, RIGHT: ACTIVATE, UP: None, LEFT: None},
     DOWN: {DOWN: None, RIGHT: RIGHT, UP: UP, LEFT: LEFT},
@@ -82,28 +81,28 @@ def directional_sequences(instructions):
     return sequences
 
 
-def shortest_sequence(code):
-    keypad_sequences = numeric_sequences("A" + code)
-    robot_sequences = []
-    for keypad_sequence in keypad_sequences:
-        robot_sequences += directional_sequences("A" + keypad_sequence)
-    final_sequences = []
-    for robot_sequence in robot_sequences:
-        final_sequences += directional_sequences("A" + robot_sequence)
-    return min(final_sequences, key=len)
+def total_complexity(codes, directional_robots):
+    total_complexity = 0
+
+    for code in codes:
+        numeric_part = int(code[:-1])
+        sequences = numeric_sequences("A" + code)
+        for _ in range(directional_robots):
+            next_sequences = []
+            for keypad_sequence in sequences:
+                next_sequences += directional_sequences("A" + keypad_sequence)
+            sequence_length = len(min(next_sequences, key=len))
+            sequences = [s for s in next_sequences if len(s) == sequence_length]
+        total_complexity += sequence_length * numeric_part
+
+    return total_complexity
 
 
 @print_time_taken
 def solve(inputs: str):
     codes = inputs.splitlines()
-    total_complexity = 0
 
-    for code in codes:
-        numeric_part = int(code[:-1])
-        sequence = shortest_sequence(code)
-        total_complexity += len(sequence) * numeric_part
-
-    print(f"Part 1: {total_complexity}")
+    print(f"Part 1: {total_complexity(codes, directional_robots=2)}")
     print(f"Part 2: {False}\n")
 
 
