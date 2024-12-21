@@ -36,8 +36,7 @@ DIRECTIONAL_KEYPAD = {
 
 
 def paths(start_key: str, target_key: str, keypad: dict[str, dict[str, str]]) -> str:
-    paths = []
-    to_visit = deque([(start_key, "")])
+    paths, to_visit = [], deque([(start_key, "")])
     while to_visit:
         current_key, sequence = to_visit.popleft()
         if paths and len(sequence) > len(paths[0]):
@@ -47,7 +46,7 @@ def paths(start_key: str, target_key: str, keypad: dict[str, dict[str, str]]) ->
         for direction, next_key in keypad[current_key].items():
             if next_key is not None:
                 to_visit.append((next_key, sequence + direction))
-    return tuple(paths)
+    return paths
 
 
 def all_paths(keypad):
@@ -55,50 +54,34 @@ def all_paths(keypad):
 
 
 NUMERIC_PATHS = all_paths(NUMERIC_KEYPAD)
-DIRECTIONAL_PATHS = all_paths(DIRECTIONAL_KEYPAD)
+ARROW_PATHS = all_paths(DIRECTIONAL_KEYPAD)
 
 
 @cache
-def best_sequence(instructions, directional_robots):
-    if directional_robots == 0:
+def shortest_sequence(instructions, n_robots):
+    if n_robots == 0:
         return len(instructions) + 1
-    sequence = 0
-    for instruction_pair in zip("A" + instructions, instructions + ACTIVATE):
-        sequences = []
-        paths = DIRECTIONAL_PATHS[instruction_pair]
-        for path in paths:
-            sequences.append(best_sequence(path, directional_robots - 1))
-        sequence += min(sequences)
-
-    return sequence
+    sequence_length = 0
+    for from_to in zip("A" + instructions, instructions + ACTIVATE):
+        sequence_length += min(
+            shortest_sequence(path, n_robots - 1) for path in ARROW_PATHS[from_to]
+        )
+    return sequence_length
 
 
-def best_code_sequence(code, directional_robots):
-    sequence = 0
-    for numeric_pair in zip("A" + code[:-1], code):
-        sequences = []
-        paths = NUMERIC_PATHS[numeric_pair]
-        for path in paths:
-            sequences.append(best_sequence(path, directional_robots))
-        sequence += min(sequences)
-    return sequence
-
-
-def total_complexity(codes, directional_robots):
-    total_complexity = 0
-    for code in codes:
-        numeric_part = int(code[:-1])
-        shortest_sequence = best_code_sequence(code, directional_robots)
-        total_complexity += shortest_sequence * numeric_part
-
-    return total_complexity
+def complexity(code, n_robots):
+    sequence_length = 0
+    for from_to in zip("A" + code[:-1], code):
+        sequence_length += min(
+            shortest_sequence(path, n_robots) for path in NUMERIC_PATHS[from_to]
+        )
+    return sequence_length * int(code[:-1])
 
 
 def solve(inputs: str):
     codes = inputs.splitlines()
-
-    print(f"Part 1: {total_complexity(codes, directional_robots=2)}")
-    print(f"Part 2: {total_complexity(codes, directional_robots=25)}\n")
+    print(f"Part 1: {sum(complexity(code, n_robots=2) for code in codes)}")
+    print(f"Part 2: {sum(complexity(code, n_robots=25) for code in codes)}\n")
 
 
 solve(example_input)
