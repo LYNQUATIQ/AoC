@@ -1,6 +1,6 @@
 """https://adventofcode.com/2024/day/21"""
 
-from collections import deque
+from collections import deque, Counter
 
 from aoc_utils import get_input_data, print_time_taken
 
@@ -46,7 +46,12 @@ def paths(start_key: str, target_key: str, keypad: dict[str, dict[str, str]]) ->
         for direction, next_key in keypad[current_key].items():
             if next_key is not None:
                 to_visit.append((next_key, sequence + direction))
-    return paths
+    # Filter out kinked paths
+    steps = Counter(paths[0])
+    up_down = UP * steps[UP] + DOWN * steps[DOWN]
+    left_right = LEFT * steps[LEFT] + RIGHT * steps[RIGHT]
+    valid_paths = set([up_down + left_right, left_right + up_down])
+    return set(paths) & valid_paths
 
 
 def all_paths(keypad):
