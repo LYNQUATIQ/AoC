@@ -1,8 +1,9 @@
 """https://adventofcode.com/2024/day/21"""
 
-from collections import deque, Counter
+from collections import deque
+from functools import cache
 
-from aoc_utils import get_input_data, print_time_taken
+from aoc_utils import get_input_data
 
 actual_input = get_input_data(2024, 21)
 example_input = """029A
@@ -13,24 +14,24 @@ example_input = """029A
 
 UP, DOWN, LEFT, RIGHT, ACTIVATE = "^", "v", "<", ">", "A"
 NUMERIC_KEYPAD = {
-    "0": {UP: "2", RIGHT: "A", DOWN: None, LEFT: None},
-    "1": {UP: "4", RIGHT: "2", DOWN: None, LEFT: None},
+    "0": {UP: "2", RIGHT: "A"},
+    "1": {UP: "4", RIGHT: "2"},
     "2": {UP: "5", RIGHT: "3", DOWN: "0", LEFT: "1"},
-    "3": {UP: "6", RIGHT: None, DOWN: "A", LEFT: "2"},
-    "4": {UP: "7", RIGHT: "5", DOWN: "1", LEFT: None},
+    "3": {UP: "6", DOWN: "A", LEFT: "2"},
+    "4": {UP: "7", RIGHT: "5", DOWN: "1"},
     "5": {UP: "8", RIGHT: "6", DOWN: "2", LEFT: "4"},
-    "6": {UP: "9", RIGHT: None, DOWN: "3", LEFT: "5"},
-    "7": {UP: None, RIGHT: "8", DOWN: "4", LEFT: None},
-    "8": {UP: None, RIGHT: "9", DOWN: "5", LEFT: "7"},
-    "9": {UP: None, RIGHT: None, DOWN: "6", LEFT: "8"},
-    "A": {UP: "3", RIGHT: None, DOWN: None, LEFT: "0"},
+    "6": {UP: "9", DOWN: "3", LEFT: "5"},
+    "7": {RIGHT: "8", DOWN: "4"},
+    "8": {RIGHT: "9", DOWN: "5", LEFT: "7"},
+    "9": {DOWN: "6", LEFT: "8"},
+    "A": {UP: "3", LEFT: "0"},
 }
 DIRECTIONAL_KEYPAD = {
-    UP: {DOWN: DOWN, RIGHT: ACTIVATE, UP: None, LEFT: None},
-    DOWN: {DOWN: None, RIGHT: RIGHT, UP: UP, LEFT: LEFT},
-    LEFT: {DOWN: None, RIGHT: DOWN, UP: None, LEFT: None},
-    RIGHT: {DOWN: None, RIGHT: None, UP: ACTIVATE, LEFT: DOWN},
-    ACTIVATE: {DOWN: RIGHT, RIGHT: None, UP: None, LEFT: UP},
+    UP: {DOWN: DOWN, RIGHT: ACTIVATE},
+    DOWN: {RIGHT: RIGHT, UP: UP, LEFT: LEFT},
+    LEFT: {RIGHT: DOWN},
+    RIGHT: {UP: ACTIVATE, LEFT: DOWN},
+    ACTIVATE: {DOWN: RIGHT, LEFT: UP},
 }
 
 
@@ -46,12 +47,7 @@ def paths(start_key: str, target_key: str, keypad: dict[str, dict[str, str]]) ->
         for direction, next_key in keypad[current_key].items():
             if next_key is not None:
                 to_visit.append((next_key, sequence + direction))
-    # Filter out kinked paths
-    steps = Counter(paths[0])
-    up_down = UP * steps[UP] + DOWN * steps[DOWN]
-    left_right = LEFT * steps[LEFT] + RIGHT * steps[RIGHT]
-    valid_paths = set([up_down + left_right, left_right + up_down])
-    return set(paths) & valid_paths
+    return tuple(paths)
 
 
 def all_paths(keypad):
@@ -62,53 +58,47 @@ NUMERIC_PATHS = all_paths(NUMERIC_KEYPAD)
 DIRECTIONAL_PATHS = all_paths(DIRECTIONAL_KEYPAD)
 
 
-def numeric_sequences(code):
-    if code == ACTIVATE:
-        return [""]
-    sequences = []
-    next_steps = NUMERIC_PATHS[(code[0], code[1])]
-    remaining = numeric_sequences(code[1:])
-    for next_step in next_steps:
-        for remainder in remaining:
-            sequences.append(next_step + ACTIVATE + remainder)
-    return sequences
+@cache
+def best_sequence(instructions, directional_robots):
+    if directional_robots == 0:
+        return len(instructions) + 1
+    sequence = 0
+    for instruction_pair in zip("A" + instructions, instructions + ACTIVATE):
+        sequences = []
+        paths = DIRECTIONAL_PATHS[instruction_pair]
+        for path in paths:
+            sequences.append(best_sequence(path, directional_robots - 1))
+        sequence += min(sequences)
+
+    return sequence
 
 
-def directional_sequences(instructions):
-    if instructions == ACTIVATE:
-        return [""]
-    sequences = []
-    next_steps = DIRECTIONAL_PATHS[(instructions[0], instructions[1])]
-    remaining = directional_sequences(instructions[1:])
-    for next_step in next_steps:
-        for remainder in remaining:
-            sequences.append(next_step + ACTIVATE + remainder)
-    return sequences
+def best_code_sequence(code, directional_robots):
+    sequence = 0
+    for numeric_pair in zip("A" + code[:-1], code):
+        sequences = []
+        paths = NUMERIC_PATHS[numeric_pair]
+        for path in paths:
+            sequences.append(best_sequence(path, directional_robots))
+        sequence += min(sequences)
+    return sequence
 
 
 def total_complexity(codes, directional_robots):
     total_complexity = 0
-
     for code in codes:
         numeric_part = int(code[:-1])
-        sequences = numeric_sequences("A" + code)
-        for _ in range(directional_robots):
-            next_sequences = []
-            for keypad_sequence in sequences:
-                next_sequences += directional_sequences("A" + keypad_sequence)
-            sequence_length = len(min(next_sequences, key=len))
-            sequences = [s for s in next_sequences if len(s) == sequence_length]
-        total_complexity += sequence_length * numeric_part
+        shortest_sequence = best_code_sequence(code, directional_robots)
+        total_complexity += shortest_sequence * numeric_part
 
     return total_complexity
 
 
-@print_time_taken
 def solve(inputs: str):
     codes = inputs.splitlines()
 
     print(f"Part 1: {total_complexity(codes, directional_robots=2)}")
-    print(f"Part 2: {False}\n")
+    print(f"Part 2: {total_complexity(codes, directional_robots=25)}\n")
 
 
 solve(example_input)
