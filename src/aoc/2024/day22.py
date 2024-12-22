@@ -10,17 +10,15 @@ example_input = """1
 100
 2024"""
 
-MODULO = 16777216
-
 
 def evolve_secret(secret: int) -> int:
-    secret ^= 64 * secret % MODULO
+    secret ^= 64 * secret % 16777216
     secret ^= secret // 32
-    secret ^= 2048 * secret % MODULO
+    secret ^= 2048 * secret % 16777216
     return secret
 
 
-def gather_price_series(initial_secret: int):
+def gather_prices(initial_secret: int) -> tuple[int, list[int]]:
     price_series = [initial_secret % 10]
     secret = initial_secret
     for _ in range(2000):
@@ -29,7 +27,7 @@ def gather_price_series(initial_secret: int):
     return secret, price_series
 
 
-def get_offers(price_series):
+def get_offers(price_series: list[int]) -> dict[tuple[int, int, int, int], int]:
     offers = {}
     price_deltas = [(b, b - a) for a, b in zip(price_series[:-1], price_series[1:])]
     for i, (price, d4) in enumerate(price_deltas[3:], start=3):
@@ -46,20 +44,17 @@ def solve(inputs: str):
     initial_secrets = tuple(map(int, inputs.splitlines()))
 
     total = 0
-    all_price_series = []
-    for secret in initial_secrets:
-        last_secret, prices = gather_price_series(secret)
-        total += last_secret
-        all_price_series.append(prices)
-
+    price_lists = []
+    for initial_secret in initial_secrets:
+        final_secret, prices = gather_prices(initial_secret)
+        total += final_secret
+        price_lists.append(prices)
     print(f"Part 1: {total}")
 
     all_offers = defaultdict(int)
-    for prices in all_price_series:
-        offers = get_offers(prices)
-        for offer, price in offers.items():
+    for prices in price_lists:
+        for offer, price in get_offers(prices).items():
             all_offers[offer] += price
-
     print(f"Part 2: {max(all_offers.values())}\n")
 
 
