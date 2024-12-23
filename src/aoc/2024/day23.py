@@ -40,6 +40,25 @@ tb-vc
 td-yn"""
 
 
+def bors_kerbosch(reported, potential, excluded, connections, maximal_clique):
+    if not potential and not excluded:
+        if len(reported) > len(maximal_clique):
+            maximal_clique -= maximal_clique
+            maximal_clique |= reported
+        return
+
+    for pc in set(potential):
+        bors_kerbosch(
+            reported | {pc},
+            potential & connections[pc],
+            excluded & connections[pc],
+            connections,
+            maximal_clique,
+        )
+        potential.remove(pc)
+        excluded.add(pc)
+
+
 @print_time_taken
 def solve(inputs: str):
 
@@ -48,29 +67,18 @@ def solve(inputs: str):
         a, b = line.split("-")
         connections[a].add(b)
         connections[b].add(a)
-    computers = set(connections)
 
-    connected_sets = defaultdict(set)
+    connected_sets = set()
     for a, b, c in combinations(connections, 3):
         if not any(pc.startswith("t") for pc in (a, b, c)):
             continue
         if b in connections[a] and c in connections[a] and c in connections[b]:
-            connected_sets[3].add(frozenset((a, b, c)))
-    print(f"Part 1: {len(connected_sets[3])}")
+            connected_sets.add(frozenset((a, b, c)))
+    print(f"Part 1: {len(connected_sets)}")
 
-    to_visit = {(3, pc_set) for pc_set in connected_sets[3]}
-    visited = set()
-    while to_visit:
-        set_size, pc_set = to_visit.pop()
-        visited.add(pc_set)
-        for pc in computers - pc_set:
-            if all(pc in connections[x] for x in pc_set):
-                new_pc_set = frozenset((*pc_set, pc))
-                connected_sets[set_size + 1].add(new_pc_set)
-                to_visit.add((set_size + 1, new_pc_set))
-
-    lan_party = connected_sets[max(connected_sets)].pop()
-    print(f"Part 2: {','.join(sorted(lan_party))}\n")
+    maximal_clique = set()
+    bors_kerbosch(set(), set(connections), set(), connections, maximal_clique)
+    print(f"Part 2:\n{','.join(sorted(maximal_clique))}\n")
 
 
 solve(example_input)
