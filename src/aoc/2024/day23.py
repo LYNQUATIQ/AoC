@@ -1,7 +1,6 @@
 """https://adventofcode.com/2024/day/23"""
 
 from collections import defaultdict
-from itertools import combinations
 
 from aoc_utils import get_input_data, print_time_taken
 
@@ -40,20 +39,25 @@ tb-vc
 td-yn"""
 
 
-def bors_kerbosch(reported, potential, excluded, connections, maximal_clique):
+def bors_kerbosch(
+    clique, potential, excluded, connections, maximal_clique, three_cliques
+):
+    if len(clique) == 3 and any(pc.startswith("t") for pc in clique):
+        three_cliques.add(frozenset(clique))
     if not potential and not excluded:
-        if len(reported) > len(maximal_clique):
+        if len(clique) > len(maximal_clique):
             maximal_clique -= maximal_clique
-            maximal_clique |= reported
+            maximal_clique |= clique
         return
 
     for pc in set(potential):
         bors_kerbosch(
-            reported | {pc},
+            clique | {pc},
             potential & connections[pc],
             excluded & connections[pc],
             connections,
             maximal_clique,
+            three_cliques,
         )
         potential.remove(pc)
         excluded.add(pc)
@@ -68,19 +72,13 @@ def solve(inputs: str):
         connections[a].add(b)
         connections[b].add(a)
 
-    connected_sets = set()
-    for a, b, c in combinations(connections, 3):
-        if not any(pc.startswith("t") for pc in (a, b, c)):
-            continue
-        if b in connections[a] and c in connections[a] and c in connections[b]:
-            connected_sets.add(frozenset((a, b, c)))
-    print(f"Part 1: {len(connected_sets)}")
-
-    maximal_clique = set()
-    bors_kerbosch(set(), set(connections), set(), connections, maximal_clique)
-    print(f"Part 2:\n{','.join(sorted(maximal_clique))}\n")
+    maximal_clique, three_cliques = set(), set()
+    bors_kerbosch(
+        set(), set(connections), set(), connections, maximal_clique, three_cliques
+    )
+    print(f"Part 1: {len(three_cliques)}")
+    print(f"Part 2: {','.join(sorted(maximal_clique))}\n")
 
 
 solve(example_input)
 solve(actual_input)
-# at,gy,ih,ly,me,sm,tc,tj,tl,vf,vt,wn    is wrong
