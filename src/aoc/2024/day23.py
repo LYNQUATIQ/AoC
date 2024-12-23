@@ -44,22 +44,35 @@ td-yn"""
 def solve(inputs: str):
 
     connections = defaultdict(set)
-    lines = inputs.splitlines()
-    for line in lines:
+    for line in inputs.splitlines():
         a, b = line.split("-")
         connections[a].add(b)
         connections[b].add(a)
+    computers = set(connections)
 
-    three_inter_connected = []
+    connected_sets = defaultdict(set)
     for a, b, c in combinations(connections, 3):
-        if not any(computer.startswith("t") for computer in (a, b, c)):
+        if not any(pc.startswith("t") for pc in (a, b, c)):
             continue
         if b in connections[a] and c in connections[a] and c in connections[b]:
-            three_inter_connected.append((a, b, c))
-    print(f"Part 1: {len(three_inter_connected)}")
+            connected_sets[3].add(frozenset((a, b, c)))
+    print(f"Part 1: {len(connected_sets[3])}")
 
-    print(f"Part 2: {False}\n")
+    to_visit = {(3, pc_set) for pc_set in connected_sets[3]}
+    visited = set()
+    while to_visit:
+        set_size, pc_set = to_visit.pop()
+        visited.add(pc_set)
+        for pc in computers - pc_set:
+            if all(pc in connections[x] for x in pc_set):
+                new_pc_set = frozenset((*pc_set, pc))
+                connected_sets[set_size + 1].add(new_pc_set)
+                to_visit.add((set_size + 1, new_pc_set))
+
+    lan_party = connected_sets[max(connected_sets)].pop()
+    print(f"Part 2: {','.join(sorted(lan_party))}\n")
 
 
 solve(example_input)
 solve(actual_input)
+# at,gy,ih,ly,me,sm,tc,tj,tl,vf,vt,wn    is wrong
