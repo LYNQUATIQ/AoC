@@ -39,30 +39,6 @@ tb-vc
 td-yn"""
 
 
-def bors_kerbosch(
-    clique, potential, excluded, connections, maximal_clique, three_cliques
-):
-    if len(clique) == 3 and any(pc.startswith("t") for pc in clique):
-        three_cliques.add(frozenset(clique))
-    if not potential and not excluded:
-        if len(clique) > len(maximal_clique):
-            maximal_clique -= maximal_clique
-            maximal_clique |= clique
-        return
-
-    for pc in set(potential):
-        bors_kerbosch(
-            clique | {pc},
-            potential & connections[pc],
-            excluded & connections[pc],
-            connections,
-            maximal_clique,
-            three_cliques,
-        )
-        potential.remove(pc)
-        excluded.add(pc)
-
-
 @print_time_taken
 def solve(inputs: str):
 
@@ -72,12 +48,29 @@ def solve(inputs: str):
         connections[a].add(b)
         connections[b].add(a)
 
-    maximal_clique, three_cliques = set(), set()
-    bors_kerbosch(
-        set(), set(connections), set(), connections, maximal_clique, three_cliques
-    )
-    print(f"Part 1: {len(three_cliques)}")
-    print(f"Part 2: {','.join(sorted(maximal_clique))}\n")
+    def bors_kerbosch(clique, potential, excluded, part_1_cliques, part_2_clique):
+        if len(clique) == 3 and any(pc.startswith("t") for pc in clique):
+            part_1_cliques.add(frozenset(clique))
+        if not potential and not excluded:
+            if len(clique) > len(part_2_clique):
+                part_2_clique -= part_2_clique
+                part_2_clique |= clique
+            return
+        for pc in set(potential):
+            bors_kerbosch(
+                clique | {pc},
+                potential & connections[pc],
+                excluded & connections[pc],
+                part_1_cliques,
+                part_2_clique,
+            )
+            potential.remove(pc)
+            excluded.add(pc)
+
+    part_1_cliques, part_2_clique = set(), set()
+    bors_kerbosch(set(), set(connections), set(), part_1_cliques, part_2_clique)
+    print(f"Part 1: {len(part_1_cliques)}")
+    print(f"Part 2: {','.join(sorted(part_2_clique))}\n")
 
 
 solve(example_input)
