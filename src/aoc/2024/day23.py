@@ -42,33 +42,33 @@ td-yn"""
 @print_time_taken
 def solve(inputs: str):
 
-    connections = defaultdict(set)
+    connected = defaultdict(set)
     for line in inputs.splitlines():
         a, b = line.split("-")
-        connections[a].add(b)
-        connections[b].add(a)
+        connected[a].add(b)
+        connected[b].add(a)
 
     def bors_kerbosch(clique, potential, excluded, part_1_cliques, part_2_clique):
-        if len(clique) == 3 and any(pc.startswith("t") for pc in clique):
+        if len(clique) == 3 and any(computer.startswith("t") for computer in clique):
             part_1_cliques.add(frozenset(clique))
         if not potential and not excluded:
             if len(clique) > len(part_2_clique):
                 part_2_clique -= part_2_clique
                 part_2_clique |= clique
             return
-        for pc in set(potential):
+        for computer in set(potential):
             bors_kerbosch(
-                clique | {pc},
-                potential & connections[pc],
-                excluded & connections[pc],
+                clique | {computer},
+                potential & connected[computer],
+                excluded & connected[computer],
                 part_1_cliques,
                 part_2_clique,
             )
-            potential.remove(pc)
-            excluded.add(pc)
+            potential.remove(computer)
+            excluded.add(computer)
 
     part_1_cliques, part_2_clique = set(), set()
-    bors_kerbosch(set(), set(connections), set(), part_1_cliques, part_2_clique)
+    bors_kerbosch(set(), set(connected), set(), part_1_cliques, part_2_clique)
     print(f"Part 1: {len(part_1_cliques)}")
     print(f"Part 2: {','.join(sorted(part_2_clique))}\n")
 
