@@ -48,7 +48,7 @@ def solve(inputs: str):
         connected[a].add(b)
         connected[b].add(a)
 
-    def bors_kerbosch(clique, potential, excluded, part_1_cliques, part_2_clique):
+    def bron_kerbosch(clique, potential, excluded, part_1_cliques, part_2_clique):
         if len(clique) == 3 and any(computer.startswith("t") for computer in clique):
             part_1_cliques.add(frozenset(clique))
         if not potential and not excluded:
@@ -57,7 +57,7 @@ def solve(inputs: str):
                 part_2_clique |= clique
             return
         for computer in set(potential):
-            bors_kerbosch(
+            bron_kerbosch(
                 clique | {computer},
                 potential & connected[computer],
                 excluded & connected[computer],
@@ -68,7 +68,7 @@ def solve(inputs: str):
             excluded.add(computer)
 
     part_1_cliques, part_2_clique = set(), set()
-    bors_kerbosch(set(), set(connected), set(), part_1_cliques, part_2_clique)
+    bron_kerbosch(set(), set(connected), set(), part_1_cliques, part_2_clique)
     print(f"Part 1: {len(part_1_cliques)}")
     print(f"Part 2: {','.join(sorted(part_2_clique))}\n")
 
