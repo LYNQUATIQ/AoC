@@ -1,6 +1,4 @@
-"""https://adventofcode.com/2024/day/24
-   https://www.geeksforgeeks.org/binary-adder-with-logic-gates/
-"""
+"""https://adventofcode.com/2024/day/24"""
 
 from aoc_utils import get_input_data
 
@@ -70,14 +68,14 @@ def solve(inputs: str, find_dodgy_wires=False):
 
     gates = {}
     for line in gate_inputs.splitlines():
-        a, op, b, _, gate_wire = line.split(" ")
-        gates[gate_wire] = (op, frozenset((a, b)))
+        a, op, b, _, wire = line.split(" ")
+        gates[wire] = (op, frozenset((a, b)))
 
     while any(wires.get(w) is None for w in gates):
-        for gate_wire, (op, inputs) in gates.items():
+        for wire, (op, inputs) in gates.items():
             a, b = inputs
             if a in wires and b in wires:
-                wires[gate_wire] = LOGICAL_OPERATORS[op](wires[a], wires[b])
+                wires[wire] = LOGICAL_OPERATORS[op](wires[a], wires[b])
 
     z_bits = {int(w[1:]) for w in wires if w.startswith("z")}
     value = 0
@@ -85,26 +83,33 @@ def solve(inputs: str, find_dodgy_wires=False):
         value += wires[f"z{bit:02}"] * (2**bit)
     print(f"\nPart 1: {value}")
 
+    if not find_dodgy_wires:
+        return
+
+    # To find the dodgy wires, try and find the 5 gates that make up a 'full adder' for
+    # each bit - if any of the inputs are 'unexpected' then add them to the patch list.
+    # See: https://www.geeksforgeeks.org/binary-adder-with-logic-gates/
+    bit_count, patches = max(z_bits), set()
+
     def find_gate(expected_inputs, logical_op, patches) -> str:
-        for gate_wire, (op, actual_inputs) in gates.items():
+        for wire, (op, actual_inputs) in gates.items():
             if op != logical_op:
                 continue
             if expected_inputs & actual_inputs:
                 if actual_inputs != expected_inputs:
                     patches |= actual_inputs ^ expected_inputs
-                return gate_wire
+                return wire
 
-    if find_dodgy_wires:
-        bit_count, patches = max(z_bits), set()
-        carry_in = find_gate({"x00", "y00"}, "AND", patches)
-        for bit in range(1, bit_count):
-            x, y = f"x{bit:02}", f"y{bit:02}"
-            x_xor_y = find_gate({x, y}, "XOR", patches)
-            x_and_y = find_gate({x, y}, "AND", patches)
-            carry_out = find_gate({carry_in, x_xor_y}, "AND", patches)
-            carry_in = find_gate({carry_out, x_and_y}, "OR", patches)
+    carry_in = find_gate({"x00", "y00"}, "AND", patches)
+    for bit in range(1, bit_count):
+        x, y = f"x{bit:02}", f"y{bit:02}"
+        x_xor_y = find_gate({x, y}, "XOR", patches)
+        x_and_y = find_gate({x, y}, "AND", patches)
+        _ = find_gate({carry_in, x_xor_y}, "XOR", patches)
+        next_carry = find_gate({carry_in, x_xor_y}, "AND", patches)
+        carry_in = find_gate({next_carry, x_and_y}, "OR", patches)
 
-        print(f"Part 2: {','.join(sorted(patches))}\n")
+    print(f"Part 2: {','.join(sorted(patches))}\n")
 
 
 solve(example_input)
