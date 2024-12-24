@@ -1,7 +1,8 @@
-"""https://adventofcode.com/2024/day/24"""
+"""https://adventofcode.com/2024/day/24
+   https://www.geeksforgeeks.org/binary-adder-with-logic-gates/
+"""
 
 from collections import defaultdict
-from tkinter import W
 
 from aoc_utils import get_input_data
 
@@ -64,7 +65,7 @@ LOGICAL_OPERATORS = {
 }
 
 
-def solve(inputs: str):
+def solve(inputs: str, find_dodgy_wires=False):
     wire_inputs, gate_inputs = inputs.split("\n\n")
     wires = {}
     for line in wire_inputs.splitlines():
@@ -72,28 +73,67 @@ def solve(inputs: str):
         wires[wire] = bool(int(value))
 
     gates = {}
-    z_wires = set()
-    inputs_to = defaultdict(list)
     for line in gate_inputs.splitlines():
-        a, op, b, _, output = line.split(" ")
-        gates[output] = (op, (a, b))
-        inputs_to[a].append(output)
-        inputs_to[b].append(output)
-        if output.startswith("z"):
-            z_wires.add(output)
+        a, op, b, _, gate_wire = line.split(" ")
+        gates[gate_wire] = (op, frozenset((a, b)))
 
-    while any(wires.get(z) is None for z in z_wires):
-        for output, (op, (a, b)) in gates.items():
+    def decimal_value(prefix: str):
+        value = 0
+        for i, wire in enumerate(sorted({w for w in wires if w.startswith(prefix)})):
+            value += wires[wire] * (2**i)
+        return value
+
+    while any(wires.get(w) is None for w in gates):
+        for gate_wire, (op, inputs) in gates.items():
+            a, b = inputs
             if a in wires and b in wires:
-                wires[output] = LOGICAL_OPERATORS[op](wires[a], wires[b])
+                wires[gate_wire] = LOGICAL_OPERATORS[op](wires[a], wires[b])
 
-    output_value = 0
-    for i, z_wire in enumerate(sorted(z_wires)):
-        output_value += wires[z_wire] * (2**i)
+    print(f"Part 1: {decimal_value('z')}")
+    if not find_dodgy_wires:
+        print()
+        return
 
-    print(f"Part 1: {output_value}")
-    print(f"Part 2: {False}\n")
+    patches = set()
+
+    def find_gate(input1, input2, logical_op, patches) -> str:
+        for gate_wire, (op, inputs) in gates.items():
+            if op != logical_op:
+                continue
+            if input1 in inputs or input2 in inputs:
+                if inputs != frozenset((input1, input2)):
+                    # Gonna need a patch
+                    if input1 in inputs:
+                        patches |= {input2} | (inputs - {input1})
+                    else:
+                        patches |= {input1} | (inputs - {input2})
+                return gate_wire
+
+        raise ValueError(f"Could not find {logical_op} gate for {input1} and {input2}")
+
+    half_adder_and, half_adder_xor = {}, {}
+    for gate_wire, (op, inputs) in gates.items():
+        a, b = sorted(inputs)
+        if a.startswith("x") and b.startswith("y"):
+            assert a[1:] == b[1:] and op in ("AND", "XOR")
+            bit_number = int(a[1:])
+            if op == "AND":
+                half_adder_and[bit_number] = gate_wire
+            elif op == "XOR":
+                half_adder_xor[bit_number] = gate_wire
+                if bit_number == 0:
+                    assert gate_wire == f"z{bit_number:02}"
+
+    bit_count = max(half_adder_xor) + 1
+    full_adder_or = {0: half_adder_and[0]}
+    for bit in range(1, bit_count):
+        c_in = full_adder_or[bit - 1]
+        find_gate(c_in, half_adder_xor[bit], "XOR", patches)
+        c_out = find_gate(c_in, half_adder_xor[bit], "AND", patches)
+        full_adder_or[bit] = find_gate(c_out, half_adder_and[bit], "OR", patches)
+
+    print(f"Part 2: {','.join(sorted(patches))}\n")
 
 
 solve(example_input)
-solve(actual_input)
+solve(actual_input, find_dodgy_wires=True)
