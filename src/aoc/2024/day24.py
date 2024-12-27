@@ -86,8 +86,8 @@ def solve(inputs: str, find_dodgy_wires=False):
     if not find_dodgy_wires:
         return
 
-    # To find the dodgy wires, try and find the 5 gates that make up a 'full adder' for
-    # each bit - if any of the inputs are 'unexpected' then add them to the patch list.
+    # To find the dodgy wires, try and find the gates that make up the half/full adders
+    # for each bit - if any inputs are 'unexpected' then add them to the patch list.
     # See: https://www.geeksforgeeks.org/binary-adder-with-logic-gates/
     bit_count, patches = max(z_bits), set()
 
@@ -100,14 +100,18 @@ def solve(inputs: str, find_dodgy_wires=False):
                     patches |= actual_inputs ^ expected_inputs
                 return wire
 
+    # Check the two gates in the initial half adder at bit 0
+    _ = find_gate({"x00", "y00"}, "XOR", patches)  # i.e. z00
     carry_in = find_gate({"x00", "y00"}, "AND", patches)
+
+    # Check the five gates in each of the full adders for bits 1 onwards
     for bit in range(1, bit_count):
         x, y = f"x{bit:02}", f"y{bit:02}"
-        x_xor_y = find_gate({x, y}, "XOR", patches)
-        x_and_y = find_gate({x, y}, "AND", patches)
-        _ = find_gate({carry_in, x_xor_y}, "XOR", patches)
-        next_carry = find_gate({carry_in, x_xor_y}, "AND", patches)
-        carry_in = find_gate({next_carry, x_and_y}, "OR", patches)
+        partial_sum_xy = find_gate({x, y}, "XOR", patches)
+        partial_carry = find_gate({x, y}, "AND", patches)
+        _ = find_gate({carry_in, partial_sum_xy}, "XOR", patches)  # i.e. z<nn>
+        carry_forward = find_gate({carry_in, partial_sum_xy}, "AND", patches)
+        carry_in = find_gate({carry_forward, partial_carry}, "OR", patches)
 
     print(f"Part 2: {','.join(sorted(patches))}\n")
 
