@@ -69,27 +69,24 @@ def solve(inputs: str, find_dodgy_wires=False):
     gates = {}
     for line in gate_inputs.splitlines():
         a, op, b, _, wire = line.split(" ")
-        gates[wire] = (op, frozenset((a, b)))
+        gates[wire] = (op, {a, b})
 
     while any(wires.get(w) is None for w in gates):
-        for wire, (op, inputs) in gates.items():
-            a, b = inputs
+        for wire, (op, (a, b)) in gates.items():
             if a in wires and b in wires:
                 wires[wire] = LOGICAL_OPERATORS[op](wires[a], wires[b])
 
-    z_bits = {int(w[1:]) for w in wires if w.startswith("z")}
-    value = 0
-    for bit in range(max(z_bits) + 1):
-        value += wires[f"z{bit:02}"] * (2**bit)
-    print(f"\nPart 1: {value}")
+    bit_count = max(int(w[1:]) for w in wires if w.startswith("z"))
+    output = sum(wires[f"z{bit:02}"] * (2**bit) for bit in range(bit_count + 1))
+    print(f"\nPart 1: {output}")
 
     if not find_dodgy_wires:
         return
 
     # To find the dodgy wires, try and find the gates that make up the half/full adders
-    # for each bit - if any inputs are 'unexpected' then add them to the patch list.
+    # for each bit - if any inputs are 'unexpected' then add them to the patch set.
     # See: https://www.geeksforgeeks.org/binary-adder-with-logic-gates/
-    bit_count, patches = max(z_bits), set()
+    patches = set()
 
     def find_gate(expected_inputs, logical_op, patches) -> str:
         for wire, (op, actual_inputs) in gates.items():
@@ -106,12 +103,12 @@ def solve(inputs: str, find_dodgy_wires=False):
 
     # Check the five gates in each of the full adders for bits 1 onwards
     for bit in range(1, bit_count):
-        x, y = f"x{bit:02}", f"y{bit:02}"
-        partial_sum_xy = find_gate({x, y}, "XOR", patches)
-        partial_carry = find_gate({x, y}, "AND", patches)
+        x_nn, y_nn = f"x{bit:02}", f"y{bit:02}"
+        partial_sum_xy = find_gate({x_nn, y_nn}, "XOR", patches)
+        partial_carry_1 = find_gate({x_nn, y_nn}, "AND", patches)
+        partial_carry_2 = find_gate({carry_in, partial_sum_xy}, "AND", patches)
         _ = find_gate({carry_in, partial_sum_xy}, "XOR", patches)  # i.e. z<nn>
-        carry_forward = find_gate({carry_in, partial_sum_xy}, "AND", patches)
-        carry_in = find_gate({carry_forward, partial_carry}, "OR", patches)
+        carry_in = find_gate({partial_carry_2, partial_carry_1}, "OR", patches)
 
     print(f"Part 2: {','.join(sorted(patches))}\n")
 
